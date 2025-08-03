@@ -11,90 +11,348 @@ using static UnityEngine.UI.GridLayoutGroup;
 
 public class GeneratePyramid : MonoBehaviour
 {
+    // --- Pyramid and Ramp Geometry ---
+    /// <summary>
+    /// The size of the pyramid's base in meters.
+    /// </summary>
     public float BaseSize = 230;
-    public float Height = 147; // 147 es de la pirámide de Keops
+    /// <summary>
+    /// The total height of the pyramid in meters. 147m is the height of the Great Pyramid of Khufu.
+    /// </summary>
+    public float Height = 147; // 147 es la altura de la pirámide de Keops
+    /// <summary>
+    /// The inclination angle of the pyramid's faces in degrees.
+    /// </summary>
     public float PyramidInclination = 51;
+    /// <summary>
+    /// The inclination angle of the construction ramp in degrees.
+    /// </summary>
     public float RampInclination = 7;
+    /// <summary>
+    /// The width of the path or ramp.
+    /// </summary>
     public float PathWide = 0;
+    /// <summary>
+    /// The separation of the path from the pyramid's edge.
+    /// </summary>
     public float PathSeparation = 0;
-    public int numberOfBlocks = 0;
-    public int numberOfBlocksDrawn = 0;
-    public int maxBlocks = 100;
-    public float path_length = 0;
-    public float total_height = 0;
-    public float massBlock = 2267.96f;
-    public float frictionCoef = 0.7f;
-    public string txtname = "pyramid.txt";
-    public int optionRamp = 0;
-    public float totalForce = 0;
-    public float totalForceRamp = 0;
-    public float totalLength = 0;
-    public float totalLengthRamp = 0;
-    public Material m_Material;
-    public Material m_Material_corner;
-    public Material m_Material_wood;
-    public Material m_Material_Blank;
-    public Material m_Material_floor;
-    public Camera cam;
-    public GameObject Palm;
-    public GameObject Dromader;
-    public GameObject Eiffel;
-    public GameObject Man;
-    public bool showEiffel = false;
-    public bool showMan = false;
-    public bool showManFinalRamp = false;
-    public bool Method4Ramp = false;
-    public bool MethodInsideRamp = false;
-    public bool Method8Ramp = false;
-    public bool Method16Ramp = false;
-    public bool DrawUntilRow = false;
-    public bool DrawOnlyRow = false;
-    public bool DrawCover = false;
-    public int DrawRow = 0;
-    public int DrawBlocks = 1;
-    public int DeletedBlocks = 0;
-    public bool DrawWall = true;
-    public bool DrawFloor = true;
-    public bool DrawWoodenCyl = true;
-    public bool DrawEgyptians = true;
-    public bool DrawGranite = true;
-    public bool DrawAll = false;
-    public bool showRamps = true;
-    public bool showInfoLevel = true;
-    public bool showInfoLevelTotal = true;
-    public bool showInfoLevelDec = true;
-    public bool showInfoRow = true;
-    public bool exportPyramidObj = false;
-    public bool exportCombineMeshes = false;
-    public bool isStatic = true;
-    public bool isRigidBody = false;
-    public bool useFixedJoints = false;
-    public int numOfGraniteRock1 = 0;
-    public int numOfGraniteRock2 = 0;
-    public int minHeightGraniteRock = 43;
-    public int maxHeightGraniteRock = 62;
-    public int minBaseSize2Ramps = 32;
-    public int minBaseSize4Ramps = 64;
-    public int minBaseSize8Ramps = 128;
-    public int minBaseSize16Ramps = 200;
+    /// <summary>
+    /// The height of the ramp's passage in block units.
+    /// </summary>
     public int holeHeight = 3;
+    /// <summary>
+    /// The width of the ramp's passage in block units.
+    /// </summary>
     public int holeWide = 3;
+    /// <summary>
+    /// The separation between individual blocks for visual clarity.
+    /// </summary>
     public float blockSeparation = 0.01f; // separation between blocks
-    public LayerMask blockLayer;
-    public bool halfPyramid = false; // if true, only draw half of the pyramid
 
+    // --- Block and Calculation Data ---
+    /// <summary>
+    /// The total number of blocks calculated for the pyramid.
+    /// </summary>
+    public int numberOfBlocks = 0;
+    /// <summary>
+    /// The number of blocks actually rendered in the scene.
+    /// </summary>
+    public int numberOfBlocksDrawn = 0;
+    /// <summary>
+    /// A limit for the maximum number of blocks to draw, for performance reasons.
+    /// </summary>
+    public int maxBlocks = 100;
+    /// <summary>
+    /// The calculated total length of the ramp path.
+    /// </summary>
+    public float path_length = 0;
+    /// <summary>
+    /// The calculated total height of the pyramid after adjusting for block height.
+    /// </summary>
+    public float total_height = 0;
+    /// <summary>
+    /// The average mass of a single block in kilograms.
+    /// </summary>
+    public float massBlock = 2267.96f;
+    /// <summary>
+    /// The coefficient of friction used in physics calculations.
+    /// </summary>
+    public float frictionCoef = 0.7f;
+    /// <summary>
+    /// An option to select different ramp calculation methods.
+    /// </summary>
+    public int optionRamp = 0;
+    /// <summary>
+    /// The total calculated force required for construction.
+    /// </summary>
+    public float totalForce = 0;
+    /// <summary>
+    /// The portion of the total force expended on the ramp.
+    /// </summary>
+    public float totalForceRamp = 0;
+    /// <summary>
+    /// The total distance all blocks are moved.
+    /// </summary>
+    public float totalLength = 0;
+    /// <summary>
+    /// The portion of the total distance traveled on the ramp.
+    /// </summary>
+    public float totalLengthRamp = 0;
+
+    // --- Materials and GameObjects ---
+    /// <summary>
+    /// Material for the standard pyramid blocks.
+    /// </summary>
+    public Material m_Material;
+    /// <summary>
+    /// Material for the corner blocks.
+    /// </summary>
+    public Material m_Material_corner;
+    /// <summary>
+    /// Material for wooden elements like cylinders.
+    /// </summary>
+    public Material m_Material_wood;
+    /// <summary>
+    /// A blank or placeholder material.
+    /// </summary>
+    public Material m_Material_Blank;
+    /// <summary>
+    /// Material for the ramp floor.
+    /// </summary>
+    public Material m_Material_floor;
+    /// <summary>
+    /// Reference to the main camera in the scene.
+    /// </summary>
+    public Camera cam;
+    /// <summary>
+    /// Prefab for a palm tree GameObject.
+    /// </summary>
+    public GameObject Palm;
+    /// <summary>
+    /// Prefab for a dromedary (camel) GameObject.
+    /// </summary>
+    public GameObject Dromader;
+    /// <summary>
+    /// Prefab for the Eiffel Tower, likely for scale comparison.
+    /// </summary>
+    public GameObject Eiffel;
+    /// <summary>
+    /// Prefab for a human figure, for scale.
+    /// </summary>
+    public GameObject Man;
+    /// <summary>
+    /// Array of prefabs for standard blocks.
+    /// </summary>
     public GameObject[] RockPrefab;
+    /// <summary>
+    /// Prefab for a divisible block.
+    /// </summary>
     public GameObject RockDivPrefab;
+    /// <summary>
+    /// Prefab for corner pieces.
+    /// </summary>
     public GameObject CornerPrefab;
+    /// <summary>
+    /// Parent GameObject to organize the generated blocks.
+    /// </summary>
     public GameObject objParent;
+    /// <summary>
+    /// Prefab for granite block type 1.
+    /// </summary>
     public GameObject graniteRockPrefab1;
+    /// <summary>
+    /// Prefab for granite block type 2.
+    /// </summary>
     public GameObject graniteRockPrefab2;
+    /// <summary>
+    /// Prefab for the pyramidion (capstone).
+    /// </summary>
     public GameObject piramidon;
+    /// <summary>
+    /// Prefab for a stone sledge.
+    /// </summary>
     public GameObject stone_sled;
+    /// <summary>
+    /// Prefab for an Egyptian worker figure.
+    /// </summary>
     public GameObject Egyptian_body;
 
-    public string exportSubFolder = "PyramidModels"; // Nombre de la carpeta de exportación
-    public string outputFileName = "MyExportedPyramid"; // Nombre del archivo OBJ (sin extensión)
+    // --- Generation and Display Options ---
+    /// <summary>
+    /// Toggles the visibility of the Eiffel Tower.
+    /// </summary>
+    public bool showEiffel = false;
+    /// <summary>
+    /// Toggles the visibility of the human figure at the base.
+    /// </summary>
+    public bool showMan = false;
+    /// <summary>
+    /// Toggles visibility of the human figure at the top of the ramp.
+    /// </summary>
+    public bool showManFinalRamp = false;
+    /// <summary>
+    /// Toggles the 4-ramp construction method.
+    /// </summary>
+    public bool Method4Ramp = false;
+    /// <summary>
+    /// Toggles the inside ramp construction method.
+    /// </summary>
+    public bool MethodInsideRamp = false;
+    /// <summary>
+    /// Toggles the 8-ramp construction method.
+    /// </summary>
+    public bool Method8Ramp = false;
+    /// <summary>
+    /// Toggles the 16-ramp construction method.
+    /// </summary>
+    public bool Method16Ramp = false;
+    /// <summary>
+    /// If true, draws the pyramid only up to a specific row.
+    /// </summary>
+    public bool DrawUntilRow = false;
+    /// <summary>
+    /// If true, draws only a specific row.
+    /// </summary>
+    public bool DrawOnlyRow = false;
+    /// <summary>
+    /// Toggles drawing the outer casing stones.
+    /// </summary>
+    public bool DrawCover = false;
+    /// <summary>
+    /// The specific row to draw for DrawUntilRow or DrawOnlyRow.
+    /// </summary>
+    public int DrawRow = 0;
+    /// <summary>
+    /// The number of outer block layers to draw.
+    /// </summary>
+    public int DrawBlocks = 1;
+    /// <summary>
+    /// A counter for deleted blocks.
+    /// </summary>
+    public int DeletedBlocks = 0;
+    /// <summary>
+    /// Toggles drawing the ramp walls.
+    /// </summary>
+    public bool DrawWall = true;
+    /// <summary>
+    /// Toggles drawing the ramp floor.
+    /// </summary>
+    public bool DrawFloor = true;
+    /// <summary>
+    /// Toggles drawing wooden cylinders at corners.
+    /// </summary>
+    public bool DrawWoodenCyl = true;
+    /// <summary>
+    /// Toggles drawing Egyptian worker figures.
+    /// </summary>
+    public bool DrawEgyptians = true;
+    /// <summary>
+    /// Toggles drawing the granite blocks for the King's Chamber.
+    /// </summary>
+    public bool DrawGranite = true;
+    /// <summary>
+    /// A master toggle to draw all elements.
+    /// </summary>
+    public bool DrawAll = false;
+    /// <summary>
+    /// Toggles the visibility of the ramp structures.
+    /// </summary>
+    public bool showRamps = true;
+    /// <summary>
+    /// If true, only draws half of the pyramid for inspection.
+    /// </summary>
+    public bool halfPyramid = false;
+
+    // --- Logging and Export Options ---
+    /// <summary>
+    /// The filename for the text output log.
+    /// </summary>
+    public string txtname = "pyramid.txt";
+    /// <summary>
+    /// Toggles logging info for each level.
+    /// </summary>
+    public bool showInfoLevel = true;
+    /// <summary>
+    /// Toggles logging total info for each level.
+    /// </summary>
+    public bool showInfoLevelTotal = true;
+    /// <summary>
+    /// Toggles logging decrement info between levels.
+    /// </summary>
+    public bool showInfoLevelDec = true;
+    /// <summary>
+    /// Toggles logging info for each row.
+    /// </summary>
+    public bool showInfoRow = true;
+    /// <summary>
+    /// If true, exports the generated pyramid as an OBJ file on start.
+    /// </summary>
+    public bool exportPyramidObj = false;
+    /// <summary>
+    /// If true, combines meshes during OBJ export for better performance.
+    /// </summary>
+    public bool exportCombineMeshes = false;
+    /// <summary>
+    /// The name of the subfolder for OBJ exports.
+    /// </summary>
+    public string exportSubFolder = "PyramidModels"; // Nombre de la subcarpeta para la exportación
+    /// <summary>
+    /// The name of the output OBJ file (without extension).
+    /// </summary>
+    public string outputFileName = "MyExportedPyramid"; // Nombre del archivo de salida OBJ (sin la extensión)
+
+
+    // --- Physics and Performance Options ---
+    /// <summary>
+    /// Sets the generated GameObjects as static for performance optimization.
+    /// </summary>
+    public bool isStatic = true;
+    /// <summary>
+    /// Adds a Rigidbody component to blocks for physics simulation.
+    /// </summary>
+    public bool isRigidBody = false;
+    /// <summary>
+    /// Adds FixedJoint components between blocks if they have Rigidbodies.
+    /// </summary>
+    public bool useFixedJoints = false;
+    /// <summary>
+    /// The physics layer for the blocks.
+    /// </summary>
+    public LayerMask blockLayer;
+
+    // --- Advanced Method Parameters ---
+    /// <summary>
+    /// Number of granite blocks of type 1.
+    /// </summary>
+    public int numOfGraniteRock1 = 0;
+    /// <summary>
+    /// Number of granite blocks of type 2.
+    /// </summary>
+    public int numOfGraniteRock2 = 0;
+    /// <summary>
+    /// Minimum height (in meters) to start placing granite blocks.
+    /// </summary>
+    public int minHeightGraniteRock = 43;
+    /// <summary>
+    /// Maximum height to place granite blocks.
+    /// </summary>
+    public int maxHeightGraniteRock = 62;
+    /// <summary>
+    /// Minimum base size to use a 2-ramp system.
+    /// </summary>
+    public int minBaseSize2Ramps = 32;
+    /// <summary>
+    /// Minimum base size to use a 4-ramp system.
+    /// </summary>
+    public int minBaseSize4Ramps = 64;
+    /// <summary>
+    /// Minimum base size to use an 8-ramp system.
+    /// </summary>
+    public int minBaseSize8Ramps = 128;
+    /// <summary>
+    /// Minimum base size to use a 16-ramp system.
+    /// </summary>
+    public int minBaseSize16Ramps = 200;
 
     private float pyramid_inclination_tg = 0;
     private float ramp_inclination_tg;

@@ -4,6 +4,11 @@ A Unity‑based procedural tool that recreates the construction of the Great P
 
 ---
 
+**Data & Code availability**\
+All simulation scripts, block-by-row tables and the Unity scene are permanently archived on Zenodo: [https://doi.org/10.5281/zenodo.16732345](https://doi.org/10.5281/zenodo.16732345)
+
+---
+
 ## 📂 Project structure
 
 | Path | Description |

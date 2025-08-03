@@ -82,6 +82,11 @@ The mesh (optionally combined) is written to:
 %APPDATA%\…\<Project>\PyramidModels\MyExportedPyramid.obj
 ```
 
+You have zipped samples in the OBJRepository folder:
+- Pyramid No Ramps
+- Pyramid 1 Ramp
+- Pyramid 4 Ramps
+
 Change `exportSubFolder` and `outputFileName` to customise the path.
 
 ---

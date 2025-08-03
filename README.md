@@ -13,9 +13,7 @@ All simulation scripts, block-by-row tables and the Unity scene are permanently 
 
 | Path | Description |
 | ---- | ----------- |
-|      |             |
 | **Assets/Scenes/SampleScene**         | Main demo scene. Contains an empty **GameObject** with the \`\` script attached.                                               |
-| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | **Assets/Scripts/GeneratePyramid.cs** | Core generator. Exposes all parameters in the Inspector and handles block placement, ramp construction, physics, exports, etc. |
 | **Assets/Prefabs/**                   | Stones, wooden sled, Egyptians, vegetation…                                                                                    |
 | **Assets/Materials/**                 | Sandstone, wood, floor, corner, etc.                                                                                           |

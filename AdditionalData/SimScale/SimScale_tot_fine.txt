@@ -1,0 +1,1258 @@
+--------------------------------------------------------------------------------
+# import code_aster
+import code_aster
+from code_aster.Commands import *
+# import math library for functions and formula
+from math import *
+# import simscale macros and utilities
+import simscale_macros
+# Input file start
+DEBUT(
+    IGNORE_ALARM=("ALGORITH11_87", "SUPERVIS2_2", "SUPERVIS_1"),
+    LANG="en",
+)
+try:
+    # Definition of material: limestone
+    MAT_0 = DEFI_MATERIAU(
+        ECRO_LINE=_F(
+            D_SIGM_EPSI=34965000000.0,
+            SY=35000000000000.0,
+        ),
+        ELAS=_F(
+            E=35000000000.0,
+            NU=0.25,
+            RHO=2600.0,
+        ),
+    )
+    # Define mesh file
+    MESH = LIRE_MAILLAGE(
+        FORMAT="MED",
+        INFO=1,
+        UNITE=20,
+    )
+    # Creation of node groups from every element group
+    MESH = DEFI_GROUP(
+        CREA_GROUP_NO=_F(
+            TOUT_GROUP_MA="OUI",
+        ),
+        INFO=1,
+        MAILLAGE=MESH,
+        reuse=MESH,
+    )
+    # Creation of node groups for result control items
+    MESH = DEFI_GROUP(
+        CREA_GROUP_NO=_F(
+            NOM="result_control_0",
+            UNION=("region1"),
+        ),
+        INFO=1,
+        MAILLAGE=MESH,
+        reuse=MESH,
+    )
+    # Model definition of phenomena and element types
+    MODEL = AFFE_MODELE(
+        AFFE=(
+            _F(
+                MODELISATION="3D",
+                PHENOMENE="MECANIQUE",
+                TOUT="OUI",
+            ),
+            _F(
+                GROUP_MA=("region1"),
+                MODELISATION="3D",
+                PHENOMENE="MECANIQUE",
+            ),
+        ),
+        DISTRIBUTION=_F(
+            METHODE="SOUS_DOMAINE",
+            NB_SOUS_DOMAINE=2,
+            PARTITIONNEUR="METIS",
+        ),
+        MAILLAGE=MESH,
+    )
+    # Assignment of materials to mesh groups
+    MATS = AFFE_MATERIAU(
+        AFFE=_F(
+            GROUP_MA=("region1"),
+            MATER=MAT_0,
+        ),
+        MAILLAGE=MESH,
+    )
+    # Definition of boundary condition: Volume load 1
+    BC_0 = AFFE_CHAR_MECA(
+        MODELE=MODEL,
+        FORCE_INTERNE=_F(
+            FX=0.0,
+            FY=-25506.0,
+            FZ=0.0,
+            GROUP_MA=("region1"),
+        ),
+    )
+    # Definition of boundary condition: Fixed support 2
+    BC_1 = AFFE_CHAR_CINE(
+        MODELE=MODEL,
+        MECA_IMPO=_F(
+            DX=0.0,
+            DY=0.0,
+            DZ=0.0,
+            GROUP_MA=("face1"),
+        ),
+    )
+    # Linear static analysis definition
+    SIM = MECA_STATIQUE(
+        CHAM_MATER=MATS,
+        EXCIT=(
+            _F(
+                CHARGE=BC_0,
+            ),
+            _F(
+                CHARGE=BC_1,
+            ),
+        ),
+        INFO=1,
+        INST=0.0,
+        INST_FIN=0.0,
+        MODELE=MODEL,
+        SOLVEUR=_F(
+            METHODE="MUMPS",
+            GESTION_MEMOIRE="AUTO",
+            MATR_DISTRIBUEE="OUI",
+            PCENT_PIVOT=20,
+            POSTTRAITEMENTS="FORCE",
+            PRETRAITEMENTS="AUTO",
+            RENUM="AUTO",
+            RESI_RELA=1e-05,
+            TYPE_RESOL="AUTO",
+            NPREC=-1,
+            STOP_SINGULIER="NON",
+        ),
+    )
+finally:
+    # Input file end
+    FIN(
+        INFO_RESU="NON",
+        PROC0="OUI",
+        RETASSAGE="NON",
+    )
+--------------------------------------------------------------------------------
+MPI_Init...
+calling MPI_Init...
+Ouverture en écriture du fichier ./vola.1
+<INFO> Démarrage de l'exécution.
+           -- CODE_ASTER -- VERSION : CORRECTIVE AVANT STABILISATION (stable-updates) --
+                               Version 15.6.10 modifiée le 14/12/2022
+                                       révision cf12489e9fcc - branche 'v15'
+                                   Copyright EDF R&D 1991 - 2025
+                                      Exécution du : Wed Aug 27 23:36:10 2025
+                                            Type de processeur : x86_64
+                                          Langue des messages : en (UTF-8)
+                                     Version de Python : 3.8.10
+                                                  Version de NumPy : 1.17.4
+                                      Parallélisme MPI : actif
+                                           Rang du processeur courant : 0
+                                         Nombre de processeurs utilisés : 2
+                                    Parallélisme OpenMP : actif
+                                          Nombre de processus utilisés : 1
+                               Version de la librairie HDF5 : 1.10.3
+                                Version de la librairie MED : 4.1.1
+                               Version de la librairie MFront : 3.4.0
+                               Version de la librairie MUMPS : 5.2.1
+                              Version de la librairie PETSc : 3.12.3p0
+                               Version de la librairie SCOTCH : 6.0.4
+                           Mémoire limite pour l'exécution : 54000.00 Mo
+                                          consommée par l'initialisation : 491.70 Mo
+                                       reste pour l'allocation dynamique : 53508.30 Mo
+                         Taille limite des fichiers d'échange : 2048.00 Go
+ DeprecationWarning: invalid escape sequence \d
+  pat = re.compile("([\d]+)([\s\S]+)$")
+<frozen importlib._bootstrap>:219: ImportWarning: can't resolve package from __spec__ or __package__, falling back on __name__ and __path__
+ DeprecationWarning: PY_SSIZE_T_CLEAN will be required for '#' formats
+  libaster.jeveux_init()
+Found the comm-file: sim.comm
+Original directory for logging was found:
+.. _stg1_txt125
+# ----------------------------------------------------------------------------------------------
+# Commande #0001 de  ligne 125
+DEBUT(DEBUG=_F(JEVEUX='NON',
+               JXVERI='NON',
+               SDVERI='NON',
+               VERI_BASE_NB=125),
+      IGNORE_ALARM=('ALGORITH11_87', 'SUPERVIS2_2', 'SUPERVIS_1'),
+      IMPR_MACRO='NON',
+      INFO=1,
+      LANG='en',
+      MEMOIRE=_F(TAILLE_BLOC=800.0,
+                 TAILLE_GROUP_ELEM=1000),
+      MESURE_TEMPS=_F(MOYENNE='NON',
+                      NIVE_DETAIL=1),
+      RESERVE_CPU=_F(BORNE=900))
+starting the execution...
+Initial value of maximum time CPU = 35996400 second
+ Valeur of the maximum time CPU placed to the orders = 35995500 second
+ Réserve CPU envisaged = 900 seconds
+Ouverture en écriture du fichier ./glob.1
+Ouverture en écriture du fichier ./vola.1
+Ouverture en lecture du fichier
+Nom de la base                          :  ELEMBASE
+     Créée avec la version                   :  15.06.10
+     Nombre d'enregistrements utilisés       :  45
+     Nombre d'enregistrements maximum        :  512
+     Nombre d'enregistrements par fichier    :  512
+     Longueur d'enregistrement (octets)      :  819200
+     Nombre d'identificateurs utilisés       :  123
+     Taille maximum du répertoire            :  300
+     Pourcentage d'utilisation du répertoire :  41 %
+Ouverture en lecture du fichier
+Nom de la base                          :  ELEMBASE
+     Nombre d'enregistrements utilisés       :  45
+     Nombre d'enregistrements maximum        :  512
+     Nombre d'enregistrements par fichier    :  512
+     Longueur d'enregistrement (octets)      :  819200
+     Nombre total d'accès en lecture         :  63
+     Volume des accès en lecture             :         49.22 Mo.
+     Nombre total d'accès en écriture        :  0
+     Volume des accès en écriture            :          0.00 Mo.
+     Nombre d'identificateurs utilisés       :  123
+     Taille maximum du répertoire            :  300
+     Pourcentage d'utilisation du répertoire :  41 %
+Second reading of the catalogues of the elements made.
+End of reading (lasted 0.173689 S.)
+ DeprecationWarning: PY_SSIZE_T_CLEAN will be required for '#' formats
+  libaster.call_debut(syntax)
+# Mémoire (Mo) :   700.50 /   691.91 /   207.90 /   184.46 (VmPeak / VmSize / Optimum / Minimum)
+# Fin commande #0001   user+syst:        0.05s (syst:        0.16s, elaps:        0.35s)
+# ----------------------------------------------------------------------------------------------
+.. _stg1_txt19
+# ----------------------------------------------------------------------------------------------
+# Commande #0002 de fort.1, ligne 19
+MAT_0 = DEFI_MATERIAU(ECRO_LINE=_F(D_SIGM_EPSI=34965000000.0,
+                                   SY=35000000000000.0),
+                      ELAS=_F(COEF_AMOR=1.0,
+                              E=35000000000.0,
+                              NU=0.25,
+                              RHO=2600.0),
+                      INFO=1)
+# Résultat commande #0002 (DEFI_MATERIAU): MAT_0 ('<00000001>') de type <Material>
+# Mémoire (Mo) :   700.50 /   692.31 /   207.90 /   184.46 (VmPeak / VmSize / Optimum / Minimum)
+# Fin commande #0002   user+syst:        0.00s (syst:        0.00s, elaps:        0.01s)
+# ----------------------------------------------------------------------------------------------
+.. _stg1_txt32
+# ----------------------------------------------------------------------------------------------
+# Commande #0003 de fort.1, ligne 32
+MESH = LIRE_MAILLAGE(FORMAT='MED',
+                     INFO=1,
+                     INFO_MED=1,
+                     PARTITIONNEUR='SANS',
+                     UNITE=20,
+                     VERI_MAIL=_F(APLAT=0.001,
+                                  VERIF='OUI'))
+Vérification du maillage.
+------------ MAILLAGE 00000002 - IMPRESSIONS NIVEAU  1 ------------
+ME-27-AOUT-2025 23:36:10
+NOMBRE DE NOEUDS                     1564716
+NOMBRE DE MAILLES                    1206504
+                              TRIA6              173806
+                              TETRA10           1032698
+NOMBRE DE GROUPES DE MAILLES               2
+                              face1                           173806
+                              region1                        1032698
+--------------------------------------------------------------------------------
+ DeprecationWarning: PY_SSIZE_T_CLEAN will be required for '#' formats
+  return libaster.call_oper(syntax, 0)
+# Résultat commande #0003 (LIRE_MAILLAGE): MESH ('<00000002>') de type <Mesh>
+# Mémoire (Mo) :  1105.29 /   937.93 /   610.22 /   475.02 (VmPeak / VmSize / Optimum / Minimum)
+# Fin commande #0003   user+syst:        8.52s (syst:        0.22s, elaps:        8.75s)
+# ----------------------------------------------------------------------------------------------
+.. _stg1_txt39
+# ----------------------------------------------------------------------------------------------
+# Commande #0004 de fort.1, ligne 39
+MESH = DEFI_GROUP(ALARME='OUI',
+                  CREA_GROUP_NO=_F(TOUT_GROUP_MA='OUI'),
+                  INFO=1,
+                  MAILLAGE=MESH,
+                  reuse=MESH)
+NOMBRE  DE GROUPES DE NOEUDS CREES :      2
+=======================================
+               ------------------------------------------------------
+               !         NOM DU GROUPE         ! NBRE DE NOEUDS DU  !
+               !            NOEUDS             !      GROUPE_NO     !
+               ------------------------------------------------------
+               !  face1                        !    347614          !
+               !  region1                      !   1564716          !
+               ------------------------------------------------------
+# Résultat commande #0004 (DEFI_GROUP): MESH ('<00000002>') de type <Mesh>
+# Mémoire (Mo) :  1105.29 /   952.79 /   610.22 /   475.02 (VmPeak / VmSize / Optimum / Minimum)
+# Fin commande #0004   user+syst:        1.32s (syst:        0.02s, elaps:        1.33s)
+# ----------------------------------------------------------------------------------------------
+.. _stg1_txt49
+# ----------------------------------------------------------------------------------------------
+# Commande #0005 de fort.1, ligne 49
+MESH = DEFI_GROUP(ALARME='OUI',
+                  CREA_GROUP_NO=_F(NOM='result_control_0',
+                                   UNION='region1'),
+                  INFO=1,
+                  MAILLAGE=MESH,
+                  reuse=MESH)
+NOMBRE  DE GROUPES DE NOEUDS CREES :      1
+=======================================
+               ------------------------------------------------------
+               !         NOM DU GROUPE         ! NBRE DE NOEUDS DU  !
+               !            NOEUDS             !      GROUPE_NO     !
+               ------------------------------------------------------
+               !  result_control_0             !   1564716          !
+               ------------------------------------------------------
+# Résultat commande #0005 (DEFI_GROUP): MESH ('<00000002>') de type <Mesh>
+# Mémoire (Mo) :  1105.29 /   964.73 /   610.22 /   475.02 (VmPeak / VmSize / Optimum / Minimum)
+# Fin commande #0005   user+syst:        0.02s (syst:        0.03s, elaps:        0.06s)
+# ----------------------------------------------------------------------------------------------
+.. _stg1_txt60
+# ----------------------------------------------------------------------------------------------
+# Commande #0006 de fort.1, ligne 60
+MODEL = AFFE_MODELE(AFFE=(_F(MODELISATION='3D',
+                             PHENOMENE='MECANIQUE',
+                             TOUT='OUI'),
+                          _F(GROUP_MA='region1',
+                             MODELISATION='3D',
+                             PHENOMENE='MECANIQUE')),
+                    DISTRIBUTION=_F(METHODE='SOUS_DOMAINE',
+                                    NB_SOUS_DOMAINE=2,
+                                    PARTITIONNEUR='METIS'),
+                    INFO=1,
+                    MAILLAGE=MESH,
+                    VERI_JACOBIEN='OUI',
+                    VERI_NORM_IFS='OUI')
+Sur les 1206504 mailles du maillage 00000002, on a demandé l'affectation de 1206504, on a pu en
+affecter 1206504.
+Modélisation     Formulation      Type maille  Élément fini     Nombre
+_                _                TRIA6        MECA_FACE6       173806
+3D               _                TETRA10      MECA_TETRA10     1032698
+  -- NOMBRE DE MAILLES :               1206504
+  -- NOMBRE DE NOEUDS  :               1564716
+******************************************************************************
+METIS 5.0 Copyright 1998-13, Regents of the University of Minnesota
+ (Built on: Aug 11 2025, 17:27:00)
+ size of idx_t: 64bits, real_t: 32bits, idx_t *: 64bits
+Graph Information -----------------------------------------------------------
+ Name: (null), #Vertices: 1206504, #Edges: 3220998, #Parts: 2
+Options ---------------------------------------------------------------------
+ ptype=kway, objtype=cut, ctype=shem, rtype=greedy, iptype=metisrb
+ dbglvl=0, ufactor=1.030, no2hop=NO, minconn=NO, contig=NO, nooutput=NO
+ seed=-1, niter=10, ncuts=1
+Direct k-way Partitioning ---------------------------------------------------
+ - Edgecut: 4411, communication volume: 6834.
+ - Balance:
+     constraint #0:  1.000 out of 0.000
+ - Most overweight partition:
+     pid: 1, actual: 603253, desired: 603252, ratio: 1.00.
+ - Subdomain connectivity: max: 1, min: 1, avg: 1.00
+ - Each partition is contiguous.
+Timing Information ----------------------------------------------------------
+  I/O:          		   0.048 sec
+  Partitioning: 		   0.820 sec   (METIS time)
+  Reporting:    		   0.172 sec
+Memory Information ----------------------------------------------------------
+  Max memory used:		 254.075 MB
+******************************************************************************
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.40      0.02      0.39
+#4      Communications MPI                                CPU (USER+SYST/SYST/ELAPS):      0.10      0.01      0.07
+# Résultat commande #0006 (AFFE_MODELE): MODEL ('<00000003>') de type <Model>
+# Dépend de :
+# - MESH ('<00000002>') de type <Mesh>
+# Mémoire (Mo) :  1606.13 /  1141.38 /   750.50 /   507.70 (VmPeak / VmSize / Optimum / Minimum)
+# Fin commande #0006   user+syst:       12.36s (syst:        0.45s, elaps:       12.82s)
+# ----------------------------------------------------------------------------------------------
+.. _stg1_txt82
+# ----------------------------------------------------------------------------------------------
+# Commande #0007 de fort.1, ligne 82
+MATS = AFFE_MATERIAU(AFFE=_F(GROUP_MA='region1',
+                             MATER=MAT_0),
+                     INFO=1,
+                     MAILLAGE=MESH)
+# Résultat commande #0007 (AFFE_MATERIAU): MATS ('<00000004>') de type <MaterialField>
+# Dépend de :
+# - MAT_0 ('<00000001>') de type <Material>
+# - MESH ('<00000002>') de type <Mesh>
+# Mémoire (Mo) :  1606.13 /  1149.27 /   750.50 /   507.70 (VmPeak / VmSize / Optimum / Minimum)
+# Fin commande #0007   user+syst:        0.02s (syst:        0.01s, elaps:        0.03s)
+# ----------------------------------------------------------------------------------------------
+.. _stg1_txt91
+# ----------------------------------------------------------------------------------------------
+# Commande #0008 de fort.1, ligne 91
+BC_0 = AFFE_CHAR_MECA(DOUBLE_LAGRANGE='OUI',
+                      FORCE_INTERNE=_F(FX=0.0,
+                                       FY=-25506.0,
+                                       FZ=0.0,
+                                       GROUP_MA='region1'),
+                      INFO=1,
+                      MODELE=MODEL,
+                      VERI_NORM='OUI')
+# Résultat commande #0008 (AFFE_CHAR_MECA): BC_0 ('<00000005>') de type <MechanicalLoadReal>
+# Mémoire (Mo) :  1606.13 /  1158.47 /   840.70 /   507.70 (VmPeak / VmSize / Optimum / Minimum)
+# Fin commande #0008   user+syst:        1.41s (syst:        0.10s, elaps:        1.52s)
+# ----------------------------------------------------------------------------------------------
+.. _stg1_txt102
+# ----------------------------------------------------------------------------------------------
+# Commande #0009 de fort.1, ligne 102
+BC_1 = AFFE_CHAR_CINE(INFO=1,
+                      MECA_IMPO=_F(DX=0.0,
+                                   DY=0.0,
+                                   DZ=0.0,
+                                   GROUP_MA='face1'),
+                      MODELE=MODEL)
+# Résultat commande #0009 (AFFE_CHAR_CINE): BC_1 ('<00000006>') de type <MechanicalDirichletBC>
+# Mémoire (Mo) :  1606.13 /  1190.30 /   840.70 /   507.70 (VmPeak / VmSize / Optimum / Minimum)
+# Fin commande #0009   user+syst:        1.16s (syst:        0.03s, elaps:        1.19s)
+# ----------------------------------------------------------------------------------------------
+.. _stg1_txt113
+# ----------------------------------------------------------------------------------------------
+# Commande #0010 de fort.1, ligne 113
+SIM = MECA_STATIQUE(CHAM_MATER=MATS,
+                    EXCIT=(_F(CHARGE=BC_0,
+                              TYPE_CHARGE='FIXE_CSTE'),
+                           _F(CHARGE=BC_1,
+                              TYPE_CHARGE='FIXE_CSTE')),
+                    INFO=1,
+                    INST=0.0,
+                    INST_FIN=0.0,
+                    MODELE=MODEL,
+                    OPTION='SIEF_ELGA',
+                    SOLVEUR=_F(ACCELERATION='AUTO',
+                               ELIM_LAGR='LAGR2',
+                               GESTION_MEMOIRE='AUTO',
+                               LOW_RANK_SEUIL=0.0,
+                               MATR_DISTRIBUEE='OUI',
+                               METHODE='MUMPS',
+                               NPREC=-1,
+                               PCENT_PIVOT=20,
+                               POSTTRAITEMENTS='FORCE',
+                               PRETRAITEMENTS='AUTO',
+                               RENUM='AUTO',
+                               RESI_RELA=1e-05,
+                               STOP_SINGULIER='NON',
+                               TYPE_RESOL='AUTO'))
+ ╔════════════════════════════════════════════════════════════════════════════════════════════════╗
+ ║ <A> <FACTOR_9>                                                                                 ║
+ ║                                                                                                ║
+ ║ Attention, le critère de détection de singularité (paramètre SOLVEUR/NPREC) est trop relâché:  ║
+ ║ -1.                                                                                            ║
+ ║ La valeur par défaut est 8. Au pire il peut monter jusqu'à 11. Avec une valeur négative, il    ║
+ ║ débranche même complètement                                                                    ║
+ ║ l'algorithme de détection de singularité.                                                      ║
+ ║                                                                                                ║
+ ║ Avec cette valeur particulière, certains problèmes de mise en données (degré de liberté mal    ║
+ ║ bloqué, condition limite redondante...)                                                        ║
+ ║ ne seront alors pas détectés. Vous risquez donc de résoudre un problème différent de celui     ║
+ ║ escompté.                                                                                      ║
+ ║                                                                                                ║
+ ║ D'autre part, certains algorithmes peuvent alors produire des résultats incorrects s'il        ║
+ ║ n'existe pas d'autres garde-fous                                                               ║
+ ║ algorithmiques ou si ceux-ci sont débranchés. Parmi ces garde-fous il y a, par exemple, les    ║
+ ║ paramètres:                                                                                    ║
+ ║     * RESI_RELA du bloc SOLVEUR si METHODE='MUMPS'(pour tous les opérateurs),                  ║
+ ║     * RESI_GLOB_RELA du bloc CONVERGENCE (pour les opérateurs STAT/DYNA_NON_LINE)...           ║
+ ║ Conseils:                                                                                      ║
+ ║    * Vérifiez votre mise en données (conditions limites, coefficients matériaux...) ou votre   ║
+ ║ maillage (mailles étirées)                                                                     ║
+ ║      afin de bien vérifier qu'elle est licite et qu'elle correspond à ce que vous souhaitez.   ║
+ ║    * Assurez-vous qu'au moins un autre critère d'arrêt reste fonctionnel (avec une valeur      ║
+ ║ raisonnable !) afin d'assurer une                                                              ║
+ ║      qualité minimale à la solution.                                                           ║
+ ║                                                                                                ║
+ ║ Remarque:                                                                                      ║
+ ║    * Pour plus d'informations sur ce sujet on pourra lire la notice U2.08.03 dédiée aux        ║
+ ║ solveurs linéaires.                                                                            ║
+ ║                                                                                                ║
+ ║                                                                                                ║
+ ║                                                                                                ║
+ ║ This is a warning. If you do not understand the meaning of this                                ║
+ ║  warning, you can obtain unexpected results!                                                   ║
+ ╚════════════════════════════════════════════════════════════════════════════════════════════════╝
+Le système linéaire à résoudre a 4694148 degrés de liberté:
+   - 4694148 sont des degrés de liberté physiques
+     (ils sont portés par 1564716 noeuds du maillage)
+   - 0 sont les couples de paramètres de Lagrange associés
+     aux 0 relations linéaires dualisées.
+La matrice est de taille 4694148 équations.
+  Elle contient 189733554 termes non nuls si elle est symétrique et 374772960 termes non nuls si
+elle n'est pas symétrique.
+  Soit un taux de remplissage de   0.002 %.
+Residual of the linear system solved by MUMPS: 8.93871e-13
+   Champ stocké <DEPL> à l'instant 0.000000e+00 pour le numéro d'ordre 1
+Temps CPU consommé dans le calcul 2.366451e+03s dont:
+*Calcul et assemblage de la matrice en 1.470347e+01s
+*Calcul et assemblage du second membre en 1.509078e+00s
+*Factorisation de la matrice en 2.226420e+03s
+*Résolution du système linéaire en 1.177913e+02s
+*Post-traitements en 6.027314e+00s
+ DeprecationWarning: PY_SSIZE_T_CLEAN will be required for '#' formats
+  self._result = mechaSolv.execute( self._result )
+# Résultat commande #0010 (MECA_STATIQUE): SIM ('<00000007>') de type <ElasticResult>
+# Mémoire (Mo) : 42206.35 /  1786.64 /  6693.59 /  6328.07 (VmPeak / VmSize / Optimum / Minimum)
+# Fin commande #0010   user+syst:     2360.06s (syst:       31.04s, elaps:     2391.36s)
+# ----------------------------------------------------------------------------------------------
+.. _stg1_txt144
+# ----------------------------------------------------------------------------------------------
+# Commande #0011 de fort.1, ligne 144
+FIN(INFO_RESU='NON',
+    PROC0='OUI',
+    RETASSAGE='NON')
+Saving objects...
+pi                       <class 'float'>
+e                        <class 'float'>
+tau                      <class 'float'>
+inf                      <class 'float'>
+nan                      <class 'float'>
+MAT_0                    <class 'libaster.Material'>
+MESH                     <class 'libaster.Mesh'>
+MODEL                    <class 'libaster.Model'>
+MATS                     <class 'libaster.MaterialField'>
+BC_0                     <class 'libaster.MechanicalLoadReal'>
+BC_1                     <class 'libaster.MechanicalDirichletBC'>
+SIM                      <class 'libaster.ElasticResult'>
+ ╔════════════════════════════════════════════════════════════════════════════════════════════════╗
+ ║ <I> <CATAMESS_89>                                                                              ║
+ ║                                                                                                ║
+ ║ List of warnings emitted during the execution of computation.                                  ║
+ ║                                                                                                ║
+ ║  Warnings which you chose to ignore of are preceded by (*).                                    ║
+ ║  Number of occurrences for each warning:                                                       ║
+ ║              FACTOR_9             emitted    1 time                                            ║
+ ╚════════════════════════════════════════════════════════════════════════════════════════════════╝
+ ---------------------------------------------------------------------------
+ Concepts de la base: G
+    Nom       Type                 Taille (Mo)         Nombre      Nombre de
+                                                     d'objets       segments
+    TOTAL                              1816.41            195            316
+    00000001   MATER_SDASTER              0.00             15             15
+    00000002   MAILLAGE_SDASTER         269.96             38             64
+    00000003   MODELE_SDASTER           132.36              9             14
+    00000004   CHAM_MATER                 7.88              9             14
+    00000005   CHAR_MECA                  9.21             32             37
+    00000006   CHAR_CINE_MECA            31.83              4              4
+    00000007   EVOL_ELAS               1325.97             33             42
+    &FOZERO                               0.00              2              2
+    &&_NUM_C                              0.00              1              1
+    &CATA.AC                              0.00              2              4
+    &CATA.CL                              0.62              1              3
+    &CATA.GD                              0.19              4             11
+    &CATA.ME                              0.22              2              4
+    &CATA.OP                              0.32              4             19
+    &CATA.PH                              0.00              1              1
+    &CATA.PR                              0.00              2              4
+    &CATA.TE                             28.61             17             42
+    &CATA.TH                              0.01              2              4
+    &CATA.TM                              0.01              7             11
+    _0000001                              9.21              3             13
+    _0000002                              0.00              2              2
+    00000009                              0.00              4              4
+    0000000a                              0.00              1              1
+ ---------------------------------------------------------------------------
+Nom de la base                          :  GLOBALE
+     Nombre d'enregistrements utilisés       :  3117
+     Nombre d'enregistrements maximum        :  2684354
+     Nombre d'enregistrements par fichier    :  15728
+     Longueur d'enregistrement (octets)      :  819200
+     Nombre total d'accès en lecture         :  190
+     Volume des accès en lecture             :        148.44 Mo.
+     Nombre total d'accès en écriture        :  4527
+     Volume des accès en écriture            :       3536.72 Mo.
+     Nombre d'identificateurs utilisés       :  414
+     Taille maximum du répertoire            :  2000
+     Pourcentage d'utilisation du répertoire :  20 %
+Nom de la base                          :  VOLATILE
+     Nombre d'enregistrements utilisés       :  107
+     Nombre d'enregistrements maximum        :  2684354
+     Nombre d'enregistrements par fichier    :  15728
+     Longueur d'enregistrement (octets)      :  819200
+     Nombre total d'accès en lecture         :  0
+     Volume des accès en lecture             :          0.00 Mo.
+     Nombre total d'accès en écriture        :  291
+     Volume des accès en écriture            :        227.34 Mo.
+     Nombre d'identificateurs utilisés       :  391
+     Taille maximum du répertoire            :  2000
+     Pourcentage d'utilisation du répertoire :  19 %
+<I> <FIN> ARRET NORMAL DANS "FIN" PAR APPEL A "JEFINI".
+ <I> <FIN> MEMOIRE JEVEUX MINIMALE REQUISE POUR L'EXECUTION :                    6328.07 Mo
+ <I> <FIN> MEMOIRE JEVEUX OPTIMALE REQUISE POUR L'EXECUTION :                    6693.59 Mo
+ <I> <FIN> MAXIMUM DE MEMOIRE UTILISEE PAR LE PROCESSUS LORS DE L'EXECUTION :   42206.35 Mo
+ <I>       FERMETURE DES BASES EFFECTUEE
+   STATISTIQUES CONCERNANT L'ALLOCATION DYNAMIQUE :
+     TAILLE CUMULEE MAXIMUM            :                 6694  Mo.
+     TAILLE CUMULEE LIBEREE            :                 5295  Mo.
+     NOMBRE TOTAL D'ALLOCATIONS        :             12639436
+     NOMBRE TOTAL DE LIBERATIONS       :             12639416
+     APPELS AU MECANISME DE LIBERATION :                    0
+     TAILLE MEMOIRE CUMULEE RECUPEREE  :                 2346  Mo.
+     VOLUME DES LECTURES               :                    0  Mo.
+     VOLUME DES ECRITURES              :                 2352  Mo.
+   MEMOIRE JEVEUX MINIMALE REQUISE POUR L'EXECUTION :    6328.07 Mo
+     - IMPOSE DE NOMBREUX ACCES DISQUE
+     - RALENTIT LA VITESSE D'EXECUTION
+   MEMOIRE JEVEUX OPTIMALE REQUISE POUR L'EXECUTION :    6693.59 Mo
+     - LIMITE LES ACCES DISQUE
+     - AMELIORE LA VITESSE D'EXECUTION
+   MAXIMUM DE MEMOIRE UTILISEE PAR LE PROCESSUS     :   42206.35 Mo
+     - COMPREND LA MEMOIRE CONSOMMEE PAR  JEVEUX,
+       LE SUPERVISEUR PYTHON, LES LIBRAIRIES EXTERNES
+ <I>       FIN D'EXECUTION LE : JE-28-AOUT-2025 00:16:28
+ DeprecationWarning: PY_SSIZE_T_CLEAN will be required for '#' formats
+  libaster.jeveux_finalize(options)
+Signature of pickled file   : 33071c3819c105944c647530a6fe53a1194dc6bbe348e1059bafc4a0e569c722
+Signature of info file      : a4971f543b0a9647d89c91b129d50040d44a6a0cf90b48faf242a536f02efbbc
+Signature of Jeveux database: 4fe244a903ad86bfef96752af03e19469f1878741f0d516b0739f9a2f84c2bb0
+ ********************************************************************************
+ * COMMAND                  :       USER :     SYSTEM :   USER+SYS :    ELAPSED *
+ ********************************************************************************
+ * DEBUT                    :       0.05 :       0.16 :       0.21 :       0.35 *
+ * DEFI_MATERIAU            :       0.00 :       0.00 :       0.00 :       0.01 *
+ * LIRE_MAILLAGE            :       8.52 :       0.22 :       8.74 :       8.75 *
+ * DEFI_GROUP               :       1.32 :       0.02 :       1.34 :       1.33 *
+ * DEFI_GROUP               :       0.02 :       0.03 :       0.05 :       0.06 *
+ * AFFE_MODELE              :      12.36 :       0.45 :      12.81 :      12.82 *
+ * AFFE_MATERIAU            :       0.02 :       0.01 :       0.03 :       0.03 *
+ * AFFE_CHAR_MECA           :       1.41 :       0.10 :       1.51 :       1.52 *
+ * AFFE_CHAR_CINE           :       1.16 :       0.03 :       1.19 :       1.19 *
+ * MECA_STATIQUE            :    2360.06 :      31.04 :    2391.10 :    2391.36 *
+ * FIN                      :       0.16 :       0.40 :       0.56 :       0.70 *
+ *  . check syntax          :       0.02 :       0.00 :       0.02 :       0.01 *
+ *  . fortran               :      24.97 :       1.41 :      26.38 :      26.70 *
+ ********************************************************************************
+ * TOTAL_JOB                :    2385.08 :      32.47 :    2417.55 :    2418.17 *
+ ********************************************************************************
+# Mémoire (Mo) : 42206.35 /   533.85 /  6693.59 /  6328.07 (VmPeak / VmSize / Optimum / Minimum)
+# Fin commande #0011   user+syst:        0.16s (syst:        0.40s, elaps:        0.70s)
+# ----------------------------------------------------------------------------------------------
+End of the Code_Aster execution
+Code_Aster MPI exits normally
+Exited
+EXECUTION_CODE_ASTER_EXIT_12=0
+--------------------------------------------------------------------------------
+# import code_aster
+import code_aster
+from code_aster.Commands import *
+# import math library for functions and formula
+from math import *
+# import simscale macros and utilities
+import simscale_macros
+# Input file start
+POURSUITE(
+    IGNORE_ALARM=("SUPERVIS_1", "ALGORITH11_87"),
+    LANG="en",
+)
+try:
+    # reconstructing model for single-core post-processing
+    MODEL = MODI_MODELE(
+        DISTRIBUTION=_F(
+            METHODE="CENTRALISE",
+        ),
+        MODELE=MODEL,
+        reuse=MODEL,
+    )
+    # Derived result calculation on nodes
+    SIM = CALC_CHAMP(
+        CONTRAINTE=("SIGM_NOEU"),
+        CRITERES=("SIEQ_NOEU"),
+        DEFORMATION=("EPSI_NOEU"),
+        GROUP_MA=("face1", "region1"),
+        RESULTAT=SIM,
+        reuse=SIM,
+    )
+    FC_0 = simscale_macros.GET_MIN_MAX_TABLE(
+        GROUP_NO="result_control_0",
+        NOM_CHAM="SIEQ_NOEU",
+        NOM_CMP=("VMIS"),
+        RESULTAT=SIM,
+        TITLE="min-max",
+    )
+    DEFI_FICHIER(
+        ACCES="NEW",
+        ACTION="ASSOCIER",
+        FICHIER="REPE_OUT/8d411468-bfa5-4d78-9f87-54e46e443874",
+        TYPE="ASCII",
+        UNITE=30,
+    )
+    IMPR_TABLE(
+        COMM_PARA="$$",
+        FORMAT="TABLEAU",
+        FORMAT_R="E12.5",
+        SEPARATEUR=",",
+        TABLE=FC_0,
+        UNITE=30,
+    )
+    DEFI_FICHIER(
+        ACTION="LIBERER",
+        UNITE=30,
+    )
+    simscale_macros.PRINT_PROBE_DATA(
+        PLOTS=_F(
+            COORDINATES=(0.0, 130.6, 0.0),
+            NOM_CHAM="DEPL",
+            NOM_CMP=("DX", "DY", "DZ"),
+            TABLE_PATH="REPE_OUT/c3968387-d0c9-4dcf-a0ee-32b6a17ca0ed",
+            TITLE=",c3968387-d0c9-4dcf-a0ee-32b6a17ca0ed,",
+        ),
+        RESULTAT=SIM,
+    )
+    # Restricted mesh (only volume elements) for global fields printing
+    MESH_PP = CREA_MAILLAGE(
+        MAILLAGE=MESH,
+        RESTREINT=_F(
+            GROUP_MA=("region1"),
+        ),
+    )
+    # Restricted model definition for global fields printing
+    MOD_PP = AFFE_MODELE(
+        AFFE=(
+            _F(
+                MODELISATION="3D",
+                PHENOMENE="MECANIQUE",
+                TOUT="OUI",
+            ),
+            _F(
+                GROUP_MA=("region1"),
+                MODELISATION="3D",
+                PHENOMENE="MECANIQUE",
+            ),
+        ),
+        MAILLAGE=MESH_PP,
+    )
+    # Restricted result for global fields printing
+    SIM_PP = EXTR_RESU(
+        ARCHIVAGE=_F(
+            NOM_CHAM=("DEPL", "EPSI_NOEU", "SIEQ_NOEU", "SIGM_NOEU"),
+            PAS_ARCH=1,
+        ),
+        RESTREINT=_F(
+            MODELE=MOD_PP,
+        ),
+        RESULTAT=SIM,
+    )
+    # Destroying intermediate objects for global fields result restriction
+    DETRUIRE(
+        INFO=1,
+        NOM=(MESH, MODEL, SIM),
+    )
+    # Solution fields in file
+    IMPR_RESU(
+        FORMAT="MED",
+        RESU=(
+            _F(
+                NOM_CHAM="DEPL",
+                NOM_CHAM_MED="displacement",
+                NOM_CMP=("DX", "DY", "DZ"),
+                RESULTAT=SIM_PP,
+            ),
+            _F(
+                NOM_CHAM="SIGM_NOEU",
+                NOM_CHAM_MED="cauchy stress",
+                NOM_CMP=("SIXX", "SIYY", "SIZZ", "SIXY", "SIXZ", "SIYZ"),
+                RESULTAT=SIM_PP,
+            ),
+            _F(
+                NOM_CHAM="SIEQ_NOEU",
+                NOM_CHAM_MED="von Mises stress",
+                NOM_CMP=("VMIS"),
+                RESULTAT=SIM_PP,
+            ),
+            _F(
+                NOM_CHAM="EPSI_NOEU",
+                NOM_CHAM_MED="total strain",
+                NOM_CMP=("EPXX", "EPYY", "EPZZ", "EPXY", "EPXZ", "EPYZ"),
+                RESULTAT=SIM_PP,
+            ),
+        ),
+        UNITE=80,
+    )
+finally:
+    # Input file end
+    FIN(
+        INFO_RESU="NON",
+        PROC0="OUI",
+        RETASSAGE="NON",
+    )
+--------------------------------------------------------------------------------
+MPI_Init...
+calling MPI_Init...
+Ouverture en écriture du fichier ./vola.1
+<INFO> Démarrage de l'exécution.
+           -- CODE_ASTER -- VERSION : CORRECTIVE AVANT STABILISATION (stable-updates) --
+                               Version 15.6.10 modifiée le 14/12/2022
+                                       révision cf12489e9fcc - branche 'v15'
+                                   Copyright EDF R&D 1991 - 2025
+                                      Exécution du : Thu Aug 28 00:16:41 2025
+                                            Type de processeur : x86_64
+                                          Langue des messages : en (UTF-8)
+                                     Version de Python : 3.8.10
+                                                  Version de NumPy : 1.17.4
+                                      Parallélisme MPI : actif
+                                           Rang du processeur courant : 0
+                                         Nombre de processeurs utilisés : 1
+                                    Parallélisme OpenMP : actif
+                                          Nombre de processus utilisés : 1
+                               Version de la librairie HDF5 : 1.10.3
+                                Version de la librairie MED : 4.1.1
+                               Version de la librairie MFront : 3.4.0
+                               Version de la librairie MUMPS : 5.2.1
+                              Version de la librairie PETSc : 3.12.3p0
+                               Version de la librairie SCOTCH : 6.0.4
+                           Mémoire limite pour l'exécution : 60000.00 Mo
+                                          consommée par l'initialisation : 483.52 Mo
+                                       reste pour l'allocation dynamique : 59516.48 Mo
+                         Taille limite des fichiers d'échange : 2048.00 Go
+ DeprecationWarning: invalid escape sequence \d
+  pat = re.compile("([\d]+)([\s\S]+)$")
+<frozen importlib._bootstrap>:219: ImportWarning: can't resolve package from __spec__ or __package__, falling back on __name__ and __path__
+ DeprecationWarning: PY_SSIZE_T_CLEAN will be required for '#' formats
+  libaster.jeveux_init()
+Found the comm-file: post.comm
+Original directory for logging was found:
+.. _stg1_txt125
+# ----------------------------------------------------------------------------------------------
+# Commande #0001 de  ligne 125
+POURSUITE(CODE='NON',
+          DEBUG=_F(JEVEUX='NON',
+                   JXVERI='NON',
+                   SDVERI='NON',
+                   VERI_BASE_NB=125),
+          IGNORE_ALARM=('SUPERVIS_1', 'ALGORITH11_87'),
+          IMPR_MACRO='NON',
+          INFO=1,
+          LANG='en',
+          MEMOIRE=_F(TAILLE_BLOC=800.0,
+                     TAILLE_GROUP_ELEM=1000),
+          MESURE_TEMPS=_F(MOYENNE='NON',
+                          NIVE_DETAIL=1),
+          RESERVE_CPU=_F(BORNE=900))
+restarting from a previous execution...
+Initial value of maximum time CPU = 35996400 second
+ Valeur of the maximum time CPU placed to the orders = 35995500 second
+ Réserve CPU envisaged = 900 seconds
+Ouverture en lecture du fichier ./glob.1
+Ajustement de la taille maximale des bases à 2048.00 Go.
+Nom de la base                          :  GLOBALE
+     Créée avec la version                   :  15.06.10
+     Nombre d'enregistrements utilisés       :  3117
+     Nombre d'enregistrements maximum        :  2684354
+     Nombre d'enregistrements par fichier    :  15728
+     Longueur d'enregistrement (octets)      :  819200
+     Nombre d'identificateurs utilisés       :  414
+     Taille maximum du répertoire            :  2000
+     Pourcentage d'utilisation du répertoire :  20 %
+Ouverture en lecture du fichier ./glob.1
+Ouverture en écriture du fichier ./vola.1
+End of reading (lasted 0.000001 S.)
+ DeprecationWarning: PY_SSIZE_T_CLEAN will be required for '#' formats
+  libaster.call_poursuite(syntax)
+Restored objects:
+pi                       <class 'float'>
+e                        <class 'float'>
+tau                      <class 'float'>
+inf                      <class 'float'>
+nan                      <class 'float'>
+MAT_0                    <class 'libaster.Material'>
+MESH                     <class 'libaster.Mesh'>
+MODEL                    <class 'libaster.Model'>
+MATS                     <class 'libaster.MaterialField'>
+BC_0                     <class 'libaster.MechanicalLoadReal'>
+BC_1                     <class 'libaster.MechanicalDirichletBC'>
+SIM                      <class 'libaster.ElasticResult'>
+# Mémoire (Mo) :   975.04 /   975.04 /   489.80 /   453.97 (VmPeak / VmSize / Optimum / Minimum)
+# Fin commande #0001   user+syst:        0.04s (syst:        0.26s, elaps:        0.32s)
+# ----------------------------------------------------------------------------------------------
+.. _stg1_txt19
+# ----------------------------------------------------------------------------------------------
+# Commande #0002 de fort.1, ligne 19
+MODEL = MODI_MODELE(DISTRIBUTION=_F(METHODE='CENTRALISE'),
+                    MODELE=MODEL,
+                    reuse=MODEL)
+# Résultat commande #0002 (MODI_MODELE): MODEL ('<00000003>') de type <Model>
+# Dépend de :
+# - MESH ('<00000002>') de type <Mesh>
+# Mémoire (Mo) :   975.04 /   975.04 /   489.80 /   453.97 (VmPeak / VmSize / Optimum / Minimum)
+# Fin commande #0002   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
+# ----------------------------------------------------------------------------------------------
+.. _stg1_txt28
+# ----------------------------------------------------------------------------------------------
+# Commande #0003 de fort.1, ligne 28
+SIM = CALC_CHAMP(CONTRAINTE='SIGM_NOEU',
+                 CRITERE='RELATIF',
+                 CRITERES='SIEQ_NOEU',
+                 DEFORMATION='EPSI_NOEU',
+                 GROUP_MA=('face1', 'region1'),
+                 INFO=1,
+                 PARALLELISME_TEMPS='NON',
+                 PRECISION=1e-06,
+                 RESULTAT=SIM,
+                 reuse=SIM)
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):     19.64      1.95     19.65
+# Résultat commande #0003 (CALC_CHAMP): SIM ('<00000007>') de type <ElasticResult>
+# Mémoire (Mo) :  9220.79 /  3164.89 /  8702.00 /  3424.98 (VmPeak / VmSize / Optimum / Minimum)
+# Fin commande #0003   user+syst:       57.39s (syst:        7.86s, elaps:       65.26s)
+# ----------------------------------------------------------------------------------------------
+.. _stg1_txt37
+# ----------------------------------------------------------------------------------------------
+# Commande #0004 de fort.1, ligne 37
+GET_MIN_MAX_TABLE(GROUP_NO='result_control_0',
+                  NOM_CHAM='SIEQ_NOEU',
+                  NOM_CMP='VMIS',
+                  RESULTAT=SIM,
+                  TITLE='min-max')
+The column  MAILLE is empty.
+The column  MAILLE is empty.
+# Résultat commande #0004 (GET_MIN_MAX_TABLE): '<0000001f>' de type <Table>
+# Mémoire (Mo) :  9220.79 /  3177.37 /  8702.00 /  3424.98 (VmPeak / VmSize / Optimum / Minimum)
+# Fin commande #0004   user+syst:        0.39s (syst:        0.09s, elaps:        0.50s)
+# ----------------------------------------------------------------------------------------------
+.. _stg1_txt45
+# ----------------------------------------------------------------------------------------------
+# Commande #0012 de fort.1, ligne 45
+DEFI_FICHIER(ACCES='NEW',
+             ACTION='ASSOCIER',
+             FICHIER='REPE_OUT/8d411468-bfa5-4d78-9f87-54e46e443874',
+             TYPE='ASCII',
+             UNITE=30)
+# Mémoire (Mo) :  9220.79 /  3177.37 /  8702.00 /  3424.98 (VmPeak / VmSize / Optimum / Minimum)
+# Fin commande #0012   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
+# ----------------------------------------------------------------------------------------------
+.. _stg1_txt53
+# ----------------------------------------------------------------------------------------------
+# Commande #0013 de fort.1, ligne 53
+IMPR_TABLE(COMMENTAIRE='#',
+           COMM_PARA='$$',
+           DEBUT_LIGNE='',
+           FIN_LIGNE='\n',
+           FIN_TABLE='',
+           FORMAT='TABLEAU',
+           FORMAT_R='E12.5',
+           IMPR_FONCTION='NON',
+           INFO=1,
+           SEPARATEUR=',',
+           TABLE='<0000001f>',
+           UNITE=30)
+# Mémoire (Mo) :  9220.79 /  3177.37 /  8702.00 /  3424.98 (VmPeak / VmSize / Optimum / Minimum)
+# Fin commande #0013   user+syst:        0.00s (syst:        0.00s, elaps:        0.00s)
+# ----------------------------------------------------------------------------------------------
+.. _stg1_txt62
+# ----------------------------------------------------------------------------------------------
+# Commande #0014 de fort.1, ligne 62
+DEFI_FICHIER(ACTION='LIBERER',
+             UNITE=30)
+# Mémoire (Mo) :  9220.79 /  3177.37 /  8702.00 /  3424.98 (VmPeak / VmSize / Optimum / Minimum)
+# Fin commande #0014   user+syst:        0.00s (syst:        0.00s, elaps:        0.01s)
+# ----------------------------------------------------------------------------------------------
+.. _stg1_txt67
+# ----------------------------------------------------------------------------------------------
+# Commande #0015 de fort.1, ligne 67
+PRINT_PROBE_DATA(CRITERE='RELATIF',
+                 DISTANCE_MAX=1000000.0,
+                 PLOTS=_F(COORDINATES=(0.0, 130.6, 0.0),
+                          NOM_CHAM='DEPL',
+                          NOM_CMP=('DX', 'DY', 'DZ'),
+                          TABLE_PATH='REPE_OUT/c3968387-d0c9-4dcf-a0ee-32b6a17ca0ed',
+                          TITLE=',c3968387-d0c9-4dcf-a0ee-32b6a17ca0ed,'),
+                 PRECISION=1e-06,
+                 RESULTAT=SIM,
+                 UNITE_MAILLAGE=25,
+                 UNITE_TABLE=30)
+Vérification du maillage.
+------------ MAILLAGE 00000020 - IMPRESSIONS NIVEAU  1 ------------
+JE-28-AOUT-2025 00:17:47
+NOMBRE DE NOEUDS                           1
+NOMBRE DE MAILLES                          1
+                              POI1                    1
+NOMBRE DE GROUPES DE NOEUDS                1
+                              GRP0                                 1
+NOMBRE DE GROUPES DE MAILLES               1
+                              GRP0                                 1
+--------------------------------------------------------------------------------
+Sur les 1 mailles du maillage 00000020, on a demandé l'affectation de 1, on a pu en affecter 1.
+Modélisation     Formulation      Type maille  Élément fini     Nombre
+DIS_T            _                POI1         MECA_DIS_T_N     1
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.00      0.00      0.00
+Vous utilisez la commande PROJ_CHAMP (ou une fonctionnalité utilisant la
+projection d'un maillage sur un autre).
+Pour des raisons de performance, les mailles du maillage à projeter sont
+placées dans une grille cartésienne régulière.
+Le maillage est tel que certaines cellules de la grille contiennent beaucoup
+plus de mailles que d'autres.
+Dans ces conditions, les performances CPU de la projection sont dégradées.
+Nombre moyen de mailles dans une cellule   : 36
+Nombre maximal de mailles dans une cellule : 892
+Conseil : dans ce type de cas de figure, l'utilisation de VIS_A_VIS peut
+améliorer très significativement les performances de PROJ_CHAMP.
+ DeprecationWarning: PY_SSIZE_T_CLEAN will be required for '#' formats
+  return libaster.call_oper(syntax, 0)
+# Mémoire (Mo) :  9220.79 /  3186.71 /  8702.00 /  3424.98 (VmPeak / VmSize / Optimum / Minimum)
+# Fin commande #0015   user+syst:        0.38s (syst:        0.05s, elaps:        0.43s)
+# ----------------------------------------------------------------------------------------------
+.. _stg1_txt79
+# ----------------------------------------------------------------------------------------------
+# Commande #0026 de fort.1, ligne 79
+MESH_PP = CREA_MAILLAGE(INFO=1,
+                        MAILLAGE=MESH,
+                        RESTREINT=_F(GROUP_MA='region1',
+                                     TOUT_GROUP_MA='NON',
+                                     TOUT_GROUP_NO='NON'))
+Vérification du maillage.
+------------ MAILLAGE 00000026 - IMPRESSIONS NIVEAU  1 ------------
+ASTER 15.06.10 CONCEPT 00000026 CALCULE LE 28/08/2025 A 00:17:56 DE TYPE
+MAILLAGE_SDASTER
+NOMBRE DE NOEUDS                     1564716
+NOMBRE DE MAILLES                    1032698
+                              TETRA10           1032698
+NOMBRE DE GROUPES DE MAILLES               1
+                              region1                        1032698
+--------------------------------------------------------------------------------
+# Résultat commande #0026 (CREA_MAILLAGE): MESH_PP ('<00000026>') de type <Mesh>
+# Dépend de :
+# - MESH ('<00000002>') de type <Mesh>
+# Mémoire (Mo) :  9220.79 /  3434.07 /  8702.00 /  3424.98 (VmPeak / VmSize / Optimum / Minimum)
+# Fin commande #0026   user+syst:        8.44s (syst:        0.15s, elaps:        8.60s)
+# ----------------------------------------------------------------------------------------------
+.. _stg1_txt87
+# ----------------------------------------------------------------------------------------------
+# Commande #0027 de fort.1, ligne 87
+MOD_PP = AFFE_MODELE(AFFE=(_F(MODELISATION='3D',
+                              PHENOMENE='MECANIQUE',
+                              TOUT='OUI'),
+                           _F(GROUP_MA='region1',
+                              MODELISATION='3D',
+                              PHENOMENE='MECANIQUE')),
+                     DISTRIBUTION=_F(METHODE='SOUS_DOMAINE',
+                                     PARTITIONNEUR='METIS'),
+                     INFO=1,
+                     MAILLAGE=MESH_PP,
+                     VERI_JACOBIEN='OUI',
+                     VERI_NORM_IFS='OUI')
+Sur les 1032698 mailles du maillage 00000026, on a demandé l'affectation de 1032698, on a pu en
+affecter 1032698.
+Modélisation     Formulation      Type maille  Élément fini     Nombre
+3D               _                TETRA10      MECA_TETRA10     1032698
+#2      Calculs elementaires et assemblages               CPU (USER+SYST/SYST/ELAPS):      0.67      0.02      0.67
+# Résultat commande #0027 (AFFE_MODELE): MOD_PP ('<00000027>') de type <Model>
+# Dépend de :
+# - MESH_PP ('<00000026>') de type <Mesh>
+# Mémoire (Mo) :  9220.79 /  3561.23 /  8702.00 /  3424.98 (VmPeak / VmSize / Optimum / Minimum)
+# Fin commande #0027   user+syst:        2.69s (syst:        0.09s, elaps:        2.78s)
+# ----------------------------------------------------------------------------------------------
+.. _stg1_txt104
+# ----------------------------------------------------------------------------------------------
+# Commande #0028 de fort.1, ligne 104
+SIM_PP = EXTR_RESU(ARCHIVAGE=_F(CRITERE='RELATIF',
+                                NOM_CHAM=('DEPL', 'EPSI_NOEU', 'SIEQ_NOEU', 'SIGM_NOEU'),
+                                PAS_ARCH=1,
+                                PRECISION=1e-06),
+                   INFO=1,
+                   RESTREINT=_F(MODELE=MOD_PP),
+                   RESULTAT=SIM)
+ STRUCTURE DU CONCEPT 00000028 CALCULE POUR 1 NUMERO D'ORDRE
+ LISTE DES NOMS SYMBOLIQUES:
+ ! ---------- !----------------!----------------!----------------!----------------!
+ ! NUME_ORDRE !      DEPL      !   EPSI_NOEU    !   SIGM_NOEU    !   SIEQ_NOEU    !
+ ! ---------- !----------------!----------------!----------------!----------------!
+ !          1 !     DEPL_R     !     EPSI_R     !     SIEF_R     !     SIEF_R     !
+ ! ---------- !----------------!----------------!----------------!----------------!
+ LISTE DES NOMS DE VARIABLES D'ACCES:
+                                      INST             DE TYPE  R
+ LISTE DES NOMS DE PARAMETRES:
+ ! ---------- !----------------!----------------!----------------!----------------!----------------!----------------!----------------!----------------!
+ ! NUME_ORDRE !    CARAELEM    !    CHAMPMAT    !     EXCIT      !   ITER_GCPC    !    METHODE     !     MODELE     !     RENUM      !    STOCKAGE    !
+ ! ---------- !----------------!----------------!----------------!----------------!----------------!----------------!----------------!----------------!
+ !          1 !       K8       !       K8       !      K24       !       I        !      K16       !       K8       !      K16       !      K16       !
+ ! ---------- !----------------!----------------!----------------!----------------!----------------!----------------!----------------!----------------!
+# Résultat commande #0028 (EXTR_RESU): SIM_PP ('<00000028>') de type <ElasticResult>
+# Dépend de :
+# - MOD_PP ('<00000027>') de type <Model>
+# Mémoire (Mo) :  9220.79 /  5542.95 /  8702.00 /  3424.98 (VmPeak / VmSize / Optimum / Minimum)
+# Fin commande #0028   user+syst:        3.69s (syst:        1.13s, elaps:        4.82s)
+# ----------------------------------------------------------------------------------------------
+.. _stg1_txt116
+# ----------------------------------------------------------------------------------------------
+# Commande #0029 de fort.1, ligne 116
+DETRUIRE(INFO=1,
+         NOM=(MESH, MODEL, SIM))
+Suppression de la référence : 'MESH'
+Suppression de la référence : 'MODEL'
+Suppression de la référence : 'SIM'
+# Mémoire (Mo) :  9220.79 /  5542.95 /  8702.00 /  3424.98 (VmPeak / VmSize / Optimum / Minimum)
+# Fin commande #0029   user+syst:        0.03s (syst:        0.00s, elaps:        0.03s)
+# ----------------------------------------------------------------------------------------------
+.. _stg1_txt122
+# ----------------------------------------------------------------------------------------------
+# Commande #0030 de fort.1, ligne 122
+IMPR_RESU(FORMAT='MED',
+          INFO=1,
+          RESU=(_F(IMPR_NOM_VARI='OUI',
+                   INFO_MAILLAGE='NON',
+                   NOM_CHAM='DEPL',
+                   NOM_CHAM_MED='displacement',
+                   NOM_CMP=('DX', 'DY', 'DZ'),
+                   RESULTAT=SIM_PP),
+                _F(IMPR_NOM_VARI='OUI',
+                   INFO_MAILLAGE='NON',
+                   NOM_CHAM='SIGM_NOEU',
+                   NOM_CHAM_MED='cauchy stress',
+                   NOM_CMP=('SIXX', 'SIYY', 'SIZZ', 'SIXY', 'SIXZ', 'SIYZ'),
+                   RESULTAT=SIM_PP),
+                _F(IMPR_NOM_VARI='OUI',
+                   INFO_MAILLAGE='NON',
+                   NOM_CHAM='SIEQ_NOEU',
+                   NOM_CHAM_MED='von Mises stress',
+                   NOM_CMP='VMIS',
+                   RESULTAT=SIM_PP),
+                _F(IMPR_NOM_VARI='OUI',
+                   INFO_MAILLAGE='NON',
+                   NOM_CHAM='EPSI_NOEU',
+                   NOM_CHAM_MED='total strain',
+                   NOM_CMP=('EPXX', 'EPYY', 'EPZZ', 'EPXY', 'EPXZ', 'EPYZ'),
+                   RESULTAT=SIM_PP)),
+          UNITE=80,
+          VERSION_MED='3.3.1')
+Création du fichier au format MED 3.3.1.
+# Mémoire (Mo) :  9220.79 /  5543.20 /  8702.00 /  3424.98 (VmPeak / VmSize / Optimum / Minimum)
+# Fin commande #0030   user+syst:        1.59s (syst:        0.45s, elaps:        2.05s)
+# ----------------------------------------------------------------------------------------------
+.. _stg1_txt155
+# ----------------------------------------------------------------------------------------------
+# Commande #0031 de fort.1, ligne 155
+FIN(INFO_RESU='NON',
+    PROC0='OUI',
+    RETASSAGE='NON')
+Saving objects...
+pi                       <class 'float'>
+e                        <class 'float'>
+tau                      <class 'float'>
+inf                      <class 'float'>
+nan                      <class 'float'>
+MAT_0                    <class 'libaster.Material'>
+MATS                     <class 'libaster.MaterialField'>
+BC_0                     <class 'libaster.MechanicalLoadReal'>
+BC_1                     <class 'libaster.MechanicalDirichletBC'>
+FC_0                     <class 'libaster.Table'>
+MESH_PP                  <class 'libaster.Mesh'>
+MOD_PP                   <class 'libaster.Model'>
+SIM_PP                   <class 'libaster.ElasticResult'>
+ ╔════════════════════════════════════════════════════════════════════════════════════════════════╗
+ ║ <I> <CATAMESS_89>                                                                              ║
+ ║                                                                                                ║
+ ║ List of warnings emitted during the execution of computation.                                  ║
+ ║                                                                                                ║
+ ║  Warnings which you chose to ignore of are preceded by (*).                                    ║
+ ║  Number of occurrences for each warning:                                                       ║
+ ║            no warning                                                                          ║
+ ╚════════════════════════════════════════════════════════════════════════════════════════════════╝
+ ---------------------------------------------------------------------------
+ Concepts de la base: G
+    Nom       Type                 Taille (Mo)         Nombre      Nombre de
+                                                     d'objets       segments
+    TOTAL                              5891.53            320            478
+    00000001   MATER_SDASTER              0.00              9              9
+    00000002   MAILLAGE_SDASTER         269.96             38             64
+    00000003   MODELE_SDASTER           132.36              9             14
+    00000004   CHAM_MATER                 7.88              9             14
+    00000005   CHAR_MECA                  9.21             32             37
+    00000006   CHAR_CINE_MECA            31.83              4              4
+    00000007   EVOL_ELAS               3045.02             60             75
+    00000028   EVOL_ELAS               1981.69             48             60
+    00000027   MODELE_SDASTER           127.05              9             14
+    0000001f   TABLE_SDASTER              0.00             11             11
+    00000026   MAILLAGE_SDASTER         247.33             38             52
+    &FOZERO                               0.00              2              2
+    &&_NUM_C                              0.00              1              1
+    &CATA.AC                              0.00              2              4
+    &CATA.CL                              0.62              1              3
+    &CATA.GD                              0.19              4             11
+    &CATA.ME                              0.22              2              4
+    &CATA.OP                              0.32              4             19
+    &CATA.PH                              0.00              1              1
+    &CATA.PR                              0.00              2              4
+    &CATA.TE                             28.61             17             42
+    &CATA.TH                              0.01              2              4
+    &CATA.TM                              0.01              7             11
+    _0000001                              9.21              3             13
+    00000009                              0.00              4              4
+    0000000a                              0.00              1              1
+ ---------------------------------------------------------------------------
+Nom de la base                          :  GLOBALE
+     Nombre d'enregistrements utilisés       :  7700
+     Nombre d'enregistrements maximum        :  2684354
+     Nombre d'enregistrements par fichier    :  15728
+     Longueur d'enregistrement (octets)      :  819200
+     Nombre total d'accès en lecture         :  1186
+     Volume des accès en lecture             :        926.56 Mo.
+     Nombre total d'accès en écriture        :  5466
+     Volume des accès en écriture            :       4270.31 Mo.
+     Nombre d'identificateurs utilisés       :  799
+     Taille maximum du répertoire            :  2000
+     Pourcentage d'utilisation du répertoire :  39 %
+Nom de la base                          :  VOLATILE
+     Nombre d'enregistrements utilisés       :  107
+     Nombre d'enregistrements maximum        :  2684354
+     Nombre d'enregistrements par fichier    :  15728
+     Longueur d'enregistrement (octets)      :  819200
+     Nombre total d'accès en lecture         :  0
+     Volume des accès en lecture             :          0.00 Mo.
+     Nombre total d'accès en écriture        :  291
+     Volume des accès en écriture            :        227.34 Mo.
+     Nombre d'identificateurs utilisés       :  525
+     Taille maximum du répertoire            :  2000
+     Pourcentage d'utilisation du répertoire :  26 %
+<I> <FIN> ARRET NORMAL DANS "FIN" PAR APPEL A "JEFINI".
+ <I> <FIN> MEMOIRE JEVEUX MINIMALE REQUISE POUR L'EXECUTION :                    3424.98 Mo
+ <I> <FIN> MEMOIRE JEVEUX OPTIMALE REQUISE POUR L'EXECUTION :                    8702.00 Mo
+ <I> <FIN> MAXIMUM DE MEMOIRE UTILISEE PAR LE PROCESSUS LORS DE L'EXECUTION :    9220.79 Mo
+ <I>       FERMETURE DES BASES EFFECTUEE
+   STATISTIQUES CONCERNANT L'ALLOCATION DYNAMIQUE :
+     TAILLE CUMULEE MAXIMUM            :                 8702  Mo.
+     TAILLE CUMULEE LIBEREE            :                 4290  Mo.
+     NOMBRE TOTAL D'ALLOCATIONS        :              6746745
+     NOMBRE TOTAL DE LIBERATIONS       :              6746745
+     APPELS AU MECANISME DE LIBERATION :                    0
+     TAILLE MEMOIRE CUMULEE RECUPEREE  :                    0  Mo.
+     VOLUME DES LECTURES               :                    0  Mo.
+     VOLUME DES ECRITURES              :                    0  Mo.
+   MEMOIRE JEVEUX MINIMALE REQUISE POUR L'EXECUTION :    3424.98 Mo
+     - IMPOSE DE NOMBREUX ACCES DISQUE
+     - RALENTIT LA VITESSE D'EXECUTION
+   MEMOIRE JEVEUX OPTIMALE REQUISE POUR L'EXECUTION :    8702.00 Mo
+     - LIMITE LES ACCES DISQUE
+     - AMELIORE LA VITESSE D'EXECUTION
+   MAXIMUM DE MEMOIRE UTILISEE PAR LE PROCESSUS     :    9220.79 Mo
+     - COMPREND LA MEMOIRE CONSOMMEE PAR  JEVEUX,
+       LE SUPERVISEUR PYTHON, LES LIBRAIRIES EXTERNES
+ <I>       FIN D'EXECUTION LE : JE-28-AOUT-2025 00:18:08
+ DeprecationWarning: PY_SSIZE_T_CLEAN will be required for '#' formats
+  libaster.jeveux_finalize(options)
+Signature of pickled file   : 50b39e6e884a13f7ce5b78dec7773db8f691d71bf4cc82e4b1e4a85eb1fb1be8
+Signature of info file      : 2d0bf9a3ba6c076aa381909c6338ca277d16ab7808bb2dd5525771784dbcf2dd
+Signature of Jeveux database: 10d7b791b321624379210a8f44ee8eed089380c7c77082f7966b045f774b36d1
+ ********************************************************************************
+ * COMMAND                  :       USER :     SYSTEM :   USER+SYS :    ELAPSED *
+ ********************************************************************************
+ * POURSUITE                :       0.04 :       0.26 :       0.30 :       0.32 *
+ * MODI_MODELE              :       0.00 :       0.00 :       0.00 :       0.00 *
+ * CALC_CHAMP               :      57.39 :       7.86 :      65.25 :      65.26 *
+ * GET_MIN_MAX_TABLE        :       0.39 :       0.09 :       0.48 :       0.50 *
+ * DEFI_FICHIER             :       0.00 :       0.00 :       0.00 :       0.00 *
+ * IMPR_TABLE               :       0.00 :       0.00 :       0.00 :       0.00 *
+ * DEFI_FICHIER             :       0.00 :       0.00 :       0.00 :       0.01 *
+ * PRINT_PROBE_DATA         :       0.38 :       0.05 :       0.43 :       0.43 *
+ * CREA_MAILLAGE            :       8.44 :       0.15 :       8.59 :       8.60 *
+ * AFFE_MODELE              :       2.69 :       0.09 :       2.78 :       2.78 *
+ * EXTR_RESU                :       3.69 :       1.13 :       4.82 :       4.82 *
+ * DETRUIRE                 :       0.03 :       0.00 :       0.03 :       0.03 *
+ * IMPR_RESU                :       1.59 :       0.45 :       2.04 :       2.05 *
+ * FIN                      :       0.56 :       2.02 :       2.58 :       2.58 *
+ *  . check syntax          :       0.04 :       0.00 :       0.04 :       0.04 *
+ *  . fortran               :      75.11 :      12.10 :      87.21 :      87.28 *
+ ********************************************************************************
+ * TOTAL_JOB                :      75.22 :      12.11 :      87.33 :      87.40 *
+ ********************************************************************************
+# Mémoire (Mo) :  9220.79 /   520.40 /  8702.00 /  3424.98 (VmPeak / VmSize / Optimum / Minimum)
+# Fin commande #0031   user+syst:        0.56s (syst:        2.02s, elaps:        2.58s)
+# ----------------------------------------------------------------------------------------------
+End of the Code_Aster execution
+Code_Aster MPI exits normally
+Exited
+EXECUTION_CODE_ASTER_EXIT_12=0
+

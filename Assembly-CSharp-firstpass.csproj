@@ -1410,18 +1410,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="HeurekaGames.AssetHunterPRO.Editor.csproj">
-      <Project>{6E80BBF0-0BFF-BAF0-6568-6E0CBDBF0645}</Project>
-      <Name>HeurekaGames.AssetHunterPRO.Editor</Name>
-    </ProjectReference>
-    <ProjectReference Include="HeurekaGames.Utils.csproj">
-      <Project>{99A37A79-4ED2-0693-49E7-8791D0050DA3}</Project>
-      <Name>HeurekaGames.Utils</Name>
-    </ProjectReference>
-    <ProjectReference Include="Heureka.Upgrade.csproj">
-      <Project>{D950F18E-E3AB-F6A5-5DC4-34E2842581DE}</Project>
-      <Name>Heureka.Upgrade</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="GenerateTargetFrameworkMonikerAttribute" />

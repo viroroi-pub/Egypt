@@ -21,6 +21,7 @@ public class PyramidSequence : MonoBehaviour
         GeneratePyramid.Palm = null;
         GeneratePyramid.Egyptian_body = null;
         GeneratePyramid.stone_sled = null;
+        GeneratePyramid.Sequenced = true;
 
         for (int i = GeneratePyramid.objParent.transform.childCount - 1; i >= 0; i--)
         {
@@ -48,19 +49,27 @@ public class PyramidSequence : MonoBehaviour
         {
             ticks++;
             Debug.Log($"Tick número: {ticks}");
-            
-            for (int i = GeneratePyramid.objParent.transform.childCount - 1; i >= 0; i--)
+
+            if (GeneratePyramid.DrawOnlyRow)
             {
-                // delete only is trigger
-                if (GeneratePyramid.DrawOnlyRow)
+                // Loop optimized for the 'true' case
+                for (int i = GeneratePyramid.objParent.transform.childCount - 1; i >= 0; i--)
                 {
-                    BoxCollider bc = GeneratePyramid.objParent.transform.GetChild(i).gameObject.GetComponent<BoxCollider>();
-                    if (bc && bc.isTrigger)
-                        GameObject.Destroy(GeneratePyramid.objParent.transform.GetChild(i).gameObject);
+                    GameObject child = GeneratePyramid.objParent.transform.GetChild(i).gameObject;
+                    if (child.TryGetComponent(out BoxCollider bc) && bc.isTrigger)
+                    {
+                        GameObject.Destroy(child);
+                    }
                 }
-                else
-                    // Destroy the child GameObject.
-                    GameObject.Destroy(GeneratePyramid.objParent.transform.GetChild(i).gameObject);
+            }
+            else
+            {
+                // Loop optimized for the 'false' case
+                for (int i = GeneratePyramid.objParent.transform.childCount - 1; i >= 0; i--)
+                {
+                    GameObject child = GeneratePyramid.objParent.transform.GetChild(i).gameObject;
+                    GameObject.Destroy(child);
+                }
             }
 
             GeneratePyramid.cam.transform.localPosition = new Vector3(-GeneratePyramid.BaseSize * 3 / 4, GeneratePyramid.Height * 3 / 4, -GeneratePyramid.BaseSize * 3 / 4);

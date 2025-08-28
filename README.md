@@ -1,97 +1,136 @@
-# Great Pyramid Generator
+# Khufu Pyramid – Unity Simulation (Edge‑Ramp)
 
-A Unity‑based procedural tool that recreates the construction of the Great Pyramid of Giza with user‑configurable geometry, physics and ramp‑layout algorithms.
-
----
-
-**Data & Code availability**\
-All simulation scripts, block-by-row tables and the Unity scene are permanently archived on Zenodo: [https://doi.org/10.5281/zenodo.16732345](https://doi.org/10.5281/zenodo.16732345)
+**Data & Code availability**
+All simulation scripts, block‑by‑row tables and the Unity scene are archived on Zenodo: [https://doi.org/10.5281/zenodo.16732345](https://doi.org/10.5281/zenodo.16732345)
 
 ---
 
 ## 📂 Project structure
 
-| Path | Description |
-| ---- | ----------- |
-| **Assets/Scenes/SampleScene**         | Main demo scene. Contains an empty **GameObject** with the \`\` script attached.                                               |
-| **Assets/Scripts/GeneratePyramid.cs** | Core generator. Exposes all parameters in the Inspector and handles block placement, ramp construction, physics, exports, etc. |
-| **Assets/Prefabs/**                   | Stones, wooden sled, Egyptians, vegetation…                                                                                    |
-| **Assets/Materials/**                 | Sandstone, wood, floor, corner, etc.                                                                                           |
+| Path                                  | Description                                                                                                                               |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| **Assets/Scenes/SampleScene**         | Main demo scene. Add an empty **GameObject** and attach **GeneratePyramid** (and optional **PyramidSequence**).                           |
+| **Assets/Scenes/MultiplePyramides**   | Showcase scene with several pyramids for side‑by‑side comparison/screenshots; each pyramid has its own **GeneratePyramid** configuration. |
+| **Assets/Scripts/GeneratePyramid.cs** | Core generator: parameters in the Inspector; builds blocks/ramps; CSV logs; OBJ export.                                                   |
+| **Assets/Scripts/PyramidSequence.cs** | Step‑by‑step builder/recorder that advances course‑by‑course and optionally saves PNG frames.                                             |
+| **Assets/Prefabs/**                   | Stones, wooden sled, Egyptians, vegetation…                                                                                               |
+| **Assets/Materials/**                 | Sandstone, wood, floor, corner, etc.                                                                                                      |
+| **AdditionalData/**                   | Companion dataset folder with the files used in the manuscript. Subfolders: `Montecarlo_ramp/`, `SimScale/`, `Tables/`.                   |
 
 ---
 
-## 🚀 Quick start
+## 🚀 Quick start
 
-1. **Open the project** in Unity 2021 LTS or newer.
-2. Load \`\`.
-3. Select the **Pyramid** GameObject → **Inspector**.
-4. Tweak the exposed fields or press **Play** to generate the full model.
+1. **Open** the project in **Unity 2021 LTS or newer** and load *SampleScene* **or** *MultiplePyramides*.
+2. Add an empty object (e.g., **Pyramid**) and **Add Component → GeneratePyramid**. Press **Play** to build the full model.
+3. *(Optional)* For a **course‑by‑course animation**, also add **PyramidSequence** and press **Play**. It will increment rows, clean previous geometry and (if enabled) capture PNGs.
 
-> ℹ️ Generation happens at \`\`; physics updates require Play Mode.
+> Tip: Generation happens in **Edit/Play** depending on the toggles; physics updates and screenshots require **Play Mode**.
 
----
+### About *MultiplePyramides* scene
 
-## 🔧 Key parameters (GeneratePyramid)
-
-| Category              | Variable                                                                                 | Default     | Meaning                                                                            |
-| --------------------- | ---------------------------------------------------------------------------------------- | ----------- | ---------------------------------------------------------------------------------- |
-| **Geometry**          | `BaseSize`                                                                               | 230 m       | Pyramid side length at ground.                                                     |
-|                       | `Height`                                                                                 |  147 m      | Target apex height. Adjusted to nearest block layer (0.71 m each).                 |
-|                       | `PyramidInclination`                                                                     |  51°        | Face angle of the pyramid.                                                         |
-|                       | `RampInclination`                                                                        |  7°         | Edge‑ramp slope.                                                                   |
-|                       | `blockwide`                                                                              |  1.27 m     | Block footprint. *(private const)*                                                 |
-| **Physics**           | `massBlock`                                                                              |  2267.96 kg | Average limestone block mass.                                                      |
-|                       | `frictionCoef`                                                                           |  0.7 (μ)    | Trineo/ground static friction.                                                     |
-| **Ramp modes**        | `Method4Ramp` / `Method8Ramp` / `Method16Ramp`                                           | bool        | Enable 4‑, 8‑ or 16‑ramp layouts.                                                  |
-|                       | `MethodInsideRamp`                                                                       | bool        | Shift ramps inwards (edge‑protected).                                              |
-| **Visual toggles**    | `DrawWall`, `DrawFloor`, `DrawWoodenCyl`, `DrawEgyptians`, `DrawGranite`, `DrawCover`, … | bool        | Enable/disable cosmetic details.                                                   |
-| **Simulation limits** | `maxBlocks`                                                                              | 100         | Hard cap during debugging (set 0 for full 2.3 M blocks).                           |
-| **Export**            | `exportPyramidObj`                                                                       | false       | Export generated mesh to **OBJ** (`Application.persistentDataPath/PyramidModels`). |
-
-Full list of public fields is available in the source code.
+* Preconfigured with **several pyramids** laid out in the desert for side‑by‑side comparisons (angles, ramp modes, materials).
+* Each pyramid is an independent **GeneratePyramid** instance; tweak them separately in the Inspector.
+* Ideal for **screenshots**, **performance checks** and **method comparisons**.
 
 ---
 
-## 🏃‍♀️ Typical pipelines
+## 🔧 Key parameters (GeneratePyramid)
 
-### Build a half‑pyramid for performance
+| Category              | Variable                                                                                                                                  | Meaning                                                                    |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| **Geometry**          | `BaseSize`, `Height`, `PyramidInclination`, `RampInclination`                                                                             | Global pyramid and ramp angles/sizes.                                      |
+|                       | `DrawUntilRow`, `DrawOnlyRow`, `DrawRow`, `DrawBlocks`                                                                                    | Build up to a course, only a course, or a fixed number of outer layers.    |
+| **Ramp modes**        | `Method16Ramp`, `Method8Ramp`, `Method4Ramp`, `MethodInsideRamp`                                                                          | Select 16/8/4 edge‑ramps and inside/edge variant.                          |
+| **Visuals**           | `DrawWall`, `DrawFloor`, `DrawWoodenCyl`, `DrawEgyptians`, `DrawGranite`, `DrawCover`, `showRamps`, `halfPyramid`                         | Rendering toggles for inspection.                                          |
+| **Logging (CSV/TXT)** | `showInfoLevel`, `showInfoLevelTotal`, `showInfoLevelDec`, `showInfoRow`; filenames: `csvitername`, `csvrowname`, `csvheadway`, `txtname` | Write iteration, per‑row and headway summaries to `/persistentDataPath/…`. |
+| **Headway model**     | `AverageHeadway`, `MinHeadway`, `MaxHeadway`, `WorkingYearMinutes`, `PyramidHeadwayType`                                                  | Throughput assumptions used in time estimates.                             |
+| **Export**            | `exportPyramidObj`, `exportCombineMeshes`, `exportSubFolder`, `outputFileName`                                                            | OBJ export of the generated meshes.                                        |
+
+---
+
+## 🎞️ Step‑by‑step building & screenshots (PyramidSequence)
+
+Attach **PyramidSequence** to the same GameObject as **GeneratePyramid** to:
+
+* **Advance automatically** one course at a time (`DrawUntilRow`/`DrawRow` are driven for you).
+* **Clean & rebuild** between steps so the scene only contains the current state.
+* **Capture PNG frames** each step when *Capture* is enabled; set *LapseSeconds* for the delay between captures.
+* Optionally point to a specific **Camera**; if empty, it will find the main camera.
+
+This is ideal to render time‑lapses or to verify per‑course geometry and headway CSV outputs match the visual model.
+
+---
+
+## 🏃‍♀️ Recipes
+
+### Build half‑pyramid for debugging
 
 ```csharp
-GeneratePyramid gp = GetComponent<GeneratePyramid>();
+var gp = GetComponent<GeneratePyramid>();
 gp.halfPyramid = true;
-gp.DrawGranite = false;   // skip interior details
+gp.DrawGranite = false; // skip interior details
 ```
 
-### Switch to the 16‑8‑4 ramp strategy
+### Adaptive ramp schedule (16 → 8 → 4)
 
 ```csharp
-gp.Method16Ramp = true;   // rows 1‑9 (16 ramps)
-gp.Method8Ramp  = true;   // rows 10‑20 (8 ramps)
-gp.Method4Ramp  = true;   // rows 21+  (4 ramps)
+var gp = GetComponent<GeneratePyramid>();
+gp.Method16Ramp = true;   // early courses
+gp.Method8Ramp  = true;    // mid courses
+gp.Method4Ramp  = true;    // upper courses
+```
+
+### Course‑by‑course capture
+
+```csharp
+var ps = GetComponent<PyramidSequence>();
+ps.Capture = true;      // save PNG per course
+ps.LapseSeconds = 0.5f; // wait between steps
 ```
 
 ---
 
 ## 📤 OBJ export
 
-Set \`\` and press **Play**.\
-The mesh (optionally combined) is written to:
+Enable `exportPyramidObj` and **Play**. The mesh (optionally combined) is written to:
 
 ```
-%APPDATA%\…\<Project>\PyramidModels\MyExportedPyramid.obj
+%APPDATA%/…/<Project>/PyramidModels/<outputFileName>.obj
 ```
-
-You have zipped samples in the OBJRepository folder:
-- Pyramid No Ramps
-- Pyramid 1 Ramp
-- Pyramid 4 Ramps
 
 Change `exportSubFolder` and `outputFileName` to customise the path.
 
 ---
 
-## 📝 License
+## 📑 Reproducibility
 
-This Unity implementation is released under the **MIT License**.\
-Please cite the accompanying paper *“A Computationally Validated Integrated Edge‑Ramp Theory …”* if you use this code in academic work.
+* CSV/TXT logs are created when the *showInfo…* flags are enabled (iteration, per‑row, headway).
+* All CAD, meshes and run settings are mirrored on the Zenodo record above.
 
+---
+
+## 📦 Additional data (manuscript dataset)
+
+The repository includes an **AdditionalData/** folder with the inputs/outputs used to build the figures and tables:
+
+* **AdditionalData/Montecarlo\_ramp/** — batches of parameter sweeps and simulation runs for ramp scenarios.
+* **AdditionalData/SimScale/** — exported project files/reports from SimScale runs used for cross‑checks.
+* **AdditionalData/Tables/** — CSV/Excel tables referenced in the manuscript (e.g., per‑row counts, headway summaries, Table 1–4 sources).
+
+These files mirror the archive on Zenodo so reviewers can reproduce every number in the paper.
+
+### 🔗 Public SimScale projects
+
+For transparency, the SimScale setup used for cross‑checks is shared publicly:
+
+* **piramide\_16\_rampas\_keops** — [https://www.simscale.com/projects/viroroi/piramide\_16\_rampas\_keops/](https://www.simscale.com/projects/viroroi/piramide_16_rampas_keops/)
+* **piramide\_keops\_4\_rampas** — [https://www.simscale.com/projects/viroroi/piramide\_keops\_4\_rampas/](https://www.simscale.com/projects/viroroi/piramide_keops_4_rampas/)
+
+*(Exports of these projects are also mirrored under `AdditionalData/SimScale/`.)*
+
+---
+
+## 📝 License
+
+MIT License. If you use this code in academic work, please cite the paper *“A Computationally Validated Integrated Edge‑Ramp Theory for the Construction of the Great Pyramid of Giza.”*

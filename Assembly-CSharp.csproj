@@ -308,6 +308,7 @@
     <Compile Include="Assets\UMA\Core\Scripts\OverlayLibrary.cs" />
     <Compile Include="Assets\UMA\Core\StandardAssets\UMA\Scripts\TextureMerge.cs" />
     <Compile Include="Assets\UMA\Core\Extensions\DynamicCharacterSystem\Scripts\UMARandomizer.cs" />
+    <Compile Include="Assets\Scripts\ScreenshotController.cs" />
     <Compile Include="Assets\UMA\Examples\Physics Examples\Scripts\CollisionMatrixFixer.cs" />
     <Compile Include="Assets\UMA\Core\StandardAssets\UMA\Scripts\Integrations\PowerToolsIntegration\UMALODConversionEntry.cs" />
     <Compile Include="Assets\WorldComposer\Scripts\TerrainNeighbors.cs" />
@@ -1582,18 +1583,6 @@
     <ProjectReference Include="Assembly-CSharp-firstpass.csproj">
       <Project>{16A35EB5-C697-9137-6DBB-AA02DE085254}</Project>
       <Name>Assembly-CSharp-firstpass</Name>
-    </ProjectReference>
-    <ProjectReference Include="HeurekaGames.AssetHunterPRO.Editor.csproj">
-      <Project>{6E80BBF0-0BFF-BAF0-6568-6E0CBDBF0645}</Project>
-      <Name>HeurekaGames.AssetHunterPRO.Editor</Name>
-    </ProjectReference>
-    <ProjectReference Include="HeurekaGames.Utils.csproj">
-      <Project>{99A37A79-4ED2-0693-49E7-8791D0050DA3}</Project>
-      <Name>HeurekaGames.Utils</Name>
-    </ProjectReference>
-    <ProjectReference Include="Heureka.Upgrade.csproj">
-      <Project>{D950F18E-E3AB-F6A5-5DC4-34E2842581DE}</Project>
-      <Name>Heureka.Upgrade</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

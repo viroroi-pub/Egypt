@@ -1,4 +1,6 @@
-# Khufu Pyramid – Unity Simulation (Edge‑Ramp)
+# Khufu Pyramid – Unity Simulation (Edge-Ramp)
+
+![Unity simulation screenshot](AdditionalData/Images/UnityPyramid.png)
 
 ---
 

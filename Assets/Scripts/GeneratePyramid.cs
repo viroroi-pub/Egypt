@@ -1738,7 +1738,7 @@ public class GeneratePyramid : MonoBehaviour
                     for (int i = 0; i < numOfGraniteRock1Def; i++)
                     {
                         GameObject objGranite = null;
-                        if (row % 4 == 0)
+                        /*if (row % 4 == 0)
                         {
                             objGranite = Instantiate(graniteRockPrefab1, objParent.transform.position + new Vector3(UnityEngine.Random.Range(0, new_base_size / 4), heightGranite + graniteRockPrefab1.transform.localScale.y / 2, UnityEngine.Random.Range(0, new_base_size / 4)), Quaternion.identity);                            
                         }
@@ -1750,12 +1750,21 @@ public class GeneratePyramid : MonoBehaviour
                         else
                         if (row % 4 == 2)
                         {
-                            objGranite = Instantiate(graniteRockPrefab1, objParent.transform.position + new Vector3(-UnityEngine.Random.Range(0, new_base_size / 4), heightGranite + graniteRockPrefab1.transform.localScale.y / 2, -UnityEngine.Random.Range(0, new_base_size / 4)), Quaternion.identity);                            
+                            objGranite = Instantiate(graniteRockPrefab1, objParent.transform.position + new Vector3(-UnityEngine.Random.Range(0, new_base_size / 4), heightGranite + graniteRockPrefab1.transform.localScale.y / 2, -UnityEngine.Random.Range(0, new_base_size / 4)), Quaternion.identity);                                                        
                         }
                         else
                         if (row % 4 == 3)
                         {
-                            objGranite = Instantiate(graniteRockPrefab1, objParent.transform.position + new Vector3(UnityEngine.Random.Range(0, new_base_size / 4), heightGranite + graniteRockPrefab1.transform.localScale.y / 2, -UnityEngine.Random.Range(0, new_base_size / 4)), Quaternion.identity);                            
+                            objGranite = Instantiate(graniteRockPrefab1, objParent.transform.position + new Vector3(UnityEngine.Random.Range(0, new_base_size / 4), heightGranite + graniteRockPrefab1.transform.localScale.y / 2, -UnityEngine.Random.Range(0, new_base_size / 4)), Quaternion.identity);                                                        
+                        }*/
+                        if (row % 2 == 0)
+                        {
+                            objGranite = Instantiate(graniteRockPrefab1, objParent.transform.position + new Vector3(UnityEngine.Random.Range(0, new_base_size / 4), heightGranite + graniteRockPrefab1.transform.localScale.y / 2, UnityEngine.Random.Range(0, new_base_size / 4)), Quaternion.identity);
+                        }
+                        else
+                        if (row % 2 == 1)
+                        {
+                            objGranite = Instantiate(graniteRockPrefab1, objParent.transform.position + new Vector3(UnityEngine.Random.Range(0, new_base_size / 4), heightGranite + graniteRockPrefab1.transform.localScale.y / 2, -UnityEngine.Random.Range(0, new_base_size / 4)), Quaternion.identity);
                         }
                         //objGranite.transform.parent = objParent.transform;
                         objGranite.transform.parent = granite_gameObject.transform;
@@ -1766,24 +1775,33 @@ public class GeneratePyramid : MonoBehaviour
                     for (int i = 0; i < numOfGraniteRock2Def; i++)
                     {
                         GameObject objGranite = null;
-                        if (row % 4 == 0)
+                        /*if (row % 4 == 0)
                         {
-                            objGranite = Instantiate(graniteRockPrefab2, objParent.transform.position + new Vector3(UnityEngine.Random.Range(0, new_base_size / 4), heightGranite + graniteRockPrefab1.transform.localScale.y / 2, UnityEngine.Random.Range(0, new_base_size / 4)), Quaternion.identity);                            
+                            objGranite = Instantiate(graniteRockPrefab2, objParent.transform.position + new Vector3(UnityEngine.Random.Range(0, new_base_size / 4), heightGranite + graniteRockPrefab1.transform.localScale.y / 2, UnityEngine.Random.Range(0, new_base_size / 4)), Quaternion.identity);
                         }
                         else
                         if (row % 4 == 1)
                         {
-                            objGranite = Instantiate(graniteRockPrefab2, objParent.transform.position + new Vector3(-UnityEngine.Random.Range(0, new_base_size / 4), heightGranite + graniteRockPrefab1.transform.localScale.y / 2, UnityEngine.Random.Range(0, new_base_size / 4)), Quaternion.identity);                            
+                            objGranite = Instantiate(graniteRockPrefab2, objParent.transform.position + new Vector3(-UnityEngine.Random.Range(0, new_base_size / 4), heightGranite + graniteRockPrefab1.transform.localScale.y / 2, UnityEngine.Random.Range(0, new_base_size / 4)), Quaternion.identity);
                         }
                         else
                         if (row % 4 == 2)
                         {
-                            objGranite = Instantiate(graniteRockPrefab2, objParent.transform.position + new Vector3(-UnityEngine.Random.Range(0, new_base_size / 4), heightGranite + graniteRockPrefab1.transform.localScale.y / 2, -UnityEngine.Random.Range(0, new_base_size / 4)), Quaternion.identity);                            
+                            objGranite = Instantiate(graniteRockPrefab2, objParent.transform.position + new Vector3(-UnityEngine.Random.Range(0, new_base_size / 4), heightGranite + graniteRockPrefab1.transform.localScale.y / 2, -UnityEngine.Random.Range(0, new_base_size / 4)), Quaternion.identity);                                                        
                         }
                         else
                         if (row % 4 == 3)
                         {
                             objGranite = Instantiate(graniteRockPrefab1, objParent.transform.position + new Vector3(UnityEngine.Random.Range(0, new_base_size / 4), heightGranite + graniteRockPrefab1.transform.localScale.y / 2, -UnityEngine.Random.Range(0, new_base_size / 4)), Quaternion.identity);                            
+                        }*/
+                        if (row % 2 == 0)
+                        {
+                            objGranite = Instantiate(graniteRockPrefab2, objParent.transform.position + new Vector3(UnityEngine.Random.Range(0, new_base_size / 4), heightGranite + graniteRockPrefab1.transform.localScale.y / 2, UnityEngine.Random.Range(0, new_base_size / 4)), Quaternion.identity);
+                        }
+                        else
+                        if (row % 2 == 1)
+                        {
+                            objGranite = Instantiate(graniteRockPrefab1, objParent.transform.position + new Vector3(UnityEngine.Random.Range(0, new_base_size / 4), heightGranite + graniteRockPrefab1.transform.localScale.y / 2, -UnityEngine.Random.Range(0, new_base_size / 4)), Quaternion.identity);
                         }
                         //objGranite.transform.parent = objParent.transform;
                         objGranite.transform.parent = granite_gameObject.transform;
@@ -1792,7 +1810,7 @@ public class GeneratePyramid : MonoBehaviour
             }
             if (piramidon)
             {
-                if (row % 4 == 0)
+                /*if (row % 4 == 0)
                 {
                     GameObject objPiramidon = Instantiate(piramidon, objParent.transform.position + new Vector3(UnityEngine.Random.Range(0, new_base_size / 4), heightGranite + 1, UnityEngine.Random.Range(0, new_base_size / 4)), Quaternion.identity);
                     //objPiramidon.transform.parent = objParent.transform;
@@ -1822,7 +1840,22 @@ public class GeneratePyramid : MonoBehaviour
                     //objPiramidon.transform.parent = objParent.transform;
                     objPiramidon.transform.parent = granite_gameObject.transform;
                     objPiramidon.transform.rotation = Quaternion.Euler(275, 0, 0);
-                }                
+                } */
+                if (row % 2 == 0)
+                {
+                    GameObject objPiramidon = Instantiate(piramidon, objParent.transform.position + new Vector3(UnityEngine.Random.Range(0, new_base_size / 4), heightGranite + 1, UnityEngine.Random.Range(0, new_base_size / 4)), Quaternion.identity);
+                    //objPiramidon.transform.parent = objParent.transform;
+                    objPiramidon.transform.parent = granite_gameObject.transform;
+                    objPiramidon.transform.rotation = Quaternion.Euler(275, 0, 0);
+                }
+                else
+                if (row % 2 == 1)
+                {
+                    GameObject objPiramidon = Instantiate(piramidon, objParent.transform.position + new Vector3(UnityEngine.Random.Range(0, new_base_size / 4), heightGranite + 1, -UnityEngine.Random.Range(0, new_base_size / 4)), Quaternion.identity);
+                    //objPiramidon.transform.parent = objParent.transform;
+                    objPiramidon.transform.parent = granite_gameObject.transform;
+                    objPiramidon.transform.rotation = Quaternion.Euler(275, 0, 0);
+                }
             }
         }
 

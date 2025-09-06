@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Globalization;
+using UnityEditor;
 using UnityEngine;
 
 /// <summary>
@@ -106,6 +107,22 @@ public class PyramidGUIController : MonoBehaviour
         DrawCollapsiblePanel("Headway & Timings", ref showHeadway, DrawHeadwayAndTimings);
         DrawCollapsiblePanel("Drawing Options", ref showDrawingOptions, DrawDrawingOptions);
         DrawCollapsiblePanel("Element Visibility", ref showVisibility, DrawElementVisibility);
+
+        // --- exit ---
+        GUILayout.FlexibleSpace(); 
+
+        GUI.backgroundColor = new Color(1f, 0.5f, 0.5f); 
+
+        if (GUILayout.Button("Quit Application"))
+        {
+#if UNITY_EDITOR
+            EditorApplication.isPlaying = false;
+#else            
+            Application.Quit();
+#endif
+        }
+
+        GUI.backgroundColor = Color.white; // Restaurar color por defecto
 
         GUI.enabled = true; // Re-enable the GUI for the buttons
 

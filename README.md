@@ -1,5 +1,57 @@
 # Khufu Pyramid – Unity Simulation (Edge‑Ramp)
 
+---
+
+## 📊 Metadata & Citation
+
+**Version:** v1.0.2 (final submission package for npj Heritage Science)  
+**DOI:** [https://doi.org/10.5281/zenodo.16732345](https://doi.org/10.5281/zenodo.16732345)  
+**Author:** Vicente Luis Rosell Roig (ORCID: 0009-0003-8857-9706)  
+**Affiliation:** Independent Researcher; PhD in Pattern Recognition, Artificial Intelligence and Computer Graphics, Universitat Politècnica de València (UPV), Spain.  
+
+If you use this dataset or code, please cite:  
+
+> Rosell Roig, V.L. (2025). *Parametric Algorithm, Finite Element Models, and Stochastic Simulations for the Integrated Edge-Ramp Theory of Khufu’s Great Pyramid* [Data set]. Zenodo. https://doi.org/10.5281/zenodo.16732345
+
+---
+
+## 🔍 Software dependencies
+
+* **Unity 2021 LTS** or newer (tested with Unity 2021.3.x, Unity 6000.2).  
+* **C# 9.0** (scripts in `Assets/Scripts`).  
+* **Python 3.11** with `numpy`, `pandas`, `matplotlib` (for additional analysis).  
+* **SimScale / Code_Aster** (for FEA runs; models exported under `AdditionalData/SimScale/`).  
+* **Blender 4.4** (for optional 3D visualization of OBJ exports).  
+
+---
+
+## 📂 File formats
+
+* `.csv` – block-by-row data, headway summaries, Monte Carlo outputs.  
+* `.xlsx` – consolidated tables for manuscript figures.  
+* `.stl`, `.obj` – 3D meshes of pyramid and ramp geometry.  
+* `.mp4` – supplementary videos (course-by-course and ramp sequences).  
+* `.zip` – bundled project exports from SimScale.  
+
+---
+
+## 📑 Changelog
+
+* **v1.0.2** – Added fine mesh FEA run; refined Monte Carlo tables; updated README with workflow diagram.  
+* **v1.0.1** – Initial Zenodo deposit, included Unity scenes and CSV tables.  
+* **v1.0.0** – Prototype release (internal use only).  
+
+All results in the npj Heritage Science submission can be reproduced exactly using the archived Unity project, CSV/Excel tables, and SimScale exports. Earlier versions remain available in the Zenodo record history for transparency
+
+---
+
+## 📜 License
+
+* **Code:** MIT License  
+* **Data, figures, and documentation:** CC-BY 4.0 
+
+---
+
 **Data & Code availability**
 All simulation scripts, block‑by‑row tables and the Unity scene are archived on Zenodo: [https://doi.org/10.5281/zenodo.16732345](https://doi.org/10.5281/zenodo.16732345)
 
@@ -11,8 +63,10 @@ All simulation scripts, block‑by‑row tables and the Unity scene are archived
 | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | **Assets/Scenes/SampleScene**         | Main demo scene. Add an empty **GameObject** and attach **GeneratePyramid** (and optional **PyramidSequence**).                           |
 | **Assets/Scenes/MultiplePyramides**   | Showcase scene with several pyramids for side‑by‑side comparison/screenshots; each pyramid has its own **GeneratePyramid** configuration. |
+| **Assets/Scenes/TerracePyramid**      | Showcase scene with a terrace pyramid for study Müller-Römer F. theory; each terrace has its own **GeneratePyramid** configuration.       |
 | **Assets/Scripts/GeneratePyramid.cs** | Core generator: parameters in the Inspector; builds blocks/ramps; CSV logs; OBJ export.                                                   |
-| **Assets/Scripts/PyramidSequence.cs** | Step‑by‑step builder/recorder that advances course‑by‑course and optionally saves PNG frames.                                             |
+| **Assets/Scripts/PyramidSequence.cs** | Step‑by‑step builder/recorder that advances course‑by‑course and optionally saves PNG frames.                                              |
+| **Assets/Scripts/PyramidGUIController.cs** | Interactive runtime GUI to control GeneratePyramid during Play Mode.                                                                 |
 | **Assets/Prefabs/**                   | Stones, wooden sled, Egyptians, vegetation…                                                                                               |
 | **Assets/Materials/**                 | Sandstone, wood, floor, corner, etc.                                                                                                      |
 | **AdditionalData/**                   | Companion dataset folder with the files used in the manuscript. Subfolders: `Montecarlo_ramp/`, `SimScale/`, `Tables/`.                   |
@@ -114,7 +168,7 @@ Change `exportSubFolder` and `outputFileName` to customise the path.
 
 The repository includes an **AdditionalData/** folder with the inputs/outputs used to build the figures and tables:
 
-* **AdditionalData/Montecarlo\_ramp/** — batches of parameter sweeps and simulation runs for ramp scenarios.
+* **AdditionalData/Montecarlo/** — batches of parameter sweeps and simulation runs for ramp scenarios.
 * **AdditionalData/SimScale/** — exported project files/reports from SimScale runs used for cross‑checks.
 * **AdditionalData/Tables/** — CSV/Excel tables referenced in the manuscript (e.g., per‑row counts, headway summaries, Table 1–4 sources).
 
@@ -124,7 +178,6 @@ These files mirror the archive on Zenodo so reviewers can reproduce every number
 
 For transparency, the SimScale setup used for cross‑checks is shared publicly:
 
-* **piramide\_16\_rampas\_keops** — [https://www.simscale.com/projects/viroroi/piramide\_16\_rampas\_keops/](https://www.simscale.com/projects/viroroi/piramide_16_rampas_keops/)
 * **piramide\_keops\_4\_rampas** — [https://www.simscale.com/projects/viroroi/piramide\_keops\_4\_rampas/](https://www.simscale.com/projects/viroroi/piramide_keops_4_rampas/)
 
 *(Exports of these projects are also mirrored under `AdditionalData/SimScale/`.)*

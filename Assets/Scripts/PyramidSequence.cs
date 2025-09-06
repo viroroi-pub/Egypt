@@ -50,27 +50,8 @@ public class PyramidSequence : MonoBehaviour
             ticks++;
             Debug.Log($"Tick número: {ticks}");
 
-            if (GeneratePyramid.DrawOnlyRow)
-            {
-                // Loop optimized for the 'true' case
-                for (int i = GeneratePyramid.objParent.transform.childCount - 1; i >= 0; i--)
-                {
-                    GameObject child = GeneratePyramid.objParent.transform.GetChild(i).gameObject;
-                    if (child.TryGetComponent(out BoxCollider bc) && bc.isTrigger)
-                    {
-                        GameObject.Destroy(child);
-                    }
-                }
-            }
-            else
-            {
-                // Loop optimized for the 'false' case
-                for (int i = GeneratePyramid.objParent.transform.childCount - 1; i >= 0; i--)
-                {
-                    GameObject child = GeneratePyramid.objParent.transform.GetChild(i).gameObject;
-                    GameObject.Destroy(child);
-                }
-            }
+            // delete previous row
+            GeneratePyramid.ClearPyramid(false);
 
             GeneratePyramid.cam.transform.localPosition = new Vector3(-GeneratePyramid.BaseSize * 3 / 4, GeneratePyramid.Height * 3 / 4, -GeneratePyramid.BaseSize * 3 / 4);
             //cam.transform.localPosition = new Vector3(BaseSize, Height, BaseSize);

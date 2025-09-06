@@ -420,6 +420,10 @@ public class GeneratePyramid : MonoBehaviour
     /// Sequenced 
     /// </summary>
     public Boolean Sequenced = false;
+    /// <summary>
+    /// Sequenced 
+    /// </summary>
+    public Boolean ShowGUI = true;
 
     private float pyramid_inclination_tg = 0;
     private float ramp_inclination_tg;   
@@ -443,7 +447,7 @@ public class GeneratePyramid : MonoBehaviour
     private int numberOfBlocksFinish = 0;
 
     private List<GameObject> blocksMidle;
-    private List<GameObject> blocksMidle2;
+    private List<GameObject> blocksMidle2;    
 
     // This runs in the editor whenever a value is changed in the Inspector.
     private void OnValidate()
@@ -589,6 +593,8 @@ public class GeneratePyramid : MonoBehaviour
             cube.transform.localScale = new Vector3(BaseSize, Height, BaseSize);
             cube.isStatic = true;
             cube.AddComponent<DeleteObject>();
+            cube.GetComponent<DeleteObject>().CommonGameObject=objParent;
+            cube.GetComponent<DeleteObject>().CommonGameObject = objParent;
             cube.GetComponent<MeshRenderer>().enabled = false;            
             cube.GetComponent<BoxCollider>().isTrigger = true;
         }
@@ -612,6 +618,7 @@ public class GeneratePyramid : MonoBehaviour
                 Man.SetActive(true);
             }
             else
+            if (Man)
                 Man.SetActive(false);
         }
 
@@ -631,6 +638,13 @@ public class GeneratePyramid : MonoBehaviour
             indexblock++;
         }*/        
     }
+
+    // create Pyramid
+    public void CreatePyramid()
+    {
+        Start();
+    }
+
 
     private float calcAngle(float opposite, float adjacent)
     {
@@ -2130,6 +2144,7 @@ public class GeneratePyramid : MonoBehaviour
         cube.isStatic = true;
         cube.AddComponent<DeleteObject>();
         cube.GetComponent<DeleteObject>().generatePyramid = this;
+        cube.GetComponent<DeleteObject>().CommonGameObject = objParent;
         cube.GetComponent<MeshRenderer>().enabled = false;
         //cube.GetComponent<ShowHideObject>().hide = true;
         cube.GetComponent<BoxCollider>().isTrigger = true;
@@ -2157,6 +2172,7 @@ public class GeneratePyramid : MonoBehaviour
             cube_c.isStatic = true;
             cube_c.AddComponent<DeleteObject>();
             cube_c.GetComponent<DeleteObject>().generatePyramid = this;
+            cube_c.GetComponent<DeleteObject>().CommonGameObject = objParent;
             cube_c.GetComponent<MeshRenderer>().enabled = false;
             cube_c.GetComponent<BoxCollider>().isTrigger = true;
         }
@@ -2544,6 +2560,7 @@ public class GeneratePyramid : MonoBehaviour
         cube.isStatic = true;
         cube.AddComponent<DeleteObject>();
         cube.GetComponent<DeleteObject>().generatePyramid = this;
+        cube.GetComponent<DeleteObject>().CommonGameObject = objParent;
         cube.GetComponent<MeshRenderer>().enabled = false;
         //cube.GetComponent<ShowHideObject>().hide = true;
         cube.GetComponent<BoxCollider>().isTrigger = true;
@@ -2581,6 +2598,7 @@ public class GeneratePyramid : MonoBehaviour
             cube.isStatic = true;
             cube.AddComponent<DeleteObject>();
             cube.GetComponent<DeleteObject>().generatePyramid = this;
+            cube.GetComponent<DeleteObject>().CommonGameObject = objParent;
             cube.GetComponent<MeshRenderer>().enabled = false;
             //cube.GetComponent<ShowHideObject>().hide = true;
             cube.GetComponent<BoxCollider>().isTrigger = true;            
@@ -2618,6 +2636,7 @@ public class GeneratePyramid : MonoBehaviour
         cube.isStatic = true;
         cube.AddComponent<DeleteObject>();
         cube.GetComponent<DeleteObject>().generatePyramid = this;
+        cube.GetComponent<DeleteObject>().CommonGameObject = objParent;
         cube.GetComponent<MeshRenderer>().enabled = false;
         //cube.GetComponent<ShowHideObject>().hide = true;
         cube.GetComponent<BoxCollider>().isTrigger = true;
@@ -2655,6 +2674,7 @@ public class GeneratePyramid : MonoBehaviour
             cube.isStatic = true;
             cube.AddComponent<DeleteObject>();
             cube.GetComponent<DeleteObject>().generatePyramid = this;
+            cube.GetComponent<DeleteObject>().CommonGameObject = objParent;
             cube.GetComponent<MeshRenderer>().enabled = false;
             //cube.GetComponent<ShowHideObject>().hide = true;
             cube.GetComponent<BoxCollider>().isTrigger = true;
@@ -2674,6 +2694,7 @@ public class GeneratePyramid : MonoBehaviour
             cube_c.isStatic = true;
             cube_c.AddComponent<DeleteObject>();
             cube_c.GetComponent<DeleteObject>().generatePyramid = this;
+            cube_c.GetComponent<DeleteObject>().CommonGameObject = objParent;
             cube_c.GetComponent<MeshRenderer>().enabled = false;
             cube_c.GetComponent<BoxCollider>().isTrigger = true;
 
@@ -2688,6 +2709,7 @@ public class GeneratePyramid : MonoBehaviour
                 cube_c.isStatic = true;
                 cube_c.AddComponent<DeleteObject>();
                 cube_c.GetComponent<DeleteObject>().generatePyramid = this;
+                cube_c.GetComponent<DeleteObject>().CommonGameObject = objParent;
                 cube_c.GetComponent<MeshRenderer>().enabled = false;
                 cube_c.GetComponent<BoxCollider>().isTrigger = true;
             }
@@ -2701,6 +2723,7 @@ public class GeneratePyramid : MonoBehaviour
             cube_c.isStatic = true;
             cube_c.AddComponent<DeleteObject>();
             cube_c.GetComponent<DeleteObject>().generatePyramid = this;
+            cube_c.GetComponent<DeleteObject>().CommonGameObject = objParent;
             cube_c.GetComponent<MeshRenderer>().enabled = false;
             cube_c.GetComponent<BoxCollider>().isTrigger = true;
 
@@ -2715,6 +2738,7 @@ public class GeneratePyramid : MonoBehaviour
                 cube_c.isStatic = true;
                 cube_c.AddComponent<DeleteObject>();
                 cube_c.GetComponent<DeleteObject>().generatePyramid = this;
+                cube_c.GetComponent<DeleteObject>().CommonGameObject = objParent;
                 cube_c.GetComponent<MeshRenderer>().enabled = false;
                 cube_c.GetComponent<BoxCollider>().isTrigger = true;
             }
@@ -3488,5 +3512,106 @@ public class GeneratePyramid : MonoBehaviour
         ObjExporter.ExportGameObjectToObj(objParent, exportPath, fileName, exportCombineMeshes);
         Debug.Log($"Exportado a: {Path.Combine(exportPath, fileName + ".obj")}");
         Debug.Log("Para ver la carpeta: En Unity Editor, haz clic derecho en este script y selecciona 'Open Export Folder'.");
+    }
+
+    /// <summary>
+    /// Delete the existing pyramid from the scene if it exists.
+    /// </summary>
+    public void ClearPyramid(bool all)
+    {
+        // delete previous row
+        if (!all && DrawOnlyRow)
+        {
+            // Loop optimized for the 'true' case
+            for (int i = objParent.transform.childCount - 1; i >= 0; i--)
+            {
+                GameObject child = objParent.transform.GetChild(i).gameObject;
+                if (child.TryGetComponent(out BoxCollider bc) && bc.isTrigger)
+                {
+                    GameObject.Destroy(child);
+                }
+            }
+        }
+        else
+        {
+            // Loop optimized for the 'false' case
+            for (int i = objParent.transform.childCount - 1; i >= 0; i--)
+            {
+                GameObject child = objParent.transform.GetChild(i).gameObject;
+                GameObject.Destroy(child);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Restaura los valores de los parámetros a sus valores por defecto.
+    /// </summary>
+    public void ResetValues()
+    {
+        selectedPyramid = PyramidType.Default;
+        BaseSize = 230;
+        Height = 147; // 147 is the height of the pyramid of Khufu
+        PyramidInclination = 51.84f;
+        RampInclination = 7;
+        blockheight = 0.71f;
+        blockwide = 1.27f;
+        PathWide = 0;
+        PathSeparation = 0;
+        holeHeight = 3;
+        holeWide = 3;
+        blockSeparation = 0.01f; // separation between blocks
+        massBlock = 2267.96f;
+    }
+
+    public void onChangePyramidType()
+    {
+        // If the selected option is not 'Default', update the dimensions.
+        if (selectedPyramid != PyramidType.Default)
+        {
+            switch (selectedPyramid)
+            {
+                case PyramidType.Khufu:
+                    BaseSize = 230.36f;
+                    Height = 146.50f;
+                    PyramidInclination = 51.85f;
+                    blockheight = 0.71f;
+                    break;
+
+                case PyramidType.Khafre:
+                    BaseSize = 215.25f;
+                    Height = 143.50f;
+                    PyramidInclination = 53.17f;
+                    blockheight = 0.70f;
+                    break;
+
+                case PyramidType.Menkaure:
+                    BaseSize = 108.5f;
+                    Height = 65.5f;
+                    PyramidInclination = 51.34f;
+                    blockheight = 0.65f;
+                    break;
+
+                case PyramidType.Bent_bottom:
+                    BaseSize = 188.0f;
+                    Height = 47f; // Total height of the pyramid.
+                    PyramidInclination = 54.5f;
+                    blockheight = 0.66f; // An average value.
+                    break;
+
+                case PyramidType.Bent_top:
+                    BaseSize = 124.5f;
+                    Height = 58f; // Total height of the pyramid.
+                    PyramidInclination = 43.3f;
+                    blockheight = 0.66f; // An average value.
+                    break;
+
+                case PyramidType.Red:
+                    BaseSize = 220.0f;
+                    Height = 104.4f;
+                    PyramidInclination = 43.3f;
+                    blockheight = 0.6f;
+                    break;
+            }
+        }
     }
 }

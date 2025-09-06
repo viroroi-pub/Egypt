@@ -1,0 +1,5013 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!29 &1
+OcclusionCullingSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_OcclusionBakeSettings:
+    smallestOccluder: 5
+    smallestHole: 0.25
+    backfaceThreshold: 100
+  m_SceneGUID: 00000000000000000000000000000000
+  m_OcclusionCullingData: {fileID: 0}
+--- !u!104 &2
+RenderSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 10
+  m_Fog: 0
+  m_FogColor: {r: 0.8867924, g: 0.7135782, b: 0.40574938, a: 1}
+  m_FogMode: 3
+  m_FogDensity: 0.01
+  m_LinearFogStart: 0
+  m_LinearFogEnd: 300
+  m_AmbientSkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+  m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
+  m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
+  m_AmbientIntensity: 1
+  m_AmbientMode: 0
+  m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
+  m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
+  m_HaloStrength: 0.5
+  m_FlareStrength: 1
+  m_FlareFadeSpeed: 3
+  m_HaloTexture: {fileID: 0}
+  m_SpotCookie: {fileID: 10001, guid: 0000000000000000e000000000000000, type: 0}
+  m_DefaultReflectionMode: 0
+  m_DefaultReflectionResolution: 128
+  m_ReflectionBounces: 1
+  m_ReflectionIntensity: 1
+  m_CustomReflection: {fileID: 0}
+  m_Sun: {fileID: 705507994}
+  m_UseRadianceAmbientProbe: 0
+--- !u!157 &3
+LightmapSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 13
+  m_BakeOnSceneLoad: 0
+  m_GISettings:
+    serializedVersion: 2
+    m_BounceScale: 1
+    m_IndirectOutputScale: 1
+    m_AlbedoBoost: 1
+    m_EnvironmentLightingMode: 0
+    m_EnableBakedLightmaps: 1
+    m_EnableRealtimeLightmaps: 0
+  m_LightmapEditorSettings:
+    serializedVersion: 12
+    m_Resolution: 2
+    m_BakeResolution: 40
+    m_AtlasSize: 1024
+    m_AO: 0
+    m_AOMaxDistance: 1
+    m_CompAOExponent: 1
+    m_CompAOExponentDirect: 0
+    m_ExtractAmbientOcclusion: 0
+    m_Padding: 2
+    m_LightmapParameters: {fileID: 0}
+    m_LightmapsBakeMode: 1
+    m_TextureCompression: 1
+    m_ReflectionCompression: 2
+    m_MixedBakeMode: 2
+    m_BakeBackend: 1
+    m_PVRSampling: 1
+    m_PVRDirectSampleCount: 32
+    m_PVRSampleCount: 500
+    m_PVRBounces: 2
+    m_PVREnvironmentSampleCount: 500
+    m_PVREnvironmentReferencePointCount: 2048
+    m_PVRFilteringMode: 2
+    m_PVRDenoiserTypeDirect: 0
+    m_PVRDenoiserTypeIndirect: 0
+    m_PVRDenoiserTypeAO: 0
+    m_PVRFilterTypeDirect: 0
+    m_PVRFilterTypeIndirect: 0
+    m_PVRFilterTypeAO: 0
+    m_PVREnvironmentMIS: 0
+    m_PVRCulling: 1
+    m_PVRFilteringGaussRadiusDirect: 1
+    m_PVRFilteringGaussRadiusIndirect: 5
+    m_PVRFilteringGaussRadiusAO: 2
+    m_PVRFilteringAtrousPositionSigmaDirect: 0.5
+    m_PVRFilteringAtrousPositionSigmaIndirect: 2
+    m_PVRFilteringAtrousPositionSigmaAO: 1
+    m_ExportTrainingData: 0
+    m_TrainingDataDestination: TrainingData
+    m_LightProbeSampleCountMultiplier: 4
+  m_LightingDataAsset: {fileID: 0}
+  m_LightingSettings: {fileID: 4890085278179872738, guid: 74657558a604a314084722626a5c3092,
+    type: 2}
+--- !u!196 &4
+NavMeshSettings:
+  serializedVersion: 2
+  m_ObjectHideFlags: 0
+  m_BuildSettings:
+    serializedVersion: 3
+    agentTypeID: 0
+    agentRadius: 0.5
+    agentHeight: 2
+    agentSlope: 45
+    agentClimb: 0.4
+    ledgeDropHeight: 0
+    maxJumpAcrossDistance: 0
+    minRegionArea: 2
+    manualCellSize: 0
+    cellSize: 0.16666667
+    manualTileSize: 0
+    tileSize: 256
+    buildHeightMesh: 0
+    maxJobWorkers: 0
+    preserveTilesOutsideBounds: 0
+    debug:
+      m_Flags: 0
+  m_NavMeshData: {fileID: 0}
+--- !u!1 &161417267
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 161417269}
+  - component: {fileID: 161417268}
+  m_Layer: 0
+  m_Name: GeneratePyramidTerrace2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 4294967295
+  m_IsActive: 1
+--- !u!114 &161417268
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 161417267}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8f3bc670555baa4b820cbe4a3fb17e9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  selectedPyramid: 0
+  BaseSize: 177
+  Height: 230
+  PyramidInclination: 54.5
+  RampInclination: 7
+  blockheight: 0.71
+  blockwide: 1.27
+  PathWide: 0
+  PathSeparation: 0
+  holeHeight: 5
+  holeWide: 3
+  blockSeparation: 0
+  numberOfBlocks: 0
+  numberOfBlocksDrawn: 0
+  maxBlocks: 0
+  path_length: 0
+  total_height: 0
+  massBlock: 2267.96
+  frictionCoef: 0.7
+  optionRamp: 1
+  totalForce: 0
+  totalForceRamp: 0
+  totalLength: 0
+  totalLengthRamp: 0
+  m_Material: {fileID: 2100000, guid: 8c57f0c93bcdf45419ad1c37ef578135, type: 2}
+  m_Material_corner: {fileID: 2100000, guid: ccc151909cb3b6144a2156cc5792c0b9, type: 2}
+  m_Material_wood: {fileID: 2100000, guid: 1ec7a28ff55f44a4a87a704aee7ecc7c, type: 2}
+  m_Material_Blank: {fileID: 2100000, guid: 7c962ba6101e8614a81609559aafa9b2, type: 2}
+  m_Material_floor: {fileID: 0}
+  cam: {fileID: 0}
+  Palm: {fileID: 0}
+  Dromader: {fileID: 0}
+  Eiffel: {fileID: 0}
+  Man: {fileID: 0}
+  RockPrefab:
+  - {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f, type: 3}
+  - {fileID: 1934847145488549955, guid: 4c5890b39fec4c0408b848058c32e418, type: 3}
+  - {fileID: 1934847145488549955, guid: 9e494471e93e3ae4ca8fe6de932ef723, type: 3}
+  RockDivPrefab: {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f,
+    type: 3}
+  CornerPrefab: {fileID: 3303205072679722066, guid: 69d5374d7cbe69346b9c8f5b1152ebac,
+    type: 3}
+  objParent: {fileID: 698932561}
+  graniteRockPrefab1: {fileID: 1934847145488549955, guid: a8af2fef706f60c4cb6ce7b9f854fb55,
+    type: 3}
+  graniteRockPrefab2: {fileID: 1934847145488549955, guid: 5cc382f61102f4d44bf8e544449de839,
+    type: 3}
+  piramidon: {fileID: 1999908982366458336, guid: fe7e4f262ac125240b6af3c2b94ce895,
+    type: 3}
+  stone_sled: {fileID: 6667684075288102831, guid: 8dce8326a02527240ac0bacd72143721,
+    type: 3}
+  Egyptian_body: {fileID: 6708560359212677676, guid: 912133279bb52b440a38c710df404a5f,
+    type: 3}
+  showEiffel: 0
+  showMan: 0
+  showManFinalRamp: 0
+  Method4Ramp: 1
+  MethodInsideRamp: 0
+  Method8Ramp: 1
+  Method16Ramp: 1
+  DrawUntilRow: 1
+  DrawOnlyRow: 0
+  DrawCover: 0
+  DrawRow: 9
+  DrawBlocks: 5
+  DeletedBlocks: 0
+  DrawWall: 0
+  DrawFloor: 1
+  DrawWoodenCyl: 0
+  DrawEgyptians: 0
+  DrawGranite: 0
+  DrawAll: 1
+  showRamps: 1
+  halfPyramid: 0
+  csvitername: pyramid_iter.csv
+  csvrowname: pyramid_row.csv
+  csvheadway: pyramid_headway.csv
+  txtname: pyramid.txt
+  showInfoLevel: 0
+  showInfoLevelTotal: 0
+  showInfoLevelDec: 0
+  showInfoRow: 0
+  exportPyramidObj: 0
+  exportCombineMeshes: 0
+  exportSubFolder: PyramidModels
+  outputFileName: MyPyramid4Ramp130_h
+  isStatic: 1
+  isRigidBody: 0
+  useFixedJoints: 0
+  blockLayer:
+    serializedVersion: 2
+    m_Bits: 1
+  numOfGraniteRock1: 21
+  numOfGraniteRock2: 38
+  minHeightGraniteRock: 43
+  maxHeightGraniteRock: 62
+  minBaseSize2Ramps: 32
+  minBaseSize4Ramps: 50
+  minBaseSize8Ramps: 100
+  minBaseSize16Ramps: 180
+  AverageHeadway: 4
+  MinHeadway: 2
+  MaxHeadway: 13
+  WorkingYearMinutes: 187200
+  PyramidHeadwayType: 0
+  Sequenced: 0
+--- !u!4 &161417269
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 161417267}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1974678473}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &195906005
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 195906006}
+  - component: {fileID: 195906007}
+  m_Layer: 0
+  m_Name: PyramidParentTerrace8
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 2147483647
+  m_IsActive: 1
+--- !u!4 &195906006
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 195906005}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 84.49, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2052374095}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &195906007
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 195906005}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9ac701a8a133f14dbbd8ef2103b9a0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ObjExporter
+--- !u!1 &368357998
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 368358000}
+  - component: {fileID: 368357999}
+  m_Layer: 0
+  m_Name: GeneratePyramidTerrace10
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 4294967295
+  m_IsActive: 1
+--- !u!114 &368357999
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 368357998}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8f3bc670555baa4b820cbe4a3fb17e9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  selectedPyramid: 0
+  BaseSize: 17
+  Height: 230
+  PyramidInclination: 54.5
+  RampInclination: 7
+  blockheight: 0.71
+  blockwide: 1.27
+  PathWide: 0
+  PathSeparation: 0
+  holeHeight: 5
+  holeWide: 3
+  blockSeparation: 0
+  numberOfBlocks: 0
+  numberOfBlocksDrawn: 0
+  maxBlocks: 0
+  path_length: 0
+  total_height: 0
+  massBlock: 2267.96
+  frictionCoef: 0.7
+  optionRamp: 1
+  totalForce: 0
+  totalForceRamp: 0
+  totalLength: 0
+  totalLengthRamp: 0
+  m_Material: {fileID: 2100000, guid: 8c57f0c93bcdf45419ad1c37ef578135, type: 2}
+  m_Material_corner: {fileID: 2100000, guid: ccc151909cb3b6144a2156cc5792c0b9, type: 2}
+  m_Material_wood: {fileID: 2100000, guid: 1ec7a28ff55f44a4a87a704aee7ecc7c, type: 2}
+  m_Material_Blank: {fileID: 2100000, guid: 7c962ba6101e8614a81609559aafa9b2, type: 2}
+  m_Material_floor: {fileID: 0}
+  cam: {fileID: 0}
+  Palm: {fileID: 0}
+  Dromader: {fileID: 0}
+  Eiffel: {fileID: 0}
+  Man: {fileID: 0}
+  RockPrefab:
+  - {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f, type: 3}
+  - {fileID: 1934847145488549955, guid: 4c5890b39fec4c0408b848058c32e418, type: 3}
+  - {fileID: 1934847145488549955, guid: 9e494471e93e3ae4ca8fe6de932ef723, type: 3}
+  RockDivPrefab: {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f,
+    type: 3}
+  CornerPrefab: {fileID: 3303205072679722066, guid: 69d5374d7cbe69346b9c8f5b1152ebac,
+    type: 3}
+  objParent: {fileID: 1061289108}
+  graniteRockPrefab1: {fileID: 1934847145488549955, guid: a8af2fef706f60c4cb6ce7b9f854fb55,
+    type: 3}
+  graniteRockPrefab2: {fileID: 1934847145488549955, guid: 5cc382f61102f4d44bf8e544449de839,
+    type: 3}
+  piramidon: {fileID: 1999908982366458336, guid: fe7e4f262ac125240b6af3c2b94ce895,
+    type: 3}
+  stone_sled: {fileID: 6667684075288102831, guid: 8dce8326a02527240ac0bacd72143721,
+    type: 3}
+  Egyptian_body: {fileID: 6708560359212677676, guid: 912133279bb52b440a38c710df404a5f,
+    type: 3}
+  showEiffel: 0
+  showMan: 0
+  showManFinalRamp: 0
+  Method4Ramp: 1
+  MethodInsideRamp: 0
+  Method8Ramp: 1
+  Method16Ramp: 1
+  DrawUntilRow: 1
+  DrawOnlyRow: 0
+  DrawCover: 0
+  DrawRow: 9
+  DrawBlocks: 5
+  DeletedBlocks: 0
+  DrawWall: 0
+  DrawFloor: 1
+  DrawWoodenCyl: 0
+  DrawEgyptians: 0
+  DrawGranite: 0
+  DrawAll: 1
+  showRamps: 1
+  halfPyramid: 0
+  csvitername: pyramid_iter.csv
+  csvrowname: pyramid_row.csv
+  csvheadway: pyramid_headway.csv
+  txtname: pyramid.txt
+  showInfoLevel: 0
+  showInfoLevelTotal: 0
+  showInfoLevelDec: 0
+  showInfoRow: 0
+  exportPyramidObj: 0
+  exportCombineMeshes: 0
+  exportSubFolder: PyramidModels
+  outputFileName: MyPyramid4Ramp130_h
+  isStatic: 1
+  isRigidBody: 0
+  useFixedJoints: 0
+  blockLayer:
+    serializedVersion: 2
+    m_Bits: 1
+  numOfGraniteRock1: 21
+  numOfGraniteRock2: 38
+  minHeightGraniteRock: 43
+  maxHeightGraniteRock: 62
+  minBaseSize2Ramps: 32
+  minBaseSize4Ramps: 50
+  minBaseSize8Ramps: 100
+  minBaseSize16Ramps: 180
+  AverageHeadway: 4
+  MinHeadway: 2
+  MaxHeadway: 13
+  WorkingYearMinutes: 187200
+  PyramidHeadwayType: 0
+  Sequenced: 0
+--- !u!4 &368358000
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 368357998}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1974678473}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &369342354
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 369342356}
+  - component: {fileID: 369342355}
+  m_Layer: 0
+  m_Name: PyramidParentTerrace6
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 4294967295
+  m_IsActive: 1
+--- !u!114 &369342355
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 369342354}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9ac701a8a133f14dbbd8ef2103b9a0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ObjExporter
+--- !u!4 &369342356
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 369342354}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 31.95, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1974678473}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &380184449
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 380184451}
+  - component: {fileID: 380184450}
+  m_Layer: 0
+  m_Name: PyramidParentTerrace9
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 4294967295
+  m_IsActive: 1
+--- !u!114 &380184450
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 380184449}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9ac701a8a133f14dbbd8ef2103b9a0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ObjExporter
+--- !u!4 &380184451
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 380184449}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 51.12, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1974678473}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &401742159
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 401742160}
+  - component: {fileID: 401742161}
+  m_Layer: 0
+  m_Name: GeneratePyramidTerrace8
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 2147483647
+  m_IsActive: 1
+--- !u!4 &401742160
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 401742159}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2052374095}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &401742161
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 401742159}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8f3bc670555baa4b820cbe4a3fb17e9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  selectedPyramid: 0
+  BaseSize: 116.5
+  Height: 230
+  PyramidInclination: 80
+  RampInclination: 7
+  blockheight: 0.71
+  blockwide: 1.27
+  PathWide: 0
+  PathSeparation: 0
+  holeHeight: 5
+  holeWide: 3
+  blockSeparation: 0
+  numberOfBlocks: 0
+  numberOfBlocksDrawn: 0
+  maxBlocks: 0
+  path_length: 0
+  total_height: 0
+  massBlock: 2267.96
+  frictionCoef: 0.7
+  optionRamp: 1
+  totalForce: 0
+  totalForceRamp: 0
+  totalLength: 0
+  totalLengthRamp: 0
+  m_Material: {fileID: 2100000, guid: 8c57f0c93bcdf45419ad1c37ef578135, type: 2}
+  m_Material_corner: {fileID: 2100000, guid: ccc151909cb3b6144a2156cc5792c0b9, type: 2}
+  m_Material_wood: {fileID: 2100000, guid: 1ec7a28ff55f44a4a87a704aee7ecc7c, type: 2}
+  m_Material_Blank: {fileID: 2100000, guid: 7c962ba6101e8614a81609559aafa9b2, type: 2}
+  m_Material_floor: {fileID: 0}
+  cam: {fileID: 0}
+  Palm: {fileID: 0}
+  Dromader: {fileID: 0}
+  Eiffel: {fileID: 0}
+  Man: {fileID: 0}
+  RockPrefab:
+  - {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f, type: 3}
+  - {fileID: 1934847145488549955, guid: 4c5890b39fec4c0408b848058c32e418, type: 3}
+  - {fileID: 1934847145488549955, guid: 9e494471e93e3ae4ca8fe6de932ef723, type: 3}
+  RockDivPrefab: {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f,
+    type: 3}
+  CornerPrefab: {fileID: 3303205072679722066, guid: 69d5374d7cbe69346b9c8f5b1152ebac,
+    type: 3}
+  objParent: {fileID: 195906005}
+  graniteRockPrefab1: {fileID: 1934847145488549955, guid: a8af2fef706f60c4cb6ce7b9f854fb55,
+    type: 3}
+  graniteRockPrefab2: {fileID: 1934847145488549955, guid: 5cc382f61102f4d44bf8e544449de839,
+    type: 3}
+  piramidon: {fileID: 1999908982366458336, guid: fe7e4f262ac125240b6af3c2b94ce895,
+    type: 3}
+  stone_sled: {fileID: 6667684075288102831, guid: 8dce8326a02527240ac0bacd72143721,
+    type: 3}
+  Egyptian_body: {fileID: 6708560359212677676, guid: 912133279bb52b440a38c710df404a5f,
+    type: 3}
+  showEiffel: 0
+  showMan: 0
+  showManFinalRamp: 0
+  Method4Ramp: 1
+  MethodInsideRamp: 0
+  Method8Ramp: 1
+  Method16Ramp: 1
+  DrawUntilRow: 1
+  DrawOnlyRow: 0
+  DrawCover: 0
+  DrawRow: 16
+  DrawBlocks: 5
+  DeletedBlocks: 0
+  DrawWall: 0
+  DrawFloor: 0
+  DrawWoodenCyl: 0
+  DrawEgyptians: 0
+  DrawGranite: 0
+  DrawAll: 0
+  showRamps: 1
+  halfPyramid: 0
+  csvitername: pyramid_iter.csv
+  csvrowname: pyramid_row.csv
+  csvheadway: pyramid_headway.csv
+  txtname: pyramid.txt
+  showInfoLevel: 0
+  showInfoLevelTotal: 0
+  showInfoLevelDec: 0
+  showInfoRow: 0
+  exportPyramidObj: 0
+  exportCombineMeshes: 0
+  exportSubFolder: PyramidModels
+  outputFileName: MyPyramid4Ramp130_h
+  isStatic: 1
+  isRigidBody: 0
+  useFixedJoints: 0
+  blockLayer:
+    serializedVersion: 2
+    m_Bits: 1
+  numOfGraniteRock1: 21
+  numOfGraniteRock2: 38
+  minHeightGraniteRock: 43
+  maxHeightGraniteRock: 62
+  minBaseSize2Ramps: 32
+  minBaseSize4Ramps: 64
+  minBaseSize8Ramps: 128
+  minBaseSize16Ramps: 200
+  AverageHeadway: 4
+  MinHeadway: 2
+  MaxHeadway: 13
+  WorkingYearMinutes: 187200
+  PyramidHeadwayType: 0
+  Sequenced: 0
+--- !u!1 &445797144
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 445797146}
+  - component: {fileID: 445797145}
+  m_Layer: 0
+  m_Name: GeneratePyramidTerrace8
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 4294967295
+  m_IsActive: 1
+--- !u!114 &445797145
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 445797144}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8f3bc670555baa4b820cbe4a3fb17e9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  selectedPyramid: 0
+  BaseSize: 57
+  Height: 230
+  PyramidInclination: 54.5
+  RampInclination: 7
+  blockheight: 0.71
+  blockwide: 1.27
+  PathWide: 0
+  PathSeparation: 0
+  holeHeight: 5
+  holeWide: 3
+  blockSeparation: 0
+  numberOfBlocks: 0
+  numberOfBlocksDrawn: 0
+  maxBlocks: 0
+  path_length: 0
+  total_height: 0
+  massBlock: 2267.96
+  frictionCoef: 0.7
+  optionRamp: 1
+  totalForce: 0
+  totalForceRamp: 0
+  totalLength: 0
+  totalLengthRamp: 0
+  m_Material: {fileID: 2100000, guid: 8c57f0c93bcdf45419ad1c37ef578135, type: 2}
+  m_Material_corner: {fileID: 2100000, guid: ccc151909cb3b6144a2156cc5792c0b9, type: 2}
+  m_Material_wood: {fileID: 2100000, guid: 1ec7a28ff55f44a4a87a704aee7ecc7c, type: 2}
+  m_Material_Blank: {fileID: 2100000, guid: 7c962ba6101e8614a81609559aafa9b2, type: 2}
+  m_Material_floor: {fileID: 0}
+  cam: {fileID: 0}
+  Palm: {fileID: 0}
+  Dromader: {fileID: 0}
+  Eiffel: {fileID: 0}
+  Man: {fileID: 0}
+  RockPrefab:
+  - {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f, type: 3}
+  - {fileID: 1934847145488549955, guid: 4c5890b39fec4c0408b848058c32e418, type: 3}
+  - {fileID: 1934847145488549955, guid: 9e494471e93e3ae4ca8fe6de932ef723, type: 3}
+  RockDivPrefab: {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f,
+    type: 3}
+  CornerPrefab: {fileID: 3303205072679722066, guid: 69d5374d7cbe69346b9c8f5b1152ebac,
+    type: 3}
+  objParent: {fileID: 1810679161}
+  graniteRockPrefab1: {fileID: 1934847145488549955, guid: a8af2fef706f60c4cb6ce7b9f854fb55,
+    type: 3}
+  graniteRockPrefab2: {fileID: 1934847145488549955, guid: 5cc382f61102f4d44bf8e544449de839,
+    type: 3}
+  piramidon: {fileID: 1999908982366458336, guid: fe7e4f262ac125240b6af3c2b94ce895,
+    type: 3}
+  stone_sled: {fileID: 6667684075288102831, guid: 8dce8326a02527240ac0bacd72143721,
+    type: 3}
+  Egyptian_body: {fileID: 6708560359212677676, guid: 912133279bb52b440a38c710df404a5f,
+    type: 3}
+  showEiffel: 0
+  showMan: 0
+  showManFinalRamp: 0
+  Method4Ramp: 1
+  MethodInsideRamp: 0
+  Method8Ramp: 1
+  Method16Ramp: 1
+  DrawUntilRow: 1
+  DrawOnlyRow: 0
+  DrawCover: 0
+  DrawRow: 9
+  DrawBlocks: 5
+  DeletedBlocks: 0
+  DrawWall: 0
+  DrawFloor: 1
+  DrawWoodenCyl: 0
+  DrawEgyptians: 0
+  DrawGranite: 0
+  DrawAll: 1
+  showRamps: 1
+  halfPyramid: 0
+  csvitername: pyramid_iter.csv
+  csvrowname: pyramid_row.csv
+  csvheadway: pyramid_headway.csv
+  txtname: pyramid.txt
+  showInfoLevel: 0
+  showInfoLevelTotal: 0
+  showInfoLevelDec: 0
+  showInfoRow: 0
+  exportPyramidObj: 0
+  exportCombineMeshes: 0
+  exportSubFolder: PyramidModels
+  outputFileName: MyPyramid4Ramp130_h
+  isStatic: 1
+  isRigidBody: 0
+  useFixedJoints: 0
+  blockLayer:
+    serializedVersion: 2
+    m_Bits: 1
+  numOfGraniteRock1: 21
+  numOfGraniteRock2: 38
+  minHeightGraniteRock: 43
+  maxHeightGraniteRock: 62
+  minBaseSize2Ramps: 32
+  minBaseSize4Ramps: 50
+  minBaseSize8Ramps: 100
+  minBaseSize16Ramps: 180
+  AverageHeadway: 4
+  MinHeadway: 2
+  MaxHeadway: 13
+  WorkingYearMinutes: 187200
+  PyramidHeadwayType: 0
+  Sequenced: 0
+--- !u!4 &445797146
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 445797144}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1974678473}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &496612225
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 496612227}
+  - component: {fileID: 496612226}
+  m_Layer: 0
+  m_Name: PyramidParentTerrace5
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 4294967295
+  m_IsActive: 1
+--- !u!114 &496612226
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 496612225}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9ac701a8a133f14dbbd8ef2103b9a0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ObjExporter
+--- !u!4 &496612227
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 496612225}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 25.56, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1974678473}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &541067049
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 541067050}
+  - component: {fileID: 541067051}
+  m_Layer: 0
+  m_Name: GeneratePyramidTerrace1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 2147483647
+  m_IsActive: 1
+--- !u!4 &541067050
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 541067049}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2052374095}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &541067051
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 541067049}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8f3bc670555baa4b820cbe4a3fb17e9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  selectedPyramid: 0
+  BaseSize: 197
+  Height: 230
+  PyramidInclination: 80
+  RampInclination: 7
+  blockheight: 0.71
+  blockwide: 1.27
+  PathWide: 0
+  PathSeparation: 0
+  holeHeight: 5
+  holeWide: 3
+  blockSeparation: 0
+  numberOfBlocks: 0
+  numberOfBlocksDrawn: 0
+  maxBlocks: 0
+  path_length: 0
+  total_height: 0
+  massBlock: 2267.96
+  frictionCoef: 0.7
+  optionRamp: 1
+  totalForce: 0
+  totalForceRamp: 0
+  totalLength: 0
+  totalLengthRamp: 0
+  m_Material: {fileID: 2100000, guid: 8c57f0c93bcdf45419ad1c37ef578135, type: 2}
+  m_Material_corner: {fileID: 2100000, guid: ccc151909cb3b6144a2156cc5792c0b9, type: 2}
+  m_Material_wood: {fileID: 2100000, guid: 1ec7a28ff55f44a4a87a704aee7ecc7c, type: 2}
+  m_Material_Blank: {fileID: 2100000, guid: 7c962ba6101e8614a81609559aafa9b2, type: 2}
+  m_Material_floor: {fileID: 0}
+  cam: {fileID: 0}
+  Palm: {fileID: 0}
+  Dromader: {fileID: 0}
+  Eiffel: {fileID: 0}
+  Man: {fileID: 0}
+  RockPrefab:
+  - {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f, type: 3}
+  - {fileID: 1934847145488549955, guid: 4c5890b39fec4c0408b848058c32e418, type: 3}
+  - {fileID: 1934847145488549955, guid: 9e494471e93e3ae4ca8fe6de932ef723, type: 3}
+  RockDivPrefab: {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f,
+    type: 3}
+  CornerPrefab: {fileID: 3303205072679722066, guid: 69d5374d7cbe69346b9c8f5b1152ebac,
+    type: 3}
+  objParent: {fileID: 2134466638}
+  graniteRockPrefab1: {fileID: 1934847145488549955, guid: a8af2fef706f60c4cb6ce7b9f854fb55,
+    type: 3}
+  graniteRockPrefab2: {fileID: 1934847145488549955, guid: 5cc382f61102f4d44bf8e544449de839,
+    type: 3}
+  piramidon: {fileID: 1999908982366458336, guid: fe7e4f262ac125240b6af3c2b94ce895,
+    type: 3}
+  stone_sled: {fileID: 6667684075288102831, guid: 8dce8326a02527240ac0bacd72143721,
+    type: 3}
+  Egyptian_body: {fileID: 6708560359212677676, guid: 912133279bb52b440a38c710df404a5f,
+    type: 3}
+  showEiffel: 0
+  showMan: 0
+  showManFinalRamp: 0
+  Method4Ramp: 1
+  MethodInsideRamp: 0
+  Method8Ramp: 1
+  Method16Ramp: 1
+  DrawUntilRow: 1
+  DrawOnlyRow: 0
+  DrawCover: 0
+  DrawRow: 16
+  DrawBlocks: 5
+  DeletedBlocks: 0
+  DrawWall: 0
+  DrawFloor: 0
+  DrawWoodenCyl: 0
+  DrawEgyptians: 0
+  DrawGranite: 0
+  DrawAll: 0
+  showRamps: 1
+  halfPyramid: 0
+  csvitername: pyramid_iter.csv
+  csvrowname: pyramid_row.csv
+  csvheadway: pyramid_headway.csv
+  txtname: pyramid.txt
+  showInfoLevel: 0
+  showInfoLevelTotal: 0
+  showInfoLevelDec: 0
+  showInfoRow: 0
+  exportPyramidObj: 0
+  exportCombineMeshes: 0
+  exportSubFolder: PyramidModels
+  outputFileName: MyPyramid4Ramp130_h
+  isStatic: 1
+  isRigidBody: 0
+  useFixedJoints: 0
+  blockLayer:
+    serializedVersion: 2
+    m_Bits: 1
+  numOfGraniteRock1: 21
+  numOfGraniteRock2: 38
+  minHeightGraniteRock: 43
+  maxHeightGraniteRock: 62
+  minBaseSize2Ramps: 32
+  minBaseSize4Ramps: 64
+  minBaseSize8Ramps: 128
+  minBaseSize16Ramps: 200
+  AverageHeadway: 4
+  MinHeadway: 2
+  MaxHeadway: 13
+  WorkingYearMinutes: 187200
+  PyramidHeadwayType: 0
+  Sequenced: 0
+--- !u!1 &555717839
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 555717841}
+  - component: {fileID: 555717840}
+  m_Layer: 0
+  m_Name: GeneratePyramidTerrace5
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 4294967295
+  m_IsActive: 1
+--- !u!114 &555717840
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 555717839}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8f3bc670555baa4b820cbe4a3fb17e9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  selectedPyramid: 0
+  BaseSize: 117
+  Height: 230
+  PyramidInclination: 54.5
+  RampInclination: 7
+  blockheight: 0.71
+  blockwide: 1.27
+  PathWide: 0
+  PathSeparation: 0
+  holeHeight: 5
+  holeWide: 3
+  blockSeparation: 0
+  numberOfBlocks: 0
+  numberOfBlocksDrawn: 0
+  maxBlocks: 0
+  path_length: 0
+  total_height: 0
+  massBlock: 2267.96
+  frictionCoef: 0.7
+  optionRamp: 1
+  totalForce: 0
+  totalForceRamp: 0
+  totalLength: 0
+  totalLengthRamp: 0
+  m_Material: {fileID: 2100000, guid: 8c57f0c93bcdf45419ad1c37ef578135, type: 2}
+  m_Material_corner: {fileID: 2100000, guid: ccc151909cb3b6144a2156cc5792c0b9, type: 2}
+  m_Material_wood: {fileID: 2100000, guid: 1ec7a28ff55f44a4a87a704aee7ecc7c, type: 2}
+  m_Material_Blank: {fileID: 2100000, guid: 7c962ba6101e8614a81609559aafa9b2, type: 2}
+  m_Material_floor: {fileID: 0}
+  cam: {fileID: 0}
+  Palm: {fileID: 0}
+  Dromader: {fileID: 0}
+  Eiffel: {fileID: 0}
+  Man: {fileID: 0}
+  RockPrefab:
+  - {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f, type: 3}
+  - {fileID: 1934847145488549955, guid: 4c5890b39fec4c0408b848058c32e418, type: 3}
+  - {fileID: 1934847145488549955, guid: 9e494471e93e3ae4ca8fe6de932ef723, type: 3}
+  RockDivPrefab: {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f,
+    type: 3}
+  CornerPrefab: {fileID: 3303205072679722066, guid: 69d5374d7cbe69346b9c8f5b1152ebac,
+    type: 3}
+  objParent: {fileID: 496612225}
+  graniteRockPrefab1: {fileID: 1934847145488549955, guid: a8af2fef706f60c4cb6ce7b9f854fb55,
+    type: 3}
+  graniteRockPrefab2: {fileID: 1934847145488549955, guid: 5cc382f61102f4d44bf8e544449de839,
+    type: 3}
+  piramidon: {fileID: 1999908982366458336, guid: fe7e4f262ac125240b6af3c2b94ce895,
+    type: 3}
+  stone_sled: {fileID: 6667684075288102831, guid: 8dce8326a02527240ac0bacd72143721,
+    type: 3}
+  Egyptian_body: {fileID: 6708560359212677676, guid: 912133279bb52b440a38c710df404a5f,
+    type: 3}
+  showEiffel: 0
+  showMan: 0
+  showManFinalRamp: 0
+  Method4Ramp: 1
+  MethodInsideRamp: 0
+  Method8Ramp: 1
+  Method16Ramp: 1
+  DrawUntilRow: 1
+  DrawOnlyRow: 0
+  DrawCover: 0
+  DrawRow: 9
+  DrawBlocks: 5
+  DeletedBlocks: 0
+  DrawWall: 0
+  DrawFloor: 1
+  DrawWoodenCyl: 0
+  DrawEgyptians: 0
+  DrawGranite: 0
+  DrawAll: 1
+  showRamps: 1
+  halfPyramid: 0
+  csvitername: pyramid_iter.csv
+  csvrowname: pyramid_row.csv
+  csvheadway: pyramid_headway.csv
+  txtname: pyramid.txt
+  showInfoLevel: 0
+  showInfoLevelTotal: 0
+  showInfoLevelDec: 0
+  showInfoRow: 0
+  exportPyramidObj: 0
+  exportCombineMeshes: 0
+  exportSubFolder: PyramidModels
+  outputFileName: MyPyramid4Ramp130_h
+  isStatic: 1
+  isRigidBody: 0
+  useFixedJoints: 0
+  blockLayer:
+    serializedVersion: 2
+    m_Bits: 1
+  numOfGraniteRock1: 21
+  numOfGraniteRock2: 38
+  minHeightGraniteRock: 43
+  maxHeightGraniteRock: 62
+  minBaseSize2Ramps: 32
+  minBaseSize4Ramps: 50
+  minBaseSize8Ramps: 100
+  minBaseSize16Ramps: 180
+  AverageHeadway: 4
+  MinHeadway: 2
+  MaxHeadway: 13
+  WorkingYearMinutes: 187200
+  PyramidHeadwayType: 0
+  Sequenced: 0
+--- !u!4 &555717841
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 555717839}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1974678473}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &588811163
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 588811164}
+  - component: {fileID: 588811165}
+  m_Layer: 0
+  m_Name: GeneratePyramidTerrace2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 2147483647
+  m_IsActive: 1
+--- !u!4 &588811164
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 588811163}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2052374095}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &588811165
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 588811163}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8f3bc670555baa4b820cbe4a3fb17e9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  selectedPyramid: 0
+  BaseSize: 185.5
+  Height: 230
+  PyramidInclination: 80
+  RampInclination: 7
+  blockheight: 0.71
+  blockwide: 1.27
+  PathWide: 0
+  PathSeparation: 0
+  holeHeight: 5
+  holeWide: 3
+  blockSeparation: 0
+  numberOfBlocks: 0
+  numberOfBlocksDrawn: 0
+  maxBlocks: 0
+  path_length: 0
+  total_height: 0
+  massBlock: 2267.96
+  frictionCoef: 0.7
+  optionRamp: 1
+  totalForce: 0
+  totalForceRamp: 0
+  totalLength: 0
+  totalLengthRamp: 0
+  m_Material: {fileID: 2100000, guid: 8c57f0c93bcdf45419ad1c37ef578135, type: 2}
+  m_Material_corner: {fileID: 2100000, guid: ccc151909cb3b6144a2156cc5792c0b9, type: 2}
+  m_Material_wood: {fileID: 2100000, guid: 1ec7a28ff55f44a4a87a704aee7ecc7c, type: 2}
+  m_Material_Blank: {fileID: 2100000, guid: 7c962ba6101e8614a81609559aafa9b2, type: 2}
+  m_Material_floor: {fileID: 0}
+  cam: {fileID: 0}
+  Palm: {fileID: 0}
+  Dromader: {fileID: 0}
+  Eiffel: {fileID: 0}
+  Man: {fileID: 0}
+  RockPrefab:
+  - {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f, type: 3}
+  - {fileID: 1934847145488549955, guid: 4c5890b39fec4c0408b848058c32e418, type: 3}
+  - {fileID: 1934847145488549955, guid: 9e494471e93e3ae4ca8fe6de932ef723, type: 3}
+  RockDivPrefab: {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f,
+    type: 3}
+  CornerPrefab: {fileID: 3303205072679722066, guid: 69d5374d7cbe69346b9c8f5b1152ebac,
+    type: 3}
+  objParent: {fileID: 2120525441}
+  graniteRockPrefab1: {fileID: 1934847145488549955, guid: a8af2fef706f60c4cb6ce7b9f854fb55,
+    type: 3}
+  graniteRockPrefab2: {fileID: 1934847145488549955, guid: 5cc382f61102f4d44bf8e544449de839,
+    type: 3}
+  piramidon: {fileID: 1999908982366458336, guid: fe7e4f262ac125240b6af3c2b94ce895,
+    type: 3}
+  stone_sled: {fileID: 6667684075288102831, guid: 8dce8326a02527240ac0bacd72143721,
+    type: 3}
+  Egyptian_body: {fileID: 6708560359212677676, guid: 912133279bb52b440a38c710df404a5f,
+    type: 3}
+  showEiffel: 0
+  showMan: 0
+  showManFinalRamp: 0
+  Method4Ramp: 1
+  MethodInsideRamp: 0
+  Method8Ramp: 1
+  Method16Ramp: 1
+  DrawUntilRow: 1
+  DrawOnlyRow: 0
+  DrawCover: 0
+  DrawRow: 16
+  DrawBlocks: 5
+  DeletedBlocks: 0
+  DrawWall: 0
+  DrawFloor: 0
+  DrawWoodenCyl: 0
+  DrawEgyptians: 0
+  DrawGranite: 0
+  DrawAll: 0
+  showRamps: 1
+  halfPyramid: 0
+  csvitername: pyramid_iter.csv
+  csvrowname: pyramid_row.csv
+  csvheadway: pyramid_headway.csv
+  txtname: pyramid.txt
+  showInfoLevel: 0
+  showInfoLevelTotal: 0
+  showInfoLevelDec: 0
+  showInfoRow: 0
+  exportPyramidObj: 0
+  exportCombineMeshes: 0
+  exportSubFolder: PyramidModels
+  outputFileName: MyPyramid4Ramp130_h
+  isStatic: 1
+  isRigidBody: 0
+  useFixedJoints: 0
+  blockLayer:
+    serializedVersion: 2
+    m_Bits: 1
+  numOfGraniteRock1: 21
+  numOfGraniteRock2: 38
+  minHeightGraniteRock: 43
+  maxHeightGraniteRock: 62
+  minBaseSize2Ramps: 32
+  minBaseSize4Ramps: 64
+  minBaseSize8Ramps: 128
+  minBaseSize16Ramps: 200
+  AverageHeadway: 4
+  MinHeadway: 2
+  MaxHeadway: 13
+  WorkingYearMinutes: 187200
+  PyramidHeadwayType: 0
+  Sequenced: 0
+--- !u!1 &604235406
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 604235407}
+  - component: {fileID: 604235408}
+  m_Layer: 0
+  m_Name: GeneratePyramidTerrace7
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 2147483647
+  m_IsActive: 1
+--- !u!4 &604235407
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 604235406}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2052374095}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &604235408
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 604235406}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8f3bc670555baa4b820cbe4a3fb17e9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  selectedPyramid: 0
+  BaseSize: 128
+  Height: 230
+  PyramidInclination: 80
+  RampInclination: 7
+  blockheight: 0.71
+  blockwide: 1.27
+  PathWide: 0
+  PathSeparation: 0
+  holeHeight: 5
+  holeWide: 3
+  blockSeparation: 0
+  numberOfBlocks: 0
+  numberOfBlocksDrawn: 0
+  maxBlocks: 0
+  path_length: 0
+  total_height: 0
+  massBlock: 2267.96
+  frictionCoef: 0.7
+  optionRamp: 1
+  totalForce: 0
+  totalForceRamp: 0
+  totalLength: 0
+  totalLengthRamp: 0
+  m_Material: {fileID: 2100000, guid: 8c57f0c93bcdf45419ad1c37ef578135, type: 2}
+  m_Material_corner: {fileID: 2100000, guid: ccc151909cb3b6144a2156cc5792c0b9, type: 2}
+  m_Material_wood: {fileID: 2100000, guid: 1ec7a28ff55f44a4a87a704aee7ecc7c, type: 2}
+  m_Material_Blank: {fileID: 2100000, guid: 7c962ba6101e8614a81609559aafa9b2, type: 2}
+  m_Material_floor: {fileID: 0}
+  cam: {fileID: 0}
+  Palm: {fileID: 0}
+  Dromader: {fileID: 0}
+  Eiffel: {fileID: 0}
+  Man: {fileID: 0}
+  RockPrefab:
+  - {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f, type: 3}
+  - {fileID: 1934847145488549955, guid: 4c5890b39fec4c0408b848058c32e418, type: 3}
+  - {fileID: 1934847145488549955, guid: 9e494471e93e3ae4ca8fe6de932ef723, type: 3}
+  RockDivPrefab: {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f,
+    type: 3}
+  CornerPrefab: {fileID: 3303205072679722066, guid: 69d5374d7cbe69346b9c8f5b1152ebac,
+    type: 3}
+  objParent: {fileID: 1133170579}
+  graniteRockPrefab1: {fileID: 1934847145488549955, guid: a8af2fef706f60c4cb6ce7b9f854fb55,
+    type: 3}
+  graniteRockPrefab2: {fileID: 1934847145488549955, guid: 5cc382f61102f4d44bf8e544449de839,
+    type: 3}
+  piramidon: {fileID: 1999908982366458336, guid: fe7e4f262ac125240b6af3c2b94ce895,
+    type: 3}
+  stone_sled: {fileID: 6667684075288102831, guid: 8dce8326a02527240ac0bacd72143721,
+    type: 3}
+  Egyptian_body: {fileID: 6708560359212677676, guid: 912133279bb52b440a38c710df404a5f,
+    type: 3}
+  showEiffel: 0
+  showMan: 0
+  showManFinalRamp: 0
+  Method4Ramp: 1
+  MethodInsideRamp: 0
+  Method8Ramp: 1
+  Method16Ramp: 1
+  DrawUntilRow: 1
+  DrawOnlyRow: 0
+  DrawCover: 0
+  DrawRow: 16
+  DrawBlocks: 5
+  DeletedBlocks: 0
+  DrawWall: 0
+  DrawFloor: 0
+  DrawWoodenCyl: 0
+  DrawEgyptians: 0
+  DrawGranite: 0
+  DrawAll: 0
+  showRamps: 1
+  halfPyramid: 0
+  csvitername: pyramid_iter.csv
+  csvrowname: pyramid_row.csv
+  csvheadway: pyramid_headway.csv
+  txtname: pyramid.txt
+  showInfoLevel: 0
+  showInfoLevelTotal: 0
+  showInfoLevelDec: 0
+  showInfoRow: 0
+  exportPyramidObj: 0
+  exportCombineMeshes: 0
+  exportSubFolder: PyramidModels
+  outputFileName: MyPyramid4Ramp130_h
+  isStatic: 1
+  isRigidBody: 0
+  useFixedJoints: 0
+  blockLayer:
+    serializedVersion: 2
+    m_Bits: 1
+  numOfGraniteRock1: 21
+  numOfGraniteRock2: 38
+  minHeightGraniteRock: 43
+  maxHeightGraniteRock: 62
+  minBaseSize2Ramps: 32
+  minBaseSize4Ramps: 64
+  minBaseSize8Ramps: 128
+  minBaseSize16Ramps: 200
+  AverageHeadway: 4
+  MinHeadway: 2
+  MaxHeadway: 13
+  WorkingYearMinutes: 187200
+  PyramidHeadwayType: 0
+  Sequenced: 0
+--- !u!1 &627980362
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 627980363}
+  - component: {fileID: 627980364}
+  m_Layer: 0
+  m_Name: PyramidParentTerrace9
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 2147483647
+  m_IsActive: 1
+--- !u!4 &627980363
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 627980362}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 96.56, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2052374095}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &627980364
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 627980362}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9ac701a8a133f14dbbd8ef2103b9a0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ObjExporter
+--- !u!1 &685806205
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 685806207}
+  - component: {fileID: 685806206}
+  m_Layer: 0
+  m_Name: PyramidParentTerrace1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 4294967295
+  m_IsActive: 1
+--- !u!114 &685806206
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 685806205}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9ac701a8a133f14dbbd8ef2103b9a0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ObjExporter
+--- !u!4 &685806207
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 685806205}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1974678473}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &694912808
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 694912810}
+  - component: {fileID: 694912809}
+  m_Layer: 0
+  m_Name: GeneratePyramidTerrace6
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 4294967295
+  m_IsActive: 1
+--- !u!114 &694912809
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 694912808}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8f3bc670555baa4b820cbe4a3fb17e9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  selectedPyramid: 0
+  BaseSize: 97
+  Height: 230
+  PyramidInclination: 54.5
+  RampInclination: 7
+  blockheight: 0.71
+  blockwide: 1.27
+  PathWide: 0
+  PathSeparation: 0
+  holeHeight: 5
+  holeWide: 3
+  blockSeparation: 0
+  numberOfBlocks: 0
+  numberOfBlocksDrawn: 0
+  maxBlocks: 0
+  path_length: 0
+  total_height: 0
+  massBlock: 2267.96
+  frictionCoef: 0.7
+  optionRamp: 1
+  totalForce: 0
+  totalForceRamp: 0
+  totalLength: 0
+  totalLengthRamp: 0
+  m_Material: {fileID: 2100000, guid: 8c57f0c93bcdf45419ad1c37ef578135, type: 2}
+  m_Material_corner: {fileID: 2100000, guid: ccc151909cb3b6144a2156cc5792c0b9, type: 2}
+  m_Material_wood: {fileID: 2100000, guid: 1ec7a28ff55f44a4a87a704aee7ecc7c, type: 2}
+  m_Material_Blank: {fileID: 2100000, guid: 7c962ba6101e8614a81609559aafa9b2, type: 2}
+  m_Material_floor: {fileID: 0}
+  cam: {fileID: 0}
+  Palm: {fileID: 0}
+  Dromader: {fileID: 0}
+  Eiffel: {fileID: 0}
+  Man: {fileID: 0}
+  RockPrefab:
+  - {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f, type: 3}
+  - {fileID: 1934847145488549955, guid: 4c5890b39fec4c0408b848058c32e418, type: 3}
+  - {fileID: 1934847145488549955, guid: 9e494471e93e3ae4ca8fe6de932ef723, type: 3}
+  RockDivPrefab: {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f,
+    type: 3}
+  CornerPrefab: {fileID: 3303205072679722066, guid: 69d5374d7cbe69346b9c8f5b1152ebac,
+    type: 3}
+  objParent: {fileID: 369342354}
+  graniteRockPrefab1: {fileID: 1934847145488549955, guid: a8af2fef706f60c4cb6ce7b9f854fb55,
+    type: 3}
+  graniteRockPrefab2: {fileID: 1934847145488549955, guid: 5cc382f61102f4d44bf8e544449de839,
+    type: 3}
+  piramidon: {fileID: 1999908982366458336, guid: fe7e4f262ac125240b6af3c2b94ce895,
+    type: 3}
+  stone_sled: {fileID: 6667684075288102831, guid: 8dce8326a02527240ac0bacd72143721,
+    type: 3}
+  Egyptian_body: {fileID: 6708560359212677676, guid: 912133279bb52b440a38c710df404a5f,
+    type: 3}
+  showEiffel: 0
+  showMan: 0
+  showManFinalRamp: 0
+  Method4Ramp: 1
+  MethodInsideRamp: 0
+  Method8Ramp: 1
+  Method16Ramp: 1
+  DrawUntilRow: 1
+  DrawOnlyRow: 0
+  DrawCover: 0
+  DrawRow: 9
+  DrawBlocks: 5
+  DeletedBlocks: 0
+  DrawWall: 0
+  DrawFloor: 1
+  DrawWoodenCyl: 0
+  DrawEgyptians: 0
+  DrawGranite: 0
+  DrawAll: 1
+  showRamps: 1
+  halfPyramid: 0
+  csvitername: pyramid_iter.csv
+  csvrowname: pyramid_row.csv
+  csvheadway: pyramid_headway.csv
+  txtname: pyramid.txt
+  showInfoLevel: 0
+  showInfoLevelTotal: 0
+  showInfoLevelDec: 0
+  showInfoRow: 0
+  exportPyramidObj: 0
+  exportCombineMeshes: 0
+  exportSubFolder: PyramidModels
+  outputFileName: MyPyramid4Ramp130_h
+  isStatic: 1
+  isRigidBody: 0
+  useFixedJoints: 0
+  blockLayer:
+    serializedVersion: 2
+    m_Bits: 1
+  numOfGraniteRock1: 21
+  numOfGraniteRock2: 38
+  minHeightGraniteRock: 43
+  maxHeightGraniteRock: 62
+  minBaseSize2Ramps: 32
+  minBaseSize4Ramps: 50
+  minBaseSize8Ramps: 100
+  minBaseSize16Ramps: 180
+  AverageHeadway: 4
+  MinHeadway: 2
+  MaxHeadway: 13
+  WorkingYearMinutes: 187200
+  PyramidHeadwayType: 0
+  Sequenced: 0
+--- !u!4 &694912810
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 694912808}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1974678473}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &698932561
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 698932563}
+  - component: {fileID: 698932562}
+  m_Layer: 0
+  m_Name: PyramidParentTerrace2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 4294967295
+  m_IsActive: 1
+--- !u!114 &698932562
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 698932561}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9ac701a8a133f14dbbd8ef2103b9a0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ObjExporter
+--- !u!4 &698932563
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 698932561}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 6.39, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1974678473}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &705507993
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 705507995}
+  - component: {fileID: 705507994}
+  m_Layer: 0
+  m_Name: Directional Light
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!108 &705507994
+Light:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 705507993}
+  m_Enabled: 1
+  serializedVersion: 11
+  m_Type: 1
+  m_Color: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
+  m_Intensity: 1
+  m_Range: 10
+  m_SpotAngle: 30
+  m_InnerSpotAngle: 21.80208
+  m_CookieSize: 10
+  m_Shadows:
+    m_Type: 0
+    m_Resolution: -1
+    m_CustomResolution: -1
+    m_Strength: 1
+    m_Bias: 0.05
+    m_NormalBias: 0.4
+    m_NearPlane: 0.2
+    m_CullingMatrixOverride:
+      e00: 1
+      e01: 0
+      e02: 0
+      e03: 0
+      e10: 0
+      e11: 1
+      e12: 0
+      e13: 0
+      e20: 0
+      e21: 0
+      e22: 1
+      e23: 0
+      e30: 0
+      e31: 0
+      e32: 0
+      e33: 1
+    m_UseCullingMatrixOverride: 0
+  m_Cookie: {fileID: 0}
+  m_DrawHalo: 0
+  m_Flare: {fileID: 0}
+  m_RenderMode: 0
+  m_CullingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_RenderingLayerMask: 1
+  m_Lightmapping: 1
+  m_LightShadowCasterMode: 0
+  m_AreaSize: {x: 1, y: 1}
+  m_BounceIntensity: 1
+  m_ColorTemperature: 6570
+  m_UseColorTemperature: 0
+  m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_UseBoundingSphereOverride: 0
+  m_UseViewFrustumForShadowCasterCull: 1
+  m_ForceVisible: 0
+  m_ShadowRadius: 0
+  m_ShadowAngle: 0
+  m_LightUnit: 1
+  m_LuxAtDistance: 1
+  m_EnableSpotReflector: 1
+--- !u!4 &705507995
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 705507993}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.11206781, y: 0.80708534, z: -0.5606196, w: 0.14751232}
+  m_LocalPosition: {x: 0, y: 400, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 119.323, y: 312.031, z: 135}
+--- !u!1 &981681860
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 981681862}
+  - component: {fileID: 981681861}
+  m_Layer: 0
+  m_Name: PyramidParentTerrace3
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 4294967295
+  m_IsActive: 1
+--- !u!114 &981681861
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 981681860}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9ac701a8a133f14dbbd8ef2103b9a0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ObjExporter
+--- !u!4 &981681862
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 981681860}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 12.8, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1974678473}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1058302701
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1058302702}
+  - component: {fileID: 1058302703}
+  m_Layer: 0
+  m_Name: GeneratePyramidTerrace10
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 2147483647
+  m_IsActive: 1
+--- !u!4 &1058302702
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1058302701}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2052374095}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1058302703
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1058302701}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8f3bc670555baa4b820cbe4a3fb17e9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  selectedPyramid: 0
+  BaseSize: 93.5
+  Height: 230
+  PyramidInclination: 80
+  RampInclination: 7
+  blockheight: 0.71
+  blockwide: 1.27
+  PathWide: 0
+  PathSeparation: 0
+  holeHeight: 5
+  holeWide: 3
+  blockSeparation: 0
+  numberOfBlocks: 0
+  numberOfBlocksDrawn: 0
+  maxBlocks: 0
+  path_length: 0
+  total_height: 0
+  massBlock: 2267.96
+  frictionCoef: 0.7
+  optionRamp: 1
+  totalForce: 0
+  totalForceRamp: 0
+  totalLength: 0
+  totalLengthRamp: 0
+  m_Material: {fileID: 2100000, guid: 8c57f0c93bcdf45419ad1c37ef578135, type: 2}
+  m_Material_corner: {fileID: 2100000, guid: ccc151909cb3b6144a2156cc5792c0b9, type: 2}
+  m_Material_wood: {fileID: 2100000, guid: 1ec7a28ff55f44a4a87a704aee7ecc7c, type: 2}
+  m_Material_Blank: {fileID: 2100000, guid: 7c962ba6101e8614a81609559aafa9b2, type: 2}
+  m_Material_floor: {fileID: 0}
+  cam: {fileID: 0}
+  Palm: {fileID: 0}
+  Dromader: {fileID: 0}
+  Eiffel: {fileID: 0}
+  Man: {fileID: 0}
+  RockPrefab:
+  - {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f, type: 3}
+  - {fileID: 1934847145488549955, guid: 4c5890b39fec4c0408b848058c32e418, type: 3}
+  - {fileID: 1934847145488549955, guid: 9e494471e93e3ae4ca8fe6de932ef723, type: 3}
+  RockDivPrefab: {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f,
+    type: 3}
+  CornerPrefab: {fileID: 3303205072679722066, guid: 69d5374d7cbe69346b9c8f5b1152ebac,
+    type: 3}
+  objParent: {fileID: 1310921205}
+  graniteRockPrefab1: {fileID: 1934847145488549955, guid: a8af2fef706f60c4cb6ce7b9f854fb55,
+    type: 3}
+  graniteRockPrefab2: {fileID: 1934847145488549955, guid: 5cc382f61102f4d44bf8e544449de839,
+    type: 3}
+  piramidon: {fileID: 1999908982366458336, guid: fe7e4f262ac125240b6af3c2b94ce895,
+    type: 3}
+  stone_sled: {fileID: 6667684075288102831, guid: 8dce8326a02527240ac0bacd72143721,
+    type: 3}
+  Egyptian_body: {fileID: 6708560359212677676, guid: 912133279bb52b440a38c710df404a5f,
+    type: 3}
+  showEiffel: 0
+  showMan: 0
+  showManFinalRamp: 0
+  Method4Ramp: 1
+  MethodInsideRamp: 0
+  Method8Ramp: 1
+  Method16Ramp: 1
+  DrawUntilRow: 1
+  DrawOnlyRow: 0
+  DrawCover: 0
+  DrawRow: 16
+  DrawBlocks: 5
+  DeletedBlocks: 0
+  DrawWall: 0
+  DrawFloor: 0
+  DrawWoodenCyl: 0
+  DrawEgyptians: 0
+  DrawGranite: 0
+  DrawAll: 0
+  showRamps: 1
+  halfPyramid: 0
+  csvitername: pyramid_iter.csv
+  csvrowname: pyramid_row.csv
+  csvheadway: pyramid_headway.csv
+  txtname: pyramid.txt
+  showInfoLevel: 0
+  showInfoLevelTotal: 0
+  showInfoLevelDec: 0
+  showInfoRow: 0
+  exportPyramidObj: 0
+  exportCombineMeshes: 0
+  exportSubFolder: PyramidModels
+  outputFileName: MyPyramid4Ramp130_h
+  isStatic: 1
+  isRigidBody: 0
+  useFixedJoints: 0
+  blockLayer:
+    serializedVersion: 2
+    m_Bits: 1
+  numOfGraniteRock1: 21
+  numOfGraniteRock2: 38
+  minHeightGraniteRock: 43
+  maxHeightGraniteRock: 62
+  minBaseSize2Ramps: 32
+  minBaseSize4Ramps: 64
+  minBaseSize8Ramps: 128
+  minBaseSize16Ramps: 200
+  AverageHeadway: 4
+  MinHeadway: 2
+  MaxHeadway: 13
+  WorkingYearMinutes: 187200
+  PyramidHeadwayType: 0
+  Sequenced: 0
+--- !u!1 &1061289108
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1061289110}
+  - component: {fileID: 1061289109}
+  m_Layer: 0
+  m_Name: PyramidParentTerrace10
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 4294967295
+  m_IsActive: 1
+--- !u!114 &1061289109
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1061289108}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9ac701a8a133f14dbbd8ef2103b9a0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ObjExporter
+--- !u!4 &1061289110
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1061289108}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 57.51, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1974678473}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1074272174
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1074272175}
+  - component: {fileID: 1074272176}
+  m_Layer: 0
+  m_Name: PyramidParentTerrace12
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 2147483647
+  m_IsActive: 1
+--- !u!4 &1074272175
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1074272174}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 132.77, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2052374095}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1074272176
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1074272174}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9ac701a8a133f14dbbd8ef2103b9a0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ObjExporter
+--- !u!1 &1111400884
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1111400885}
+  - component: {fileID: 1111400886}
+  m_Layer: 0
+  m_Name: GeneratePyramidTerrace6
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 2147483647
+  m_IsActive: 1
+--- !u!4 &1111400885
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1111400884}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2052374095}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1111400886
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1111400884}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8f3bc670555baa4b820cbe4a3fb17e9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  selectedPyramid: 0
+  BaseSize: 139.5
+  Height: 230
+  PyramidInclination: 80
+  RampInclination: 7
+  blockheight: 0.71
+  blockwide: 1.27
+  PathWide: 0
+  PathSeparation: 0
+  holeHeight: 5
+  holeWide: 3
+  blockSeparation: 0
+  numberOfBlocks: 0
+  numberOfBlocksDrawn: 0
+  maxBlocks: 0
+  path_length: 0
+  total_height: 0
+  massBlock: 2267.96
+  frictionCoef: 0.7
+  optionRamp: 1
+  totalForce: 0
+  totalForceRamp: 0
+  totalLength: 0
+  totalLengthRamp: 0
+  m_Material: {fileID: 2100000, guid: 8c57f0c93bcdf45419ad1c37ef578135, type: 2}
+  m_Material_corner: {fileID: 2100000, guid: ccc151909cb3b6144a2156cc5792c0b9, type: 2}
+  m_Material_wood: {fileID: 2100000, guid: 1ec7a28ff55f44a4a87a704aee7ecc7c, type: 2}
+  m_Material_Blank: {fileID: 2100000, guid: 7c962ba6101e8614a81609559aafa9b2, type: 2}
+  m_Material_floor: {fileID: 0}
+  cam: {fileID: 0}
+  Palm: {fileID: 0}
+  Dromader: {fileID: 0}
+  Eiffel: {fileID: 0}
+  Man: {fileID: 0}
+  RockPrefab:
+  - {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f, type: 3}
+  - {fileID: 1934847145488549955, guid: 4c5890b39fec4c0408b848058c32e418, type: 3}
+  - {fileID: 1934847145488549955, guid: 9e494471e93e3ae4ca8fe6de932ef723, type: 3}
+  RockDivPrefab: {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f,
+    type: 3}
+  CornerPrefab: {fileID: 3303205072679722066, guid: 69d5374d7cbe69346b9c8f5b1152ebac,
+    type: 3}
+  objParent: {fileID: 1157754938}
+  graniteRockPrefab1: {fileID: 1934847145488549955, guid: a8af2fef706f60c4cb6ce7b9f854fb55,
+    type: 3}
+  graniteRockPrefab2: {fileID: 1934847145488549955, guid: 5cc382f61102f4d44bf8e544449de839,
+    type: 3}
+  piramidon: {fileID: 1999908982366458336, guid: fe7e4f262ac125240b6af3c2b94ce895,
+    type: 3}
+  stone_sled: {fileID: 6667684075288102831, guid: 8dce8326a02527240ac0bacd72143721,
+    type: 3}
+  Egyptian_body: {fileID: 6708560359212677676, guid: 912133279bb52b440a38c710df404a5f,
+    type: 3}
+  showEiffel: 0
+  showMan: 0
+  showManFinalRamp: 0
+  Method4Ramp: 1
+  MethodInsideRamp: 0
+  Method8Ramp: 1
+  Method16Ramp: 1
+  DrawUntilRow: 1
+  DrawOnlyRow: 0
+  DrawCover: 0
+  DrawRow: 16
+  DrawBlocks: 5
+  DeletedBlocks: 0
+  DrawWall: 0
+  DrawFloor: 0
+  DrawWoodenCyl: 0
+  DrawEgyptians: 0
+  DrawGranite: 0
+  DrawAll: 0
+  showRamps: 1
+  halfPyramid: 0
+  csvitername: pyramid_iter.csv
+  csvrowname: pyramid_row.csv
+  csvheadway: pyramid_headway.csv
+  txtname: pyramid.txt
+  showInfoLevel: 0
+  showInfoLevelTotal: 0
+  showInfoLevelDec: 0
+  showInfoRow: 0
+  exportPyramidObj: 0
+  exportCombineMeshes: 0
+  exportSubFolder: PyramidModels
+  outputFileName: MyPyramid4Ramp130_h
+  isStatic: 1
+  isRigidBody: 0
+  useFixedJoints: 0
+  blockLayer:
+    serializedVersion: 2
+    m_Bits: 1
+  numOfGraniteRock1: 21
+  numOfGraniteRock2: 38
+  minHeightGraniteRock: 43
+  maxHeightGraniteRock: 62
+  minBaseSize2Ramps: 32
+  minBaseSize4Ramps: 64
+  minBaseSize8Ramps: 128
+  minBaseSize16Ramps: 200
+  AverageHeadway: 4
+  MinHeadway: 2
+  MaxHeadway: 13
+  WorkingYearMinutes: 187200
+  PyramidHeadwayType: 0
+  Sequenced: 0
+--- !u!1 &1114488619
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1114488621}
+  - component: {fileID: 1114488620}
+  m_Layer: 0
+  m_Name: PyramidParentTerrace4
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 4294967295
+  m_IsActive: 1
+--- !u!114 &1114488620
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1114488619}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9ac701a8a133f14dbbd8ef2103b9a0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ObjExporter
+--- !u!4 &1114488621
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1114488619}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 19.7, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1974678473}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1128998240
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1128998241}
+  - component: {fileID: 1128998242}
+  m_Layer: 0
+  m_Name: PyramidParentTerrace11
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 2147483647
+  m_IsActive: 1
+--- !u!4 &1128998241
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1128998240}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 120.7, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2052374095}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1128998242
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1128998240}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9ac701a8a133f14dbbd8ef2103b9a0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ObjExporter
+--- !u!1 &1133170579
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1133170580}
+  - component: {fileID: 1133170581}
+  m_Layer: 0
+  m_Name: PyramidParentTerrace7
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 2147483647
+  m_IsActive: 1
+--- !u!4 &1133170580
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1133170579}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 72.42, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2052374095}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1133170581
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1133170579}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9ac701a8a133f14dbbd8ef2103b9a0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ObjExporter
+--- !u!1 &1157754938
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1157754939}
+  - component: {fileID: 1157754940}
+  m_Layer: 0
+  m_Name: PyramidParentTerrace6
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 2147483647
+  m_IsActive: 1
+--- !u!4 &1157754939
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1157754938}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 60.35, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2052374095}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1157754940
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1157754938}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9ac701a8a133f14dbbd8ef2103b9a0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ObjExporter
+--- !u!1 &1226662743
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1226662744}
+  - component: {fileID: 1226662745}
+  m_Layer: 0
+  m_Name: GeneratePyramidTerrace3
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 2147483647
+  m_IsActive: 1
+--- !u!4 &1226662744
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1226662743}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2052374095}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1226662745
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1226662743}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8f3bc670555baa4b820cbe4a3fb17e9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  selectedPyramid: 0
+  BaseSize: 174
+  Height: 230
+  PyramidInclination: 80
+  RampInclination: 7
+  blockheight: 0.71
+  blockwide: 1.27
+  PathWide: 0
+  PathSeparation: 0
+  holeHeight: 5
+  holeWide: 3
+  blockSeparation: 0
+  numberOfBlocks: 0
+  numberOfBlocksDrawn: 0
+  maxBlocks: 0
+  path_length: 0
+  total_height: 0
+  massBlock: 2267.96
+  frictionCoef: 0.7
+  optionRamp: 1
+  totalForce: 0
+  totalForceRamp: 0
+  totalLength: 0
+  totalLengthRamp: 0
+  m_Material: {fileID: 2100000, guid: 8c57f0c93bcdf45419ad1c37ef578135, type: 2}
+  m_Material_corner: {fileID: 2100000, guid: ccc151909cb3b6144a2156cc5792c0b9, type: 2}
+  m_Material_wood: {fileID: 2100000, guid: 1ec7a28ff55f44a4a87a704aee7ecc7c, type: 2}
+  m_Material_Blank: {fileID: 2100000, guid: 7c962ba6101e8614a81609559aafa9b2, type: 2}
+  m_Material_floor: {fileID: 0}
+  cam: {fileID: 0}
+  Palm: {fileID: 0}
+  Dromader: {fileID: 0}
+  Eiffel: {fileID: 0}
+  Man: {fileID: 0}
+  RockPrefab:
+  - {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f, type: 3}
+  - {fileID: 1934847145488549955, guid: 4c5890b39fec4c0408b848058c32e418, type: 3}
+  - {fileID: 1934847145488549955, guid: 9e494471e93e3ae4ca8fe6de932ef723, type: 3}
+  RockDivPrefab: {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f,
+    type: 3}
+  CornerPrefab: {fileID: 3303205072679722066, guid: 69d5374d7cbe69346b9c8f5b1152ebac,
+    type: 3}
+  objParent: {fileID: 1326552942}
+  graniteRockPrefab1: {fileID: 1934847145488549955, guid: a8af2fef706f60c4cb6ce7b9f854fb55,
+    type: 3}
+  graniteRockPrefab2: {fileID: 1934847145488549955, guid: 5cc382f61102f4d44bf8e544449de839,
+    type: 3}
+  piramidon: {fileID: 1999908982366458336, guid: fe7e4f262ac125240b6af3c2b94ce895,
+    type: 3}
+  stone_sled: {fileID: 6667684075288102831, guid: 8dce8326a02527240ac0bacd72143721,
+    type: 3}
+  Egyptian_body: {fileID: 6708560359212677676, guid: 912133279bb52b440a38c710df404a5f,
+    type: 3}
+  showEiffel: 0
+  showMan: 0
+  showManFinalRamp: 0
+  Method4Ramp: 1
+  MethodInsideRamp: 0
+  Method8Ramp: 1
+  Method16Ramp: 1
+  DrawUntilRow: 1
+  DrawOnlyRow: 0
+  DrawCover: 0
+  DrawRow: 16
+  DrawBlocks: 5
+  DeletedBlocks: 0
+  DrawWall: 0
+  DrawFloor: 0
+  DrawWoodenCyl: 0
+  DrawEgyptians: 0
+  DrawGranite: 0
+  DrawAll: 0
+  showRamps: 1
+  halfPyramid: 0
+  csvitername: pyramid_iter.csv
+  csvrowname: pyramid_row.csv
+  csvheadway: pyramid_headway.csv
+  txtname: pyramid.txt
+  showInfoLevel: 0
+  showInfoLevelTotal: 0
+  showInfoLevelDec: 0
+  showInfoRow: 0
+  exportPyramidObj: 0
+  exportCombineMeshes: 0
+  exportSubFolder: PyramidModels
+  outputFileName: MyPyramid4Ramp130_h
+  isStatic: 1
+  isRigidBody: 0
+  useFixedJoints: 0
+  blockLayer:
+    serializedVersion: 2
+    m_Bits: 1
+  numOfGraniteRock1: 21
+  numOfGraniteRock2: 38
+  minHeightGraniteRock: 43
+  maxHeightGraniteRock: 62
+  minBaseSize2Ramps: 32
+  minBaseSize4Ramps: 64
+  minBaseSize8Ramps: 128
+  minBaseSize16Ramps: 200
+  AverageHeadway: 4
+  MinHeadway: 2
+  MaxHeadway: 13
+  WorkingYearMinutes: 187200
+  PyramidHeadwayType: 0
+  Sequenced: 0
+--- !u!1 &1310116606
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1310116607}
+  - component: {fileID: 1310116608}
+  m_Layer: 0
+  m_Name: GeneratePyramidTerrace11
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 2147483647
+  m_IsActive: 1
+--- !u!4 &1310116607
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1310116606}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2052374095}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1310116608
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1310116606}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8f3bc670555baa4b820cbe4a3fb17e9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  selectedPyramid: 0
+  BaseSize: 82
+  Height: 230
+  PyramidInclination: 80
+  RampInclination: 7
+  blockheight: 0.71
+  blockwide: 1.27
+  PathWide: 0
+  PathSeparation: 0
+  holeHeight: 5
+  holeWide: 3
+  blockSeparation: 0
+  numberOfBlocks: 0
+  numberOfBlocksDrawn: 0
+  maxBlocks: 0
+  path_length: 0
+  total_height: 0
+  massBlock: 2267.96
+  frictionCoef: 0.7
+  optionRamp: 1
+  totalForce: 0
+  totalForceRamp: 0
+  totalLength: 0
+  totalLengthRamp: 0
+  m_Material: {fileID: 2100000, guid: 8c57f0c93bcdf45419ad1c37ef578135, type: 2}
+  m_Material_corner: {fileID: 2100000, guid: ccc151909cb3b6144a2156cc5792c0b9, type: 2}
+  m_Material_wood: {fileID: 2100000, guid: 1ec7a28ff55f44a4a87a704aee7ecc7c, type: 2}
+  m_Material_Blank: {fileID: 2100000, guid: 7c962ba6101e8614a81609559aafa9b2, type: 2}
+  m_Material_floor: {fileID: 0}
+  cam: {fileID: 0}
+  Palm: {fileID: 0}
+  Dromader: {fileID: 0}
+  Eiffel: {fileID: 0}
+  Man: {fileID: 0}
+  RockPrefab:
+  - {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f, type: 3}
+  - {fileID: 1934847145488549955, guid: 4c5890b39fec4c0408b848058c32e418, type: 3}
+  - {fileID: 1934847145488549955, guid: 9e494471e93e3ae4ca8fe6de932ef723, type: 3}
+  RockDivPrefab: {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f,
+    type: 3}
+  CornerPrefab: {fileID: 3303205072679722066, guid: 69d5374d7cbe69346b9c8f5b1152ebac,
+    type: 3}
+  objParent: {fileID: 1128998240}
+  graniteRockPrefab1: {fileID: 1934847145488549955, guid: a8af2fef706f60c4cb6ce7b9f854fb55,
+    type: 3}
+  graniteRockPrefab2: {fileID: 1934847145488549955, guid: 5cc382f61102f4d44bf8e544449de839,
+    type: 3}
+  piramidon: {fileID: 1999908982366458336, guid: fe7e4f262ac125240b6af3c2b94ce895,
+    type: 3}
+  stone_sled: {fileID: 6667684075288102831, guid: 8dce8326a02527240ac0bacd72143721,
+    type: 3}
+  Egyptian_body: {fileID: 6708560359212677676, guid: 912133279bb52b440a38c710df404a5f,
+    type: 3}
+  showEiffel: 0
+  showMan: 0
+  showManFinalRamp: 0
+  Method4Ramp: 1
+  MethodInsideRamp: 0
+  Method8Ramp: 1
+  Method16Ramp: 1
+  DrawUntilRow: 1
+  DrawOnlyRow: 0
+  DrawCover: 0
+  DrawRow: 16
+  DrawBlocks: 5
+  DeletedBlocks: 0
+  DrawWall: 0
+  DrawFloor: 0
+  DrawWoodenCyl: 0
+  DrawEgyptians: 0
+  DrawGranite: 0
+  DrawAll: 0
+  showRamps: 1
+  halfPyramid: 0
+  csvitername: pyramid_iter.csv
+  csvrowname: pyramid_row.csv
+  csvheadway: pyramid_headway.csv
+  txtname: pyramid.txt
+  showInfoLevel: 0
+  showInfoLevelTotal: 0
+  showInfoLevelDec: 0
+  showInfoRow: 0
+  exportPyramidObj: 0
+  exportCombineMeshes: 0
+  exportSubFolder: PyramidModels
+  outputFileName: MyPyramid4Ramp130_h
+  isStatic: 1
+  isRigidBody: 0
+  useFixedJoints: 0
+  blockLayer:
+    serializedVersion: 2
+    m_Bits: 1
+  numOfGraniteRock1: 21
+  numOfGraniteRock2: 38
+  minHeightGraniteRock: 43
+  maxHeightGraniteRock: 62
+  minBaseSize2Ramps: 32
+  minBaseSize4Ramps: 64
+  minBaseSize8Ramps: 128
+  minBaseSize16Ramps: 200
+  AverageHeadway: 4
+  MinHeadway: 2
+  MaxHeadway: 13
+  WorkingYearMinutes: 187200
+  PyramidHeadwayType: 0
+  Sequenced: 0
+--- !u!1 &1310921205
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1310921206}
+  - component: {fileID: 1310921207}
+  m_Layer: 0
+  m_Name: PyramidParentTerrace10
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 2147483647
+  m_IsActive: 1
+--- !u!4 &1310921206
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1310921205}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 108.63, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2052374095}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1310921207
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1310921205}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9ac701a8a133f14dbbd8ef2103b9a0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ObjExporter
+--- !u!1 &1326552942
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1326552943}
+  - component: {fileID: 1326552944}
+  m_Layer: 0
+  m_Name: PyramidParentTerrace3
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 2147483647
+  m_IsActive: 1
+--- !u!4 &1326552943
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1326552942}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 24.14, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2052374095}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1326552944
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1326552942}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9ac701a8a133f14dbbd8ef2103b9a0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ObjExporter
+--- !u!1 &1384497160
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1384497161}
+  - component: {fileID: 1384497162}
+  m_Layer: 0
+  m_Name: GeneratePyramidTerrace4
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 2147483647
+  m_IsActive: 1
+--- !u!4 &1384497161
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1384497160}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2052374095}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1384497162
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1384497160}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8f3bc670555baa4b820cbe4a3fb17e9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  selectedPyramid: 0
+  BaseSize: 162.5
+  Height: 230
+  PyramidInclination: 80
+  RampInclination: 7
+  blockheight: 0.71
+  blockwide: 1.27
+  PathWide: 0
+  PathSeparation: 0
+  holeHeight: 5
+  holeWide: 3
+  blockSeparation: 0
+  numberOfBlocks: 0
+  numberOfBlocksDrawn: 0
+  maxBlocks: 0
+  path_length: 0
+  total_height: 0
+  massBlock: 2267.96
+  frictionCoef: 0.7
+  optionRamp: 1
+  totalForce: 0
+  totalForceRamp: 0
+  totalLength: 0
+  totalLengthRamp: 0
+  m_Material: {fileID: 2100000, guid: 8c57f0c93bcdf45419ad1c37ef578135, type: 2}
+  m_Material_corner: {fileID: 2100000, guid: ccc151909cb3b6144a2156cc5792c0b9, type: 2}
+  m_Material_wood: {fileID: 2100000, guid: 1ec7a28ff55f44a4a87a704aee7ecc7c, type: 2}
+  m_Material_Blank: {fileID: 2100000, guid: 7c962ba6101e8614a81609559aafa9b2, type: 2}
+  m_Material_floor: {fileID: 0}
+  cam: {fileID: 0}
+  Palm: {fileID: 0}
+  Dromader: {fileID: 0}
+  Eiffel: {fileID: 0}
+  Man: {fileID: 0}
+  RockPrefab:
+  - {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f, type: 3}
+  - {fileID: 1934847145488549955, guid: 4c5890b39fec4c0408b848058c32e418, type: 3}
+  - {fileID: 1934847145488549955, guid: 9e494471e93e3ae4ca8fe6de932ef723, type: 3}
+  RockDivPrefab: {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f,
+    type: 3}
+  CornerPrefab: {fileID: 3303205072679722066, guid: 69d5374d7cbe69346b9c8f5b1152ebac,
+    type: 3}
+  objParent: {fileID: 1863761980}
+  graniteRockPrefab1: {fileID: 1934847145488549955, guid: a8af2fef706f60c4cb6ce7b9f854fb55,
+    type: 3}
+  graniteRockPrefab2: {fileID: 1934847145488549955, guid: 5cc382f61102f4d44bf8e544449de839,
+    type: 3}
+  piramidon: {fileID: 1999908982366458336, guid: fe7e4f262ac125240b6af3c2b94ce895,
+    type: 3}
+  stone_sled: {fileID: 6667684075288102831, guid: 8dce8326a02527240ac0bacd72143721,
+    type: 3}
+  Egyptian_body: {fileID: 6708560359212677676, guid: 912133279bb52b440a38c710df404a5f,
+    type: 3}
+  showEiffel: 0
+  showMan: 0
+  showManFinalRamp: 0
+  Method4Ramp: 1
+  MethodInsideRamp: 0
+  Method8Ramp: 1
+  Method16Ramp: 1
+  DrawUntilRow: 1
+  DrawOnlyRow: 0
+  DrawCover: 0
+  DrawRow: 16
+  DrawBlocks: 5
+  DeletedBlocks: 0
+  DrawWall: 0
+  DrawFloor: 0
+  DrawWoodenCyl: 0
+  DrawEgyptians: 0
+  DrawGranite: 0
+  DrawAll: 0
+  showRamps: 1
+  halfPyramid: 0
+  csvitername: pyramid_iter.csv
+  csvrowname: pyramid_row.csv
+  csvheadway: pyramid_headway.csv
+  txtname: pyramid.txt
+  showInfoLevel: 0
+  showInfoLevelTotal: 0
+  showInfoLevelDec: 0
+  showInfoRow: 0
+  exportPyramidObj: 0
+  exportCombineMeshes: 0
+  exportSubFolder: PyramidModels
+  outputFileName: MyPyramid4Ramp130_h
+  isStatic: 1
+  isRigidBody: 0
+  useFixedJoints: 0
+  blockLayer:
+    serializedVersion: 2
+    m_Bits: 1
+  numOfGraniteRock1: 21
+  numOfGraniteRock2: 38
+  minHeightGraniteRock: 43
+  maxHeightGraniteRock: 62
+  minBaseSize2Ramps: 32
+  minBaseSize4Ramps: 64
+  minBaseSize8Ramps: 128
+  minBaseSize16Ramps: 200
+  AverageHeadway: 4
+  MinHeadway: 2
+  MaxHeadway: 13
+  WorkingYearMinutes: 187200
+  PyramidHeadwayType: 0
+  Sequenced: 0
+--- !u!1 &1454568517
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1454568518}
+  - component: {fileID: 1454568519}
+  m_Layer: 0
+  m_Name: GeneratePyramidTerrace5
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 2147483647
+  m_IsActive: 1
+--- !u!4 &1454568518
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1454568517}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2052374095}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1454568519
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1454568517}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8f3bc670555baa4b820cbe4a3fb17e9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  selectedPyramid: 0
+  BaseSize: 151
+  Height: 230
+  PyramidInclination: 80
+  RampInclination: 7
+  blockheight: 0.71
+  blockwide: 1.27
+  PathWide: 0
+  PathSeparation: 0
+  holeHeight: 5
+  holeWide: 3
+  blockSeparation: 0
+  numberOfBlocks: 0
+  numberOfBlocksDrawn: 0
+  maxBlocks: 0
+  path_length: 0
+  total_height: 0
+  massBlock: 2267.96
+  frictionCoef: 0.7
+  optionRamp: 1
+  totalForce: 0
+  totalForceRamp: 0
+  totalLength: 0
+  totalLengthRamp: 0
+  m_Material: {fileID: 2100000, guid: 8c57f0c93bcdf45419ad1c37ef578135, type: 2}
+  m_Material_corner: {fileID: 2100000, guid: ccc151909cb3b6144a2156cc5792c0b9, type: 2}
+  m_Material_wood: {fileID: 2100000, guid: 1ec7a28ff55f44a4a87a704aee7ecc7c, type: 2}
+  m_Material_Blank: {fileID: 2100000, guid: 7c962ba6101e8614a81609559aafa9b2, type: 2}
+  m_Material_floor: {fileID: 0}
+  cam: {fileID: 0}
+  Palm: {fileID: 0}
+  Dromader: {fileID: 0}
+  Eiffel: {fileID: 0}
+  Man: {fileID: 0}
+  RockPrefab:
+  - {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f, type: 3}
+  - {fileID: 1934847145488549955, guid: 4c5890b39fec4c0408b848058c32e418, type: 3}
+  - {fileID: 1934847145488549955, guid: 9e494471e93e3ae4ca8fe6de932ef723, type: 3}
+  RockDivPrefab: {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f,
+    type: 3}
+  CornerPrefab: {fileID: 3303205072679722066, guid: 69d5374d7cbe69346b9c8f5b1152ebac,
+    type: 3}
+  objParent: {fileID: 1532099606}
+  graniteRockPrefab1: {fileID: 1934847145488549955, guid: a8af2fef706f60c4cb6ce7b9f854fb55,
+    type: 3}
+  graniteRockPrefab2: {fileID: 1934847145488549955, guid: 5cc382f61102f4d44bf8e544449de839,
+    type: 3}
+  piramidon: {fileID: 1999908982366458336, guid: fe7e4f262ac125240b6af3c2b94ce895,
+    type: 3}
+  stone_sled: {fileID: 6667684075288102831, guid: 8dce8326a02527240ac0bacd72143721,
+    type: 3}
+  Egyptian_body: {fileID: 6708560359212677676, guid: 912133279bb52b440a38c710df404a5f,
+    type: 3}
+  showEiffel: 0
+  showMan: 0
+  showManFinalRamp: 0
+  Method4Ramp: 1
+  MethodInsideRamp: 0
+  Method8Ramp: 1
+  Method16Ramp: 1
+  DrawUntilRow: 1
+  DrawOnlyRow: 0
+  DrawCover: 0
+  DrawRow: 16
+  DrawBlocks: 5
+  DeletedBlocks: 0
+  DrawWall: 0
+  DrawFloor: 0
+  DrawWoodenCyl: 0
+  DrawEgyptians: 0
+  DrawGranite: 0
+  DrawAll: 0
+  showRamps: 1
+  halfPyramid: 0
+  csvitername: pyramid_iter.csv
+  csvrowname: pyramid_row.csv
+  csvheadway: pyramid_headway.csv
+  txtname: pyramid.txt
+  showInfoLevel: 0
+  showInfoLevelTotal: 0
+  showInfoLevelDec: 0
+  showInfoRow: 0
+  exportPyramidObj: 0
+  exportCombineMeshes: 0
+  exportSubFolder: PyramidModels
+  outputFileName: MyPyramid4Ramp130_h
+  isStatic: 1
+  isRigidBody: 0
+  useFixedJoints: 0
+  blockLayer:
+    serializedVersion: 2
+    m_Bits: 1
+  numOfGraniteRock1: 21
+  numOfGraniteRock2: 38
+  minHeightGraniteRock: 43
+  maxHeightGraniteRock: 62
+  minBaseSize2Ramps: 32
+  minBaseSize4Ramps: 64
+  minBaseSize8Ramps: 128
+  minBaseSize16Ramps: 200
+  AverageHeadway: 4
+  MinHeadway: 2
+  MaxHeadway: 13
+  WorkingYearMinutes: 187200
+  PyramidHeadwayType: 0
+  Sequenced: 0
+--- !u!1 &1491777344
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1491777345}
+  - component: {fileID: 1491777346}
+  m_Layer: 0
+  m_Name: GeneratePyramidTerrace13
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 2147483647
+  m_IsActive: 0
+--- !u!4 &1491777345
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1491777344}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2052374095}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1491777346
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1491777344}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8f3bc670555baa4b820cbe4a3fb17e9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  selectedPyramid: 0
+  BaseSize: 59
+  Height: 230
+  PyramidInclination: 80
+  RampInclination: 7
+  blockheight: 0.71
+  blockwide: 1.27
+  PathWide: 0
+  PathSeparation: 0
+  holeHeight: 5
+  holeWide: 3
+  blockSeparation: 0
+  numberOfBlocks: 0
+  numberOfBlocksDrawn: 0
+  maxBlocks: 0
+  path_length: 0
+  total_height: 0
+  massBlock: 2267.96
+  frictionCoef: 0.7
+  optionRamp: 1
+  totalForce: 0
+  totalForceRamp: 0
+  totalLength: 0
+  totalLengthRamp: 0
+  m_Material: {fileID: 2100000, guid: 8c57f0c93bcdf45419ad1c37ef578135, type: 2}
+  m_Material_corner: {fileID: 2100000, guid: ccc151909cb3b6144a2156cc5792c0b9, type: 2}
+  m_Material_wood: {fileID: 2100000, guid: 1ec7a28ff55f44a4a87a704aee7ecc7c, type: 2}
+  m_Material_Blank: {fileID: 2100000, guid: 7c962ba6101e8614a81609559aafa9b2, type: 2}
+  m_Material_floor: {fileID: 0}
+  cam: {fileID: 0}
+  Palm: {fileID: 0}
+  Dromader: {fileID: 0}
+  Eiffel: {fileID: 0}
+  Man: {fileID: 0}
+  RockPrefab:
+  - {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f, type: 3}
+  - {fileID: 1934847145488549955, guid: 4c5890b39fec4c0408b848058c32e418, type: 3}
+  - {fileID: 1934847145488549955, guid: 9e494471e93e3ae4ca8fe6de932ef723, type: 3}
+  RockDivPrefab: {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f,
+    type: 3}
+  CornerPrefab: {fileID: 3303205072679722066, guid: 69d5374d7cbe69346b9c8f5b1152ebac,
+    type: 3}
+  objParent: {fileID: 1620816269}
+  graniteRockPrefab1: {fileID: 1934847145488549955, guid: a8af2fef706f60c4cb6ce7b9f854fb55,
+    type: 3}
+  graniteRockPrefab2: {fileID: 1934847145488549955, guid: 5cc382f61102f4d44bf8e544449de839,
+    type: 3}
+  piramidon: {fileID: 1999908982366458336, guid: fe7e4f262ac125240b6af3c2b94ce895,
+    type: 3}
+  stone_sled: {fileID: 6667684075288102831, guid: 8dce8326a02527240ac0bacd72143721,
+    type: 3}
+  Egyptian_body: {fileID: 6708560359212677676, guid: 912133279bb52b440a38c710df404a5f,
+    type: 3}
+  showEiffel: 0
+  showMan: 0
+  showManFinalRamp: 0
+  Method4Ramp: 1
+  MethodInsideRamp: 0
+  Method8Ramp: 1
+  Method16Ramp: 1
+  DrawUntilRow: 1
+  DrawOnlyRow: 0
+  DrawCover: 0
+  DrawRow: 16
+  DrawBlocks: 2
+  DeletedBlocks: 0
+  DrawWall: 0
+  DrawFloor: 0
+  DrawWoodenCyl: 0
+  DrawEgyptians: 0
+  DrawGranite: 0
+  DrawAll: 1
+  showRamps: 1
+  halfPyramid: 0
+  csvitername: pyramid_iter.csv
+  csvrowname: pyramid_row.csv
+  csvheadway: pyramid_headway.csv
+  txtname: pyramid.txt
+  showInfoLevel: 0
+  showInfoLevelTotal: 0
+  showInfoLevelDec: 0
+  showInfoRow: 0
+  exportPyramidObj: 0
+  exportCombineMeshes: 0
+  exportSubFolder: PyramidModels
+  outputFileName: MyPyramid4Ramp130_h
+  isStatic: 1
+  isRigidBody: 0
+  useFixedJoints: 0
+  blockLayer:
+    serializedVersion: 2
+    m_Bits: 1
+  numOfGraniteRock1: 21
+  numOfGraniteRock2: 38
+  minHeightGraniteRock: 43
+  maxHeightGraniteRock: 62
+  minBaseSize2Ramps: 32
+  minBaseSize4Ramps: 64
+  minBaseSize8Ramps: 128
+  minBaseSize16Ramps: 200
+  AverageHeadway: 4
+  MinHeadway: 2
+  MaxHeadway: 13
+  WorkingYearMinutes: 187200
+  PyramidHeadwayType: 0
+  Sequenced: 0
+--- !u!1 &1517730798
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1517730801}
+  - component: {fileID: 1517730800}
+  - component: {fileID: 1517730799}
+  - component: {fileID: 1517730802}
+  - component: {fileID: 1517730803}
+  m_Layer: 0
+  m_Name: Camera
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!81 &1517730799
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1517730798}
+  m_Enabled: 1
+--- !u!20 &1517730800
+Camera:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1517730798}
+  m_Enabled: 1
+  serializedVersion: 2
+  m_ClearFlags: 1
+  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_projectionMatrixMode: 1
+  m_GateFitMode: 2
+  m_FOVAxisMode: 0
+  m_Iso: 200
+  m_ShutterSpeed: 0.005
+  m_Aperture: 16
+  m_FocusDistance: 10
+  m_FocalLength: 50
+  m_BladeCount: 5
+  m_Curvature: {x: 2, y: 11}
+  m_BarrelClipping: 0.25
+  m_Anamorphism: 0
+  m_SensorSize: {x: 36, y: 24}
+  m_LensShift: {x: 0, y: 0}
+  m_NormalizedViewPortRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+  near clip plane: 0.3
+  far clip plane: 3000
+  field of view: 60
+  orthographic: 0
+  orthographic size: 5
+  m_Depth: 0
+  m_CullingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_RenderingPath: -1
+  m_TargetTexture: {fileID: 0}
+  m_TargetDisplay: 0
+  m_TargetEye: 3
+  m_HDR: 1
+  m_AllowMSAA: 1
+  m_AllowDynamicResolution: 0
+  m_ForceIntoRT: 0
+  m_OcclusionCulling: 1
+  m_StereoConvergence: 10
+  m_StereoSeparation: 0.022
+--- !u!4 &1517730801
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1517730798}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.082827814, y: -0.90198, z: 0.19996412, w: -0.37361214}
+  m_LocalPosition: {x: -176.9, y: 164.1, z: 176.9}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 25, y: -225, z: 0}
+--- !u!114 &1517730802
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1517730798}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4c616b3ba49a3f419000efa37b35d97, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cameraRotationSpeed: 15
+  climbSpeed: 4
+  normalMoveSpeed: 10
+  slowMoveFactor: 0.25
+  fastMoveFactor: 3
+  pickSceneViewCam: 0
+  sceneCamRotation: {x: -0, y: 0, z: 0}
+  sceneCamPosition: {x: 0, y: 0, z: 0}
+--- !u!114 &1517730803
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1517730798}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2e4916c8c579f945987f6dd5e4daec2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ScreenshotController
+  screenshotKey: 112
+--- !u!1 &1532099606
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1532099607}
+  - component: {fileID: 1532099608}
+  m_Layer: 0
+  m_Name: PyramidParentTerrace5
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 2147483647
+  m_IsActive: 1
+--- !u!4 &1532099607
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1532099606}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 48.28, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2052374095}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1532099608
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1532099606}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9ac701a8a133f14dbbd8ef2103b9a0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ObjExporter
+--- !u!1 &1572393027
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1572393029}
+  - component: {fileID: 1572393028}
+  m_Layer: 0
+  m_Name: GeneratePyramidTerrace3
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 4294967295
+  m_IsActive: 1
+--- !u!114 &1572393028
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1572393027}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8f3bc670555baa4b820cbe4a3fb17e9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  selectedPyramid: 0
+  BaseSize: 157
+  Height: 230
+  PyramidInclination: 54.5
+  RampInclination: 7
+  blockheight: 0.71
+  blockwide: 1.27
+  PathWide: 0
+  PathSeparation: 0
+  holeHeight: 5
+  holeWide: 3
+  blockSeparation: 0
+  numberOfBlocks: 0
+  numberOfBlocksDrawn: 0
+  maxBlocks: 0
+  path_length: 0
+  total_height: 0
+  massBlock: 2267.96
+  frictionCoef: 0.7
+  optionRamp: 1
+  totalForce: 0
+  totalForceRamp: 0
+  totalLength: 0
+  totalLengthRamp: 0
+  m_Material: {fileID: 2100000, guid: 8c57f0c93bcdf45419ad1c37ef578135, type: 2}
+  m_Material_corner: {fileID: 2100000, guid: ccc151909cb3b6144a2156cc5792c0b9, type: 2}
+  m_Material_wood: {fileID: 2100000, guid: 1ec7a28ff55f44a4a87a704aee7ecc7c, type: 2}
+  m_Material_Blank: {fileID: 2100000, guid: 7c962ba6101e8614a81609559aafa9b2, type: 2}
+  m_Material_floor: {fileID: 0}
+  cam: {fileID: 0}
+  Palm: {fileID: 0}
+  Dromader: {fileID: 0}
+  Eiffel: {fileID: 0}
+  Man: {fileID: 0}
+  RockPrefab:
+  - {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f, type: 3}
+  - {fileID: 1934847145488549955, guid: 4c5890b39fec4c0408b848058c32e418, type: 3}
+  - {fileID: 1934847145488549955, guid: 9e494471e93e3ae4ca8fe6de932ef723, type: 3}
+  RockDivPrefab: {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f,
+    type: 3}
+  CornerPrefab: {fileID: 3303205072679722066, guid: 69d5374d7cbe69346b9c8f5b1152ebac,
+    type: 3}
+  objParent: {fileID: 981681860}
+  graniteRockPrefab1: {fileID: 1934847145488549955, guid: a8af2fef706f60c4cb6ce7b9f854fb55,
+    type: 3}
+  graniteRockPrefab2: {fileID: 1934847145488549955, guid: 5cc382f61102f4d44bf8e544449de839,
+    type: 3}
+  piramidon: {fileID: 1999908982366458336, guid: fe7e4f262ac125240b6af3c2b94ce895,
+    type: 3}
+  stone_sled: {fileID: 6667684075288102831, guid: 8dce8326a02527240ac0bacd72143721,
+    type: 3}
+  Egyptian_body: {fileID: 6708560359212677676, guid: 912133279bb52b440a38c710df404a5f,
+    type: 3}
+  showEiffel: 0
+  showMan: 0
+  showManFinalRamp: 0
+  Method4Ramp: 1
+  MethodInsideRamp: 0
+  Method8Ramp: 1
+  Method16Ramp: 1
+  DrawUntilRow: 1
+  DrawOnlyRow: 0
+  DrawCover: 0
+  DrawRow: 9
+  DrawBlocks: 5
+  DeletedBlocks: 0
+  DrawWall: 0
+  DrawFloor: 1
+  DrawWoodenCyl: 0
+  DrawEgyptians: 0
+  DrawGranite: 0
+  DrawAll: 1
+  showRamps: 1
+  halfPyramid: 0
+  csvitername: pyramid_iter.csv
+  csvrowname: pyramid_row.csv
+  csvheadway: pyramid_headway.csv
+  txtname: pyramid.txt
+  showInfoLevel: 0
+  showInfoLevelTotal: 0
+  showInfoLevelDec: 0
+  showInfoRow: 0
+  exportPyramidObj: 0
+  exportCombineMeshes: 0
+  exportSubFolder: PyramidModels
+  outputFileName: MyPyramid4Ramp130_h
+  isStatic: 1
+  isRigidBody: 0
+  useFixedJoints: 0
+  blockLayer:
+    serializedVersion: 2
+    m_Bits: 1
+  numOfGraniteRock1: 21
+  numOfGraniteRock2: 38
+  minHeightGraniteRock: 43
+  maxHeightGraniteRock: 62
+  minBaseSize2Ramps: 32
+  minBaseSize4Ramps: 50
+  minBaseSize8Ramps: 100
+  minBaseSize16Ramps: 180
+  AverageHeadway: 4
+  MinHeadway: 2
+  MaxHeadway: 13
+  WorkingYearMinutes: 187200
+  PyramidHeadwayType: 0
+  Sequenced: 0
+--- !u!4 &1572393029
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1572393027}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1974678473}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1574393635
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1574393636}
+  - component: {fileID: 1574393637}
+  m_Layer: 0
+  m_Name: GeneratePyramidTerrace9
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 2147483647
+  m_IsActive: 1
+--- !u!4 &1574393636
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1574393635}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2052374095}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1574393637
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1574393635}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8f3bc670555baa4b820cbe4a3fb17e9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  selectedPyramid: 0
+  BaseSize: 105
+  Height: 230
+  PyramidInclination: 80
+  RampInclination: 7
+  blockheight: 0.71
+  blockwide: 1.27
+  PathWide: 0
+  PathSeparation: 0
+  holeHeight: 5
+  holeWide: 3
+  blockSeparation: 0
+  numberOfBlocks: 0
+  numberOfBlocksDrawn: 0
+  maxBlocks: 0
+  path_length: 0
+  total_height: 0
+  massBlock: 2267.96
+  frictionCoef: 0.7
+  optionRamp: 1
+  totalForce: 0
+  totalForceRamp: 0
+  totalLength: 0
+  totalLengthRamp: 0
+  m_Material: {fileID: 2100000, guid: 8c57f0c93bcdf45419ad1c37ef578135, type: 2}
+  m_Material_corner: {fileID: 2100000, guid: ccc151909cb3b6144a2156cc5792c0b9, type: 2}
+  m_Material_wood: {fileID: 2100000, guid: 1ec7a28ff55f44a4a87a704aee7ecc7c, type: 2}
+  m_Material_Blank: {fileID: 2100000, guid: 7c962ba6101e8614a81609559aafa9b2, type: 2}
+  m_Material_floor: {fileID: 0}
+  cam: {fileID: 0}
+  Palm: {fileID: 0}
+  Dromader: {fileID: 0}
+  Eiffel: {fileID: 0}
+  Man: {fileID: 0}
+  RockPrefab:
+  - {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f, type: 3}
+  - {fileID: 1934847145488549955, guid: 4c5890b39fec4c0408b848058c32e418, type: 3}
+  - {fileID: 1934847145488549955, guid: 9e494471e93e3ae4ca8fe6de932ef723, type: 3}
+  RockDivPrefab: {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f,
+    type: 3}
+  CornerPrefab: {fileID: 3303205072679722066, guid: 69d5374d7cbe69346b9c8f5b1152ebac,
+    type: 3}
+  objParent: {fileID: 627980362}
+  graniteRockPrefab1: {fileID: 1934847145488549955, guid: a8af2fef706f60c4cb6ce7b9f854fb55,
+    type: 3}
+  graniteRockPrefab2: {fileID: 1934847145488549955, guid: 5cc382f61102f4d44bf8e544449de839,
+    type: 3}
+  piramidon: {fileID: 1999908982366458336, guid: fe7e4f262ac125240b6af3c2b94ce895,
+    type: 3}
+  stone_sled: {fileID: 6667684075288102831, guid: 8dce8326a02527240ac0bacd72143721,
+    type: 3}
+  Egyptian_body: {fileID: 6708560359212677676, guid: 912133279bb52b440a38c710df404a5f,
+    type: 3}
+  showEiffel: 0
+  showMan: 0
+  showManFinalRamp: 0
+  Method4Ramp: 1
+  MethodInsideRamp: 0
+  Method8Ramp: 1
+  Method16Ramp: 1
+  DrawUntilRow: 1
+  DrawOnlyRow: 0
+  DrawCover: 0
+  DrawRow: 16
+  DrawBlocks: 5
+  DeletedBlocks: 0
+  DrawWall: 0
+  DrawFloor: 0
+  DrawWoodenCyl: 0
+  DrawEgyptians: 0
+  DrawGranite: 0
+  DrawAll: 0
+  showRamps: 1
+  halfPyramid: 0
+  csvitername: pyramid_iter.csv
+  csvrowname: pyramid_row.csv
+  csvheadway: pyramid_headway.csv
+  txtname: pyramid.txt
+  showInfoLevel: 0
+  showInfoLevelTotal: 0
+  showInfoLevelDec: 0
+  showInfoRow: 0
+  exportPyramidObj: 0
+  exportCombineMeshes: 0
+  exportSubFolder: PyramidModels
+  outputFileName: MyPyramid4Ramp130_h
+  isStatic: 1
+  isRigidBody: 0
+  useFixedJoints: 0
+  blockLayer:
+    serializedVersion: 2
+    m_Bits: 1
+  numOfGraniteRock1: 21
+  numOfGraniteRock2: 38
+  minHeightGraniteRock: 43
+  maxHeightGraniteRock: 62
+  minBaseSize2Ramps: 32
+  minBaseSize4Ramps: 64
+  minBaseSize8Ramps: 128
+  minBaseSize16Ramps: 200
+  AverageHeadway: 4
+  MinHeadway: 2
+  MaxHeadway: 13
+  WorkingYearMinutes: 187200
+  PyramidHeadwayType: 0
+  Sequenced: 0
+--- !u!1 &1620816269
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1620816270}
+  - component: {fileID: 1620816271}
+  m_Layer: 0
+  m_Name: PyramidParentTerrace13
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 2147483647
+  m_IsActive: 0
+--- !u!4 &1620816270
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1620816269}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 144.84, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2052374095}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1620816271
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1620816269}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9ac701a8a133f14dbbd8ef2103b9a0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ObjExporter
+--- !u!1 &1756516215
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1756516217}
+  - component: {fileID: 1756516216}
+  m_Layer: 0
+  m_Name: GeneratePyramidTerrace7
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 4294967295
+  m_IsActive: 1
+--- !u!114 &1756516216
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1756516215}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8f3bc670555baa4b820cbe4a3fb17e9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  selectedPyramid: 0
+  BaseSize: 77
+  Height: 230
+  PyramidInclination: 54.5
+  RampInclination: 7
+  blockheight: 0.71
+  blockwide: 1.27
+  PathWide: 0
+  PathSeparation: 0
+  holeHeight: 5
+  holeWide: 3
+  blockSeparation: 0
+  numberOfBlocks: 0
+  numberOfBlocksDrawn: 0
+  maxBlocks: 0
+  path_length: 0
+  total_height: 0
+  massBlock: 2267.96
+  frictionCoef: 0.7
+  optionRamp: 1
+  totalForce: 0
+  totalForceRamp: 0
+  totalLength: 0
+  totalLengthRamp: 0
+  m_Material: {fileID: 2100000, guid: 8c57f0c93bcdf45419ad1c37ef578135, type: 2}
+  m_Material_corner: {fileID: 2100000, guid: ccc151909cb3b6144a2156cc5792c0b9, type: 2}
+  m_Material_wood: {fileID: 2100000, guid: 1ec7a28ff55f44a4a87a704aee7ecc7c, type: 2}
+  m_Material_Blank: {fileID: 2100000, guid: 7c962ba6101e8614a81609559aafa9b2, type: 2}
+  m_Material_floor: {fileID: 0}
+  cam: {fileID: 0}
+  Palm: {fileID: 0}
+  Dromader: {fileID: 0}
+  Eiffel: {fileID: 0}
+  Man: {fileID: 0}
+  RockPrefab:
+  - {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f, type: 3}
+  - {fileID: 1934847145488549955, guid: 4c5890b39fec4c0408b848058c32e418, type: 3}
+  - {fileID: 1934847145488549955, guid: 9e494471e93e3ae4ca8fe6de932ef723, type: 3}
+  RockDivPrefab: {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f,
+    type: 3}
+  CornerPrefab: {fileID: 3303205072679722066, guid: 69d5374d7cbe69346b9c8f5b1152ebac,
+    type: 3}
+  objParent: {fileID: 1933076267}
+  graniteRockPrefab1: {fileID: 1934847145488549955, guid: a8af2fef706f60c4cb6ce7b9f854fb55,
+    type: 3}
+  graniteRockPrefab2: {fileID: 1934847145488549955, guid: 5cc382f61102f4d44bf8e544449de839,
+    type: 3}
+  piramidon: {fileID: 1999908982366458336, guid: fe7e4f262ac125240b6af3c2b94ce895,
+    type: 3}
+  stone_sled: {fileID: 6667684075288102831, guid: 8dce8326a02527240ac0bacd72143721,
+    type: 3}
+  Egyptian_body: {fileID: 6708560359212677676, guid: 912133279bb52b440a38c710df404a5f,
+    type: 3}
+  showEiffel: 0
+  showMan: 0
+  showManFinalRamp: 0
+  Method4Ramp: 1
+  MethodInsideRamp: 0
+  Method8Ramp: 1
+  Method16Ramp: 1
+  DrawUntilRow: 1
+  DrawOnlyRow: 0
+  DrawCover: 0
+  DrawRow: 9
+  DrawBlocks: 5
+  DeletedBlocks: 0
+  DrawWall: 0
+  DrawFloor: 1
+  DrawWoodenCyl: 0
+  DrawEgyptians: 0
+  DrawGranite: 0
+  DrawAll: 1
+  showRamps: 1
+  halfPyramid: 0
+  csvitername: pyramid_iter.csv
+  csvrowname: pyramid_row.csv
+  csvheadway: pyramid_headway.csv
+  txtname: pyramid.txt
+  showInfoLevel: 0
+  showInfoLevelTotal: 0
+  showInfoLevelDec: 0
+  showInfoRow: 0
+  exportPyramidObj: 0
+  exportCombineMeshes: 0
+  exportSubFolder: PyramidModels
+  outputFileName: MyPyramid4Ramp130_h
+  isStatic: 1
+  isRigidBody: 0
+  useFixedJoints: 0
+  blockLayer:
+    serializedVersion: 2
+    m_Bits: 1
+  numOfGraniteRock1: 21
+  numOfGraniteRock2: 38
+  minHeightGraniteRock: 43
+  maxHeightGraniteRock: 62
+  minBaseSize2Ramps: 32
+  minBaseSize4Ramps: 50
+  minBaseSize8Ramps: 100
+  minBaseSize16Ramps: 180
+  AverageHeadway: 4
+  MinHeadway: 2
+  MaxHeadway: 13
+  WorkingYearMinutes: 187200
+  PyramidHeadwayType: 0
+  Sequenced: 0
+--- !u!4 &1756516217
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1756516215}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1974678473}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1810679161
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1810679163}
+  - component: {fileID: 1810679162}
+  m_Layer: 0
+  m_Name: PyramidParentTerrace8
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 4294967295
+  m_IsActive: 1
+--- !u!114 &1810679162
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1810679161}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9ac701a8a133f14dbbd8ef2103b9a0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ObjExporter
+--- !u!4 &1810679163
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1810679161}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 44.73, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1974678473}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1817545801
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1817545803}
+  - component: {fileID: 1817545802}
+  m_Layer: 0
+  m_Name: GeneratePyramidTerrace9
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 4294967295
+  m_IsActive: 1
+--- !u!114 &1817545802
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1817545801}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8f3bc670555baa4b820cbe4a3fb17e9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  selectedPyramid: 0
+  BaseSize: 37
+  Height: 230
+  PyramidInclination: 54.5
+  RampInclination: 7
+  blockheight: 0.71
+  blockwide: 1.27
+  PathWide: 0
+  PathSeparation: 0
+  holeHeight: 5
+  holeWide: 3
+  blockSeparation: 0
+  numberOfBlocks: 0
+  numberOfBlocksDrawn: 0
+  maxBlocks: 0
+  path_length: 0
+  total_height: 0
+  massBlock: 2267.96
+  frictionCoef: 0.7
+  optionRamp: 1
+  totalForce: 0
+  totalForceRamp: 0
+  totalLength: 0
+  totalLengthRamp: 0
+  m_Material: {fileID: 2100000, guid: 8c57f0c93bcdf45419ad1c37ef578135, type: 2}
+  m_Material_corner: {fileID: 2100000, guid: ccc151909cb3b6144a2156cc5792c0b9, type: 2}
+  m_Material_wood: {fileID: 2100000, guid: 1ec7a28ff55f44a4a87a704aee7ecc7c, type: 2}
+  m_Material_Blank: {fileID: 2100000, guid: 7c962ba6101e8614a81609559aafa9b2, type: 2}
+  m_Material_floor: {fileID: 0}
+  cam: {fileID: 0}
+  Palm: {fileID: 0}
+  Dromader: {fileID: 0}
+  Eiffel: {fileID: 0}
+  Man: {fileID: 0}
+  RockPrefab:
+  - {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f, type: 3}
+  - {fileID: 1934847145488549955, guid: 4c5890b39fec4c0408b848058c32e418, type: 3}
+  - {fileID: 1934847145488549955, guid: 9e494471e93e3ae4ca8fe6de932ef723, type: 3}
+  RockDivPrefab: {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f,
+    type: 3}
+  CornerPrefab: {fileID: 3303205072679722066, guid: 69d5374d7cbe69346b9c8f5b1152ebac,
+    type: 3}
+  objParent: {fileID: 380184449}
+  graniteRockPrefab1: {fileID: 1934847145488549955, guid: a8af2fef706f60c4cb6ce7b9f854fb55,
+    type: 3}
+  graniteRockPrefab2: {fileID: 1934847145488549955, guid: 5cc382f61102f4d44bf8e544449de839,
+    type: 3}
+  piramidon: {fileID: 1999908982366458336, guid: fe7e4f262ac125240b6af3c2b94ce895,
+    type: 3}
+  stone_sled: {fileID: 6667684075288102831, guid: 8dce8326a02527240ac0bacd72143721,
+    type: 3}
+  Egyptian_body: {fileID: 6708560359212677676, guid: 912133279bb52b440a38c710df404a5f,
+    type: 3}
+  showEiffel: 0
+  showMan: 0
+  showManFinalRamp: 0
+  Method4Ramp: 1
+  MethodInsideRamp: 0
+  Method8Ramp: 1
+  Method16Ramp: 1
+  DrawUntilRow: 1
+  DrawOnlyRow: 0
+  DrawCover: 0
+  DrawRow: 9
+  DrawBlocks: 5
+  DeletedBlocks: 0
+  DrawWall: 0
+  DrawFloor: 1
+  DrawWoodenCyl: 0
+  DrawEgyptians: 0
+  DrawGranite: 0
+  DrawAll: 1
+  showRamps: 1
+  halfPyramid: 0
+  csvitername: pyramid_iter.csv
+  csvrowname: pyramid_row.csv
+  csvheadway: pyramid_headway.csv
+  txtname: pyramid.txt
+  showInfoLevel: 0
+  showInfoLevelTotal: 0
+  showInfoLevelDec: 0
+  showInfoRow: 0
+  exportPyramidObj: 0
+  exportCombineMeshes: 0
+  exportSubFolder: PyramidModels
+  outputFileName: MyPyramid4Ramp130_h
+  isStatic: 1
+  isRigidBody: 0
+  useFixedJoints: 0
+  blockLayer:
+    serializedVersion: 2
+    m_Bits: 1
+  numOfGraniteRock1: 21
+  numOfGraniteRock2: 38
+  minHeightGraniteRock: 43
+  maxHeightGraniteRock: 62
+  minBaseSize2Ramps: 32
+  minBaseSize4Ramps: 50
+  minBaseSize8Ramps: 100
+  minBaseSize16Ramps: 180
+  AverageHeadway: 4
+  MinHeadway: 2
+  MaxHeadway: 13
+  WorkingYearMinutes: 187200
+  PyramidHeadwayType: 0
+  Sequenced: 0
+--- !u!4 &1817545803
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1817545801}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1974678473}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1863761980
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1863761981}
+  - component: {fileID: 1863761982}
+  m_Layer: 0
+  m_Name: PyramidParentTerrace4
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 2147483647
+  m_IsActive: 1
+--- !u!4 &1863761981
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1863761980}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 36.21, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2052374095}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1863761982
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1863761980}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9ac701a8a133f14dbbd8ef2103b9a0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ObjExporter
+--- !u!1 &1933076267
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1933076269}
+  - component: {fileID: 1933076268}
+  m_Layer: 0
+  m_Name: PyramidParentTerrace7
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 4294967295
+  m_IsActive: 1
+--- !u!114 &1933076268
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1933076267}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9ac701a8a133f14dbbd8ef2103b9a0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ObjExporter
+--- !u!4 &1933076269
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1933076267}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 38.34, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1974678473}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1974678472
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1974678473}
+  m_Layer: 0
+  m_Name: Method1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 2147483647
+  m_IsActive: 0
+--- !u!4 &1974678473
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1974678472}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 2055568746}
+  - {fileID: 685806207}
+  - {fileID: 161417269}
+  - {fileID: 698932563}
+  - {fileID: 1572393029}
+  - {fileID: 981681862}
+  - {fileID: 2019756632}
+  - {fileID: 1114488621}
+  - {fileID: 555717841}
+  - {fileID: 496612227}
+  - {fileID: 694912810}
+  - {fileID: 369342356}
+  - {fileID: 1756516217}
+  - {fileID: 1933076269}
+  - {fileID: 445797146}
+  - {fileID: 1810679163}
+  - {fileID: 1817545803}
+  - {fileID: 380184451}
+  - {fileID: 368358000}
+  - {fileID: 1061289110}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2019756630
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2019756632}
+  - component: {fileID: 2019756631}
+  m_Layer: 0
+  m_Name: GeneratePyramidTerrace4
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 4294967295
+  m_IsActive: 1
+--- !u!114 &2019756631
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2019756630}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8f3bc670555baa4b820cbe4a3fb17e9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  selectedPyramid: 0
+  BaseSize: 137
+  Height: 230
+  PyramidInclination: 54.5
+  RampInclination: 7
+  blockheight: 0.71
+  blockwide: 1.27
+  PathWide: 0
+  PathSeparation: 0
+  holeHeight: 5
+  holeWide: 3
+  blockSeparation: 0
+  numberOfBlocks: 0
+  numberOfBlocksDrawn: 0
+  maxBlocks: 0
+  path_length: 0
+  total_height: 0
+  massBlock: 2267.96
+  frictionCoef: 0.7
+  optionRamp: 1
+  totalForce: 0
+  totalForceRamp: 0
+  totalLength: 0
+  totalLengthRamp: 0
+  m_Material: {fileID: 2100000, guid: 8c57f0c93bcdf45419ad1c37ef578135, type: 2}
+  m_Material_corner: {fileID: 2100000, guid: ccc151909cb3b6144a2156cc5792c0b9, type: 2}
+  m_Material_wood: {fileID: 2100000, guid: 1ec7a28ff55f44a4a87a704aee7ecc7c, type: 2}
+  m_Material_Blank: {fileID: 2100000, guid: 7c962ba6101e8614a81609559aafa9b2, type: 2}
+  m_Material_floor: {fileID: 0}
+  cam: {fileID: 0}
+  Palm: {fileID: 0}
+  Dromader: {fileID: 0}
+  Eiffel: {fileID: 0}
+  Man: {fileID: 0}
+  RockPrefab:
+  - {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f, type: 3}
+  - {fileID: 1934847145488549955, guid: 4c5890b39fec4c0408b848058c32e418, type: 3}
+  - {fileID: 1934847145488549955, guid: 9e494471e93e3ae4ca8fe6de932ef723, type: 3}
+  RockDivPrefab: {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f,
+    type: 3}
+  CornerPrefab: {fileID: 3303205072679722066, guid: 69d5374d7cbe69346b9c8f5b1152ebac,
+    type: 3}
+  objParent: {fileID: 1114488619}
+  graniteRockPrefab1: {fileID: 1934847145488549955, guid: a8af2fef706f60c4cb6ce7b9f854fb55,
+    type: 3}
+  graniteRockPrefab2: {fileID: 1934847145488549955, guid: 5cc382f61102f4d44bf8e544449de839,
+    type: 3}
+  piramidon: {fileID: 1999908982366458336, guid: fe7e4f262ac125240b6af3c2b94ce895,
+    type: 3}
+  stone_sled: {fileID: 6667684075288102831, guid: 8dce8326a02527240ac0bacd72143721,
+    type: 3}
+  Egyptian_body: {fileID: 6708560359212677676, guid: 912133279bb52b440a38c710df404a5f,
+    type: 3}
+  showEiffel: 0
+  showMan: 0
+  showManFinalRamp: 0
+  Method4Ramp: 1
+  MethodInsideRamp: 0
+  Method8Ramp: 1
+  Method16Ramp: 1
+  DrawUntilRow: 1
+  DrawOnlyRow: 0
+  DrawCover: 0
+  DrawRow: 9
+  DrawBlocks: 5
+  DeletedBlocks: 0
+  DrawWall: 0
+  DrawFloor: 1
+  DrawWoodenCyl: 0
+  DrawEgyptians: 0
+  DrawGranite: 0
+  DrawAll: 1
+  showRamps: 1
+  halfPyramid: 0
+  csvitername: pyramid_iter.csv
+  csvrowname: pyramid_row.csv
+  csvheadway: pyramid_headway.csv
+  txtname: pyramid.txt
+  showInfoLevel: 0
+  showInfoLevelTotal: 0
+  showInfoLevelDec: 0
+  showInfoRow: 0
+  exportPyramidObj: 0
+  exportCombineMeshes: 0
+  exportSubFolder: PyramidModels
+  outputFileName: MyPyramid4Ramp130_h
+  isStatic: 1
+  isRigidBody: 0
+  useFixedJoints: 0
+  blockLayer:
+    serializedVersion: 2
+    m_Bits: 1
+  numOfGraniteRock1: 21
+  numOfGraniteRock2: 38
+  minHeightGraniteRock: 43
+  maxHeightGraniteRock: 62
+  minBaseSize2Ramps: 32
+  minBaseSize4Ramps: 50
+  minBaseSize8Ramps: 100
+  minBaseSize16Ramps: 180
+  AverageHeadway: 4
+  MinHeadway: 2
+  MaxHeadway: 13
+  WorkingYearMinutes: 187200
+  PyramidHeadwayType: 0
+  Sequenced: 0
+--- !u!4 &2019756632
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2019756630}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1974678473}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2052374094
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2052374095}
+  m_Layer: 0
+  m_Name: Method2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 2147483647
+  m_IsActive: 1
+--- !u!4 &2052374095
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2052374094}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 541067050}
+  - {fileID: 2134466639}
+  - {fileID: 588811164}
+  - {fileID: 2120525443}
+  - {fileID: 1226662744}
+  - {fileID: 1326552943}
+  - {fileID: 1384497161}
+  - {fileID: 1863761981}
+  - {fileID: 1454568518}
+  - {fileID: 1532099607}
+  - {fileID: 1111400885}
+  - {fileID: 1157754939}
+  - {fileID: 604235407}
+  - {fileID: 1133170580}
+  - {fileID: 401742160}
+  - {fileID: 195906006}
+  - {fileID: 1574393636}
+  - {fileID: 627980363}
+  - {fileID: 1058302702}
+  - {fileID: 1310921206}
+  - {fileID: 1310116607}
+  - {fileID: 1128998241}
+  - {fileID: 2120344825}
+  - {fileID: 1074272175}
+  - {fileID: 1491777345}
+  - {fileID: 1620816270}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2055568744
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2055568746}
+  - component: {fileID: 2055568745}
+  m_Layer: 0
+  m_Name: GeneratePyramidTerrace1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 4294967295
+  m_IsActive: 1
+--- !u!114 &2055568745
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2055568744}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8f3bc670555baa4b820cbe4a3fb17e9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  selectedPyramid: 0
+  BaseSize: 197
+  Height: 230
+  PyramidInclination: 54.5
+  RampInclination: 7
+  blockheight: 0.71
+  blockwide: 1.27
+  PathWide: 0
+  PathSeparation: 0
+  holeHeight: 5
+  holeWide: 3
+  blockSeparation: 0
+  numberOfBlocks: 0
+  numberOfBlocksDrawn: 0
+  maxBlocks: 0
+  path_length: 0
+  total_height: 0
+  massBlock: 2267.96
+  frictionCoef: 0.7
+  optionRamp: 1
+  totalForce: 0
+  totalForceRamp: 0
+  totalLength: 0
+  totalLengthRamp: 0
+  m_Material: {fileID: 2100000, guid: 8c57f0c93bcdf45419ad1c37ef578135, type: 2}
+  m_Material_corner: {fileID: 2100000, guid: ccc151909cb3b6144a2156cc5792c0b9, type: 2}
+  m_Material_wood: {fileID: 2100000, guid: 1ec7a28ff55f44a4a87a704aee7ecc7c, type: 2}
+  m_Material_Blank: {fileID: 2100000, guid: 7c962ba6101e8614a81609559aafa9b2, type: 2}
+  m_Material_floor: {fileID: 0}
+  cam: {fileID: 0}
+  Palm: {fileID: 0}
+  Dromader: {fileID: 0}
+  Eiffel: {fileID: 0}
+  Man: {fileID: 0}
+  RockPrefab:
+  - {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f, type: 3}
+  - {fileID: 1934847145488549955, guid: 4c5890b39fec4c0408b848058c32e418, type: 3}
+  - {fileID: 1934847145488549955, guid: 9e494471e93e3ae4ca8fe6de932ef723, type: 3}
+  RockDivPrefab: {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f,
+    type: 3}
+  CornerPrefab: {fileID: 3303205072679722066, guid: 69d5374d7cbe69346b9c8f5b1152ebac,
+    type: 3}
+  objParent: {fileID: 685806205}
+  graniteRockPrefab1: {fileID: 1934847145488549955, guid: a8af2fef706f60c4cb6ce7b9f854fb55,
+    type: 3}
+  graniteRockPrefab2: {fileID: 1934847145488549955, guid: 5cc382f61102f4d44bf8e544449de839,
+    type: 3}
+  piramidon: {fileID: 1999908982366458336, guid: fe7e4f262ac125240b6af3c2b94ce895,
+    type: 3}
+  stone_sled: {fileID: 6667684075288102831, guid: 8dce8326a02527240ac0bacd72143721,
+    type: 3}
+  Egyptian_body: {fileID: 6708560359212677676, guid: 912133279bb52b440a38c710df404a5f,
+    type: 3}
+  showEiffel: 0
+  showMan: 0
+  showManFinalRamp: 0
+  Method4Ramp: 1
+  MethodInsideRamp: 0
+  Method8Ramp: 1
+  Method16Ramp: 1
+  DrawUntilRow: 1
+  DrawOnlyRow: 0
+  DrawCover: 0
+  DrawRow: 9
+  DrawBlocks: 5
+  DeletedBlocks: 0
+  DrawWall: 0
+  DrawFloor: 1
+  DrawWoodenCyl: 0
+  DrawEgyptians: 0
+  DrawGranite: 0
+  DrawAll: 1
+  showRamps: 1
+  halfPyramid: 0
+  csvitername: pyramid_iter.csv
+  csvrowname: pyramid_row.csv
+  csvheadway: pyramid_headway.csv
+  txtname: pyramid.txt
+  showInfoLevel: 0
+  showInfoLevelTotal: 0
+  showInfoLevelDec: 0
+  showInfoRow: 0
+  exportPyramidObj: 0
+  exportCombineMeshes: 0
+  exportSubFolder: PyramidModels
+  outputFileName: MyPyramid4Ramp130_h
+  isStatic: 1
+  isRigidBody: 0
+  useFixedJoints: 0
+  blockLayer:
+    serializedVersion: 2
+    m_Bits: 1
+  numOfGraniteRock1: 21
+  numOfGraniteRock2: 38
+  minHeightGraniteRock: 43
+  maxHeightGraniteRock: 62
+  minBaseSize2Ramps: 32
+  minBaseSize4Ramps: 50
+  minBaseSize8Ramps: 100
+  minBaseSize16Ramps: 180
+  AverageHeadway: 4
+  MinHeadway: 2
+  MaxHeadway: 13
+  WorkingYearMinutes: 187200
+  PyramidHeadwayType: 0
+  Sequenced: 0
+--- !u!4 &2055568746
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2055568744}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1974678473}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2120344824
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2120344825}
+  - component: {fileID: 2120344826}
+  m_Layer: 0
+  m_Name: GeneratePyramidTerrace12
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 2147483647
+  m_IsActive: 1
+--- !u!4 &2120344825
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2120344824}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2052374095}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2120344826
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2120344824}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8f3bc670555baa4b820cbe4a3fb17e9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  selectedPyramid: 0
+  BaseSize: 70.5
+  Height: 230
+  PyramidInclination: 80
+  RampInclination: 7
+  blockheight: 0.71
+  blockwide: 1.27
+  PathWide: 0
+  PathSeparation: 0
+  holeHeight: 5
+  holeWide: 3
+  blockSeparation: 0
+  numberOfBlocks: 0
+  numberOfBlocksDrawn: 0
+  maxBlocks: 0
+  path_length: 0
+  total_height: 0
+  massBlock: 2267.96
+  frictionCoef: 0.7
+  optionRamp: 1
+  totalForce: 0
+  totalForceRamp: 0
+  totalLength: 0
+  totalLengthRamp: 0
+  m_Material: {fileID: 2100000, guid: 8c57f0c93bcdf45419ad1c37ef578135, type: 2}
+  m_Material_corner: {fileID: 2100000, guid: ccc151909cb3b6144a2156cc5792c0b9, type: 2}
+  m_Material_wood: {fileID: 2100000, guid: 1ec7a28ff55f44a4a87a704aee7ecc7c, type: 2}
+  m_Material_Blank: {fileID: 2100000, guid: 7c962ba6101e8614a81609559aafa9b2, type: 2}
+  m_Material_floor: {fileID: 0}
+  cam: {fileID: 0}
+  Palm: {fileID: 0}
+  Dromader: {fileID: 0}
+  Eiffel: {fileID: 0}
+  Man: {fileID: 0}
+  RockPrefab:
+  - {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f, type: 3}
+  - {fileID: 1934847145488549955, guid: 4c5890b39fec4c0408b848058c32e418, type: 3}
+  - {fileID: 1934847145488549955, guid: 9e494471e93e3ae4ca8fe6de932ef723, type: 3}
+  RockDivPrefab: {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f,
+    type: 3}
+  CornerPrefab: {fileID: 3303205072679722066, guid: 69d5374d7cbe69346b9c8f5b1152ebac,
+    type: 3}
+  objParent: {fileID: 1074272174}
+  graniteRockPrefab1: {fileID: 1934847145488549955, guid: a8af2fef706f60c4cb6ce7b9f854fb55,
+    type: 3}
+  graniteRockPrefab2: {fileID: 1934847145488549955, guid: 5cc382f61102f4d44bf8e544449de839,
+    type: 3}
+  piramidon: {fileID: 1999908982366458336, guid: fe7e4f262ac125240b6af3c2b94ce895,
+    type: 3}
+  stone_sled: {fileID: 6667684075288102831, guid: 8dce8326a02527240ac0bacd72143721,
+    type: 3}
+  Egyptian_body: {fileID: 6708560359212677676, guid: 912133279bb52b440a38c710df404a5f,
+    type: 3}
+  showEiffel: 0
+  showMan: 0
+  showManFinalRamp: 0
+  Method4Ramp: 1
+  MethodInsideRamp: 0
+  Method8Ramp: 1
+  Method16Ramp: 1
+  DrawUntilRow: 1
+  DrawOnlyRow: 0
+  DrawCover: 0
+  DrawRow: 16
+  DrawBlocks: 5
+  DeletedBlocks: 0
+  DrawWall: 0
+  DrawFloor: 0
+  DrawWoodenCyl: 0
+  DrawEgyptians: 0
+  DrawGranite: 0
+  DrawAll: 0
+  showRamps: 1
+  halfPyramid: 0
+  csvitername: pyramid_iter.csv
+  csvrowname: pyramid_row.csv
+  csvheadway: pyramid_headway.csv
+  txtname: pyramid.txt
+  showInfoLevel: 0
+  showInfoLevelTotal: 0
+  showInfoLevelDec: 0
+  showInfoRow: 0
+  exportPyramidObj: 0
+  exportCombineMeshes: 0
+  exportSubFolder: PyramidModels
+  outputFileName: MyPyramid4Ramp130_h
+  isStatic: 1
+  isRigidBody: 0
+  useFixedJoints: 0
+  blockLayer:
+    serializedVersion: 2
+    m_Bits: 1
+  numOfGraniteRock1: 21
+  numOfGraniteRock2: 38
+  minHeightGraniteRock: 43
+  maxHeightGraniteRock: 62
+  minBaseSize2Ramps: 32
+  minBaseSize4Ramps: 64
+  minBaseSize8Ramps: 128
+  minBaseSize16Ramps: 200
+  AverageHeadway: 4
+  MinHeadway: 2
+  MaxHeadway: 13
+  WorkingYearMinutes: 187200
+  PyramidHeadwayType: 0
+  Sequenced: 0
+--- !u!1 &2120525441
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2120525443}
+  - component: {fileID: 2120525442}
+  m_Layer: 0
+  m_Name: PyramidParentTerrace2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 2147483647
+  m_IsActive: 1
+--- !u!114 &2120525442
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2120525441}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9ac701a8a133f14dbbd8ef2103b9a0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ObjExporter
+--- !u!4 &2120525443
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2120525441}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 12.07, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2052374095}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2134466638
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2134466639}
+  - component: {fileID: 2134466640}
+  m_Layer: 0
+  m_Name: PyramidParentTerrace1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 2147483647
+  m_IsActive: 1
+--- !u!4 &2134466639
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2134466638}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2052374095}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2134466640
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2134466638}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9ac701a8a133f14dbbd8ef2103b9a0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ObjExporter
+--- !u!1001 &2284711194927389276
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2284711195693372971, guid: 99898615502ce544985ef6857673f584,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 2284711195693372971, guid: 99898615502ce544985ef6857673f584,
+        type: 3}
+      propertyPath: m_LocalScale.x
+      value: 10000
+      objectReference: {fileID: 0}
+    - target: {fileID: 2284711195693372971, guid: 99898615502ce544985ef6857673f584,
+        type: 3}
+      propertyPath: m_LocalScale.z
+      value: 10000
+      objectReference: {fileID: 0}
+    - target: {fileID: 2284711195693372971, guid: 99898615502ce544985ef6857673f584,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2284711195693372971, guid: 99898615502ce544985ef6857673f584,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2284711195693372971, guid: 99898615502ce544985ef6857673f584,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2284711195693372971, guid: 99898615502ce544985ef6857673f584,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2284711195693372971, guid: 99898615502ce544985ef6857673f584,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2284711195693372971, guid: 99898615502ce544985ef6857673f584,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2284711195693372971, guid: 99898615502ce544985ef6857673f584,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2284711195693372971, guid: 99898615502ce544985ef6857673f584,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2284711195693372971, guid: 99898615502ce544985ef6857673f584,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2284711195693372971, guid: 99898615502ce544985ef6857673f584,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2284711195693372975, guid: 99898615502ce544985ef6857673f584,
+        type: 3}
+      propertyPath: m_Name
+      value: Plane
+      objectReference: {fileID: 0}
+    - target: {fileID: 2284711195693372975, guid: 99898615502ce544985ef6857673f584,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 99898615502ce544985ef6857673f584, type: 3}
+--- !u!1660057539 &9223372036854775807
+SceneRoots:
+  m_ObjectHideFlags: 0
+  m_Roots:
+  - {fileID: 705507995}
+  - {fileID: 2284711194927389276}
+  - {fileID: 1517730801}
+  - {fileID: 1974678473}
+  - {fileID: 2052374095}

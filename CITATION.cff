@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use this code or dataset, please cite it as below."
+title: "Parametric Algorithm, Finite Element Models, and Stochastic Simulations for the Integrated Edge-Ramp Theory of Khufu’s Great Pyramid"
+version: "1.0.2"
+doi: 10.5281/zenodo.16732345
+date-released: 2025-08-01
+authors:
+  - family-names: "Rosell Roig"
+    given-names: "Vicente Luis"
+    orcid: "https://orcid.org/0009-0003-8857-9706"
+affiliation: "Independent Researcher; PhD in Pattern Recognition, Artificial Intelligence and Computer Graphics, Universitat Politècnica de València (UPV), Spain"
+keywords:
+  - Khufu Pyramid
+  - edge-ramp theory
+  - computational archaeology
+  - pyramid construction
+  - finite element analysis
+  - stochastic modeling
+license: "MIT (code), CC-BY-4.0 (data)"
+repository-code: "https://doi.org/10.5281/zenodo.16732345"

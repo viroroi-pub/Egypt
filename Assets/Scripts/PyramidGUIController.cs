@@ -1,6 +1,7 @@
 ﻿using System;
-using UnityEngine;
 using System.Collections;
+using System.Globalization;
+using UnityEngine;
 
 /// <summary>
 /// This script creates a runtime GUI to control the GeneratePyramid script.
@@ -14,7 +15,7 @@ public class PyramidGUIController : MonoBehaviour
 
     // Private variables to hold the string values from the GUI text fields.
     private string baseSizeStr, heightStr, angleStr, levelsStr;
-    private string pyramidInclinationStr, rampInclinationStr, blockHeightStr, blockWideStr;
+    private string rampInclinationStr, blockHeightStr, blockWideStr;
     private string holeHeightStr, holeWideStr, drawRowStr, drawBlocksStr;
     private string numGranite1Str, numGranite2Str, minHeightGraniteStr, maxHeightGraniteStr;
     private string minBase2RampStr, minBase4RampStr, minBase8RampStr, minBase16RampStr;
@@ -310,6 +311,19 @@ public class PyramidGUIController : MonoBehaviour
         if (int.TryParse(holeWideStr, out int hW)) generatePyramid.holeWide = hW;
         if (int.TryParse(drawRowStr, out int dR)) generatePyramid.DrawRow = dR;
         if (int.TryParse(drawBlocksStr, out int dB)) generatePyramid.DrawBlocks = dB;
+
+        if (int.TryParse(numGranite1Str, out int intVal)) generatePyramid.numOfGraniteRock1 = intVal;
+        if (int.TryParse(numGranite2Str, out int intVal2)) generatePyramid.numOfGraniteRock2 = intVal2;
+        if (int.TryParse(minHeightGraniteStr, out int intVal3)) generatePyramid.minHeightGraniteRock = intVal3;
+        if (int.TryParse(maxHeightGraniteStr, out int intVal4)) generatePyramid.maxHeightGraniteRock = intVal4;
+        if (int.TryParse(minBase2RampStr, out int intVal5)) generatePyramid.minBaseSize2Ramps = intVal5;
+        if (int.TryParse(minBase4RampStr, out int intVal6)) generatePyramid.minBaseSize4Ramps = intVal6;
+        if (int.TryParse(minBase8RampStr, out int intVal7)) generatePyramid.minBaseSize8Ramps = intVal7;
+        if (int.TryParse(minBase16RampStr, out int intVal8)) generatePyramid.minBaseSize16Ramps = intVal8;
+        if (float.TryParse(avgHeadwayStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float val)) generatePyramid.AverageHeadway = val;
+        if (float.TryParse(minHeadwayStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float val1)) generatePyramid.MinHeadway = val1;
+        if (float.TryParse(maxHeadwayStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float val2)) generatePyramid.MaxHeadway = val2;
+        if (float.TryParse(workingMinutesStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float val3)) generatePyramid.WorkingYearMinutes = val3;
     }
 
     /// <summary>
@@ -332,6 +346,19 @@ public class PyramidGUIController : MonoBehaviour
         holeWideStr = generatePyramid.holeWide.ToString();
         drawRowStr = generatePyramid.DrawRow.ToString();
         drawBlocksStr = generatePyramid.DrawBlocks.ToString();
+
+        numGranite1Str = generatePyramid.numOfGraniteRock1.ToString();
+        numGranite2Str = generatePyramid.numOfGraniteRock2.ToString();
+        minHeightGraniteStr = generatePyramid.minHeightGraniteRock.ToString();
+        maxHeightGraniteStr = generatePyramid.maxHeightGraniteRock.ToString();
+        minBase2RampStr = generatePyramid.minBaseSize2Ramps.ToString();
+        minBase4RampStr = generatePyramid.minBaseSize4Ramps.ToString();
+        minBase8RampStr = generatePyramid.minBaseSize8Ramps.ToString();
+        minBase16RampStr = generatePyramid.minBaseSize16Ramps.ToString();
+        avgHeadwayStr = generatePyramid.AverageHeadway.ToString("F2", CultureInfo.InvariantCulture);
+        minHeadwayStr = generatePyramid.MinHeadway.ToString("F2", CultureInfo.InvariantCulture);
+        maxHeadwayStr = generatePyramid.MaxHeadway.ToString("F2", CultureInfo.InvariantCulture);
+        workingMinutesStr = generatePyramid.WorkingYearMinutes.ToString("F2", CultureInfo.InvariantCulture);
     }
 
     // Utility to create a texture for the GUI background

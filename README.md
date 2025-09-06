@@ -69,7 +69,7 @@ All simulation scripts, block‑by‑row tables and the Unity scene are archived
 | **Assets/Scripts/PyramidGUIController.cs** | Interactive runtime GUI to control GeneratePyramid during Play Mode.                                                                 |
 | **Assets/Prefabs/**                   | Stones, wooden sled, Egyptians, vegetation…                                                                                               |
 | **Assets/Materials/**                 | Sandstone, wood, floor, corner, etc.                                                                                                      |
-| **AdditionalData/**                   | Companion dataset folder with the files used in the manuscript. Subfolders: `Montecarlo_ramp/`, `SimScale/`, `Tables/`.                   |
+| **AdditionalData/**                   | Companion dataset folder with the files used in the manuscript. Subfolders: `Montecarlo_ramp/`, `SimScale/`, `Tables/`. , `Images/`.      |
 
 ---
 

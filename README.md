@@ -171,6 +171,7 @@ The repository includes an **AdditionalData/** folder with the inputs/outputs us
 * **AdditionalData/Montecarlo/** — batches of parameter sweeps and simulation runs for ramp scenarios.
 * **AdditionalData/SimScale/** — exported project files/reports from SimScale runs used for cross‑checks.
 * **AdditionalData/Tables/** — CSV/Excel tables referenced in the manuscript (e.g., per‑row counts, headway summaries, Table 1–4 sources).
+* **AdditionalData/Images/** — paper generated images.
 
 These files mirror the archive on Zenodo so reviewers can reproduce every number in the paper.
 

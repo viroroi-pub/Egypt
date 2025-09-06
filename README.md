@@ -1,4 +1,4 @@
-# Khufu Pyramid – Unity Simulation (Edge-Ramp)
+# Khufu Pyramid – Unity Simulation (Integrated Edge-Ramp)
 
 ![Unity simulation screenshot](AdditionalData/Images/UnityPyramid.png)
 
@@ -39,6 +39,8 @@ If you use this dataset or code, please cite:
 
 ## 📑 Changelog
 
+* **v1.0.4** – Added code updates.  
+* **v1.0.3** – Added refined Monte Carlo tables; Code updates for UI; Images.  
 * **v1.0.2** – Added fine mesh FEA run; refined Monte Carlo tables; updated README with workflow diagram.  
 * **v1.0.1** – Initial Zenodo deposit, included Unity scenes and CSV tables.  
 * **v1.0.0** – Prototype release (internal use only).  

@@ -1,9 +1,9 @@
 cff-version: 1.2.0
 message: "If you use this code or dataset, please cite it as below."
 title: "Parametric Algorithm, Finite Element Models, and Stochastic Simulations for the Integrated Edge-Ramp Theory of Khufu’s Great Pyramid"
-version: "1.0.4"
+version: "1.0.6"
 doi: 10.5281/zenodo.16732345
-date-released: 2025-08-01
+date-released: 2025-09-07
 authors:
   - family-names: "Rosell Roig"
     given-names: "Vicente Luis"

@@ -190,8 +190,9 @@ public class PyramidGUIController : MonoBehaviour
 
     private void DrawRampDetails()
     {
+        DrawLabeledTextField("Ramp Inclination (°)", ref rampInclinationStr);
         DrawLabeledTextField("Passage Height (blocks)", ref holeHeightStr);
-        DrawLabeledTextField("Passage Width (blocks)", ref holeWideStr);
+        DrawLabeledTextField("Passage Width (blocks)", ref holeWideStr);        
         generatePyramid.showRamps = GUILayout.Toggle(generatePyramid.showRamps, "Show Ramps");
         GUILayout.BeginHorizontal();
         generatePyramid.Method4Ramp = GUILayout.Toggle(generatePyramid.Method4Ramp, "4-Ramp Method");

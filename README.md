@@ -6,7 +6,7 @@
 
 ## 📊 Metadata & Citation
 
-**Version:** v1.0.2 (final submission package for npj Heritage Science)  
+**Version:** v1.0.10 (final submission package for npj Heritage Science)  
 **DOI:** [https://doi.org/10.5281/zenodo.16732345](https://doi.org/10.5281/zenodo.16732345)  
 **Author:** Vicente Luis Rosell Roig (ORCID: 0009-0003-8857-9706)  
 **Affiliation:** Independent Researcher; PhD in Pattern Recognition, Artificial Intelligence and Computer Graphics, Universitat Politècnica de València (UPV), Spain.  
@@ -39,6 +39,7 @@ If you use this dataset or code, please cite:
 
 ## 📑 Changelog
 
+* **v1.0.10** – Added code updates.
 * **v1.0.4** – Added code updates.  
 * **v1.0.3** – Added refined Monte Carlo tables; Code updates for UI; Images.  
 * **v1.0.2** – Added fine mesh FEA run; refined Monte Carlo tables; updated README with workflow diagram.  

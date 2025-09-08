@@ -31,6 +31,16 @@ public enum PyramidHeadwayType
     Adaptative
 }
 
+// Defines the camera position face
+public enum CameraPositionFace
+{
+    Default,
+    NorthFace,
+    EastFace,
+    SouthFace,
+    WestFace
+}
+
 public class GeneratePyramid : MonoBehaviour
 {
     // --- Pyramid and Ramp Geometry ---
@@ -421,9 +431,29 @@ public class GeneratePyramid : MonoBehaviour
     /// </summary>
     public Boolean Sequenced = false;
     /// <summary>
-    /// Sequenced 
+    /// Show GUI 
     /// </summary>
     public Boolean ShowGUI = true;
+    /// <summary>
+    /// Notch C1
+    /// </summary>
+    public GameObject notchC1;
+    /// <summary>
+    /// Notch C2
+    /// </summary>
+    public GameObject notchC2;
+    /// <summary>
+    /// Notch N3
+    /// </summary>
+    public GameObject notchN3;
+    /// <summary>
+    /// Show GUI 
+    /// </summary>
+    public Boolean ShowKhufuNotchs = false;
+    /// <summary>
+    /// Show GUI 
+    /// </summary>
+    public CameraPositionFace cameraPositionFace = CameraPositionFace.NorthFace;
 
     private float pyramid_inclination_tg = 0;
     private float ramp_inclination_tg;   
@@ -528,10 +558,31 @@ public class GeneratePyramid : MonoBehaviour
         base_cube.transform.localScale = new Vector3(BaseSize, 1.0f, BaseSize);
         base_cube.GetComponent<MeshRenderer>().enabled = false;
 
+        // Notchs
+        if (notchC1)
+        {
+            notchC1.SetActive(ShowKhufuNotchs);
+        }
+        if (notchC2)
+        {
+            notchC2.SetActive(ShowKhufuNotchs);
+        }
+        if (notchN3)
+        {
+            notchN3.SetActive(ShowKhufuNotchs);
+        }
+
         // look
         if (cam)
         { 
-            cam.transform.localPosition = new Vector3(-BaseSize * 4 / 5, Height * 3 / 4, -BaseSize * 4 / 5);
+            if (cameraPositionFace == CameraPositionFace.NorthFace)               
+                cam.transform.localPosition = new Vector3(-BaseSize * 4 / 5, Height * 3 / 4, -BaseSize * 4 / 5);
+            if (cameraPositionFace == CameraPositionFace.EastFace)
+                cam.transform.localPosition = new Vector3(BaseSize * 4 / 5, Height * 3 / 4, -BaseSize * 4 / 5);
+            if (cameraPositionFace == CameraPositionFace.SouthFace)
+                cam.transform.localPosition = new Vector3(BaseSize * 4 / 5, Height * 3 / 4, BaseSize * 4 / 5);
+            if (cameraPositionFace == CameraPositionFace.WestFace)
+                cam.transform.localPosition = new Vector3(-BaseSize * 4 / 5, Height * 3 / 4, BaseSize * 4 / 5);
             //cam.transform.localPosition = new Vector3(BaseSize, Height, BaseSize);
             //cam.transform.localPosition = new Vector3(-BaseSize, Height, BaseSize);
             //cam.transform.localPosition = new Vector3(-BaseSize, Height, -BaseSize);
@@ -3594,6 +3645,29 @@ public class GeneratePyramid : MonoBehaviour
         holeWide = 3;
         blockSeparation = 0.01f; // separation between blocks
         massBlock = 2267.96f;
+        // Reset new variables to their defaults
+        holeHeight = 3;
+        holeWide = 3;
+        Method4Ramp = false;
+        MethodInsideRamp = false;
+        Method8Ramp = false;
+        Method16Ramp = false;
+        DrawUntilRow = false;
+        DrawOnlyRow = false;
+        DrawCover = false;
+        DrawRow = 0;
+        DrawBlocks = 1;
+        DeletedBlocks = 0;
+        DrawWall = true;
+        DrawFloor = true;
+        DrawWoodenCyl = true;
+        DrawEgyptians = true;
+        DrawGranite = true;
+        DrawAll = false;
+        showRamps = true;
+        halfPyramid = false;
+
+        Debug.Log("Properties reset to default values.");
     }
 
     public void onChangePyramidType()

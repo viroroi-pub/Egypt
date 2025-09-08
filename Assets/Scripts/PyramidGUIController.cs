@@ -21,6 +21,8 @@ public class PyramidGUIController : MonoBehaviour
     private string numGranite1Str, numGranite2Str, minHeightGraniteStr, maxHeightGraniteStr;
     private string minBase2RampStr, minBase4RampStr, minBase8RampStr, minBase16RampStr;
     private string avgHeadwayStr, minHeadwayStr, maxHeadwayStr, workingMinutesStr;
+    private string txtNameStr, csvIterNameStr, csvRowNameStr, csvHeadwayNameStr;
+    private string exportSubFolderStr, outputFileNameStr;
 
     private Vector2 scrollPosition; // For the scrollbar
     private bool showGUI = true; // To toggle GUI visibility
@@ -33,6 +35,7 @@ public class PyramidGUIController : MonoBehaviour
     private bool showHeadway = false;
     private bool showDrawingOptions = true;
     private bool showVisibility = false;
+    private bool showLogging = false;
 
     void Start()
     {
@@ -107,6 +110,7 @@ public class PyramidGUIController : MonoBehaviour
         DrawCollapsiblePanel("Headway & Timings", ref showHeadway, DrawHeadwayAndTimings);
         DrawCollapsiblePanel("Drawing Options", ref showDrawingOptions, DrawDrawingOptions);
         DrawCollapsiblePanel("Element Visibility", ref showVisibility, DrawElementVisibility);
+        DrawCollapsiblePanel("Logging & Export", ref showLogging, DrawLoggingOptions); // New Panel
 
         // --- exit ---
         GUILayout.FlexibleSpace(); 
@@ -257,6 +261,43 @@ public class PyramidGUIController : MonoBehaviour
         generatePyramid.DrawGranite = GUILayout.Toggle(generatePyramid.DrawGranite, "Granite");        
         generatePyramid.halfPyramid = GUILayout.Toggle(generatePyramid.halfPyramid, "Half Pyramid");        
         GUILayout.EndHorizontal();
+        GUILayout.BeginHorizontal();
+        generatePyramid.ShowKhufuNotchs = GUILayout.Toggle(generatePyramid.ShowKhufuNotchs, "Show Khufu Notchs");
+        GUILayout.EndHorizontal();
+        GUILayout.Space(10);
+        GUIStyle subHeaderStyle = new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold };
+        GUILayout.Label("Camera Position", subHeaderStyle);
+        generatePyramid.cameraPositionFace = (CameraPositionFace)GUILayout.Toolbar((int)generatePyramid.cameraPositionFace, Enum.GetNames(typeof(CameraPositionFace)));
+    }
+
+    private void DrawLoggingOptions()
+    {
+        GUIStyle subHeaderStyle = new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold };
+        GUILayout.Label("Log Files", subHeaderStyle);
+        DrawLabeledTextField("TXT Filename", ref txtNameStr);
+        DrawLabeledTextField("CSV Iter Filename", ref csvIterNameStr);
+        DrawLabeledTextField("CSV Row Filename", ref csvRowNameStr);
+        DrawLabeledTextField("CSV Headway Filename", ref csvHeadwayNameStr);
+
+        GUILayout.Space(5);
+
+        generatePyramid.showInfoLevel = GUILayout.Toggle(generatePyramid.showInfoLevel, "Log Level Info");
+        generatePyramid.showInfoLevelTotal = GUILayout.Toggle(generatePyramid.showInfoLevelTotal, "Log Level Totals");
+        generatePyramid.showInfoLevelDec = GUILayout.Toggle(generatePyramid.showInfoLevelDec, "Log Level Decrements");
+        generatePyramid.showInfoRow = GUILayout.Toggle(generatePyramid.showInfoRow, "Log Row Info");
+
+        GUILayout.Space(10);
+        GUILayout.Label("OBJ Export", subHeaderStyle);
+        generatePyramid.exportPyramidObj = GUILayout.Toggle(generatePyramid.exportPyramidObj, "Enable OBJ Export");
+
+        bool wasEnabled = GUI.enabled;
+        GUI.enabled = generatePyramid.exportPyramidObj;
+
+        generatePyramid.exportCombineMeshes = GUILayout.Toggle(generatePyramid.exportCombineMeshes, "Combine Meshes");
+        DrawLabeledTextField("Export Subfolder", ref exportSubFolderStr);
+        DrawLabeledTextField("Export Filename", ref outputFileNameStr);
+
+        GUI.enabled = wasEnabled;
     }
 
 
@@ -342,6 +383,14 @@ public class PyramidGUIController : MonoBehaviour
         if (float.TryParse(minHeadwayStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float val1)) generatePyramid.MinHeadway = val1;
         if (float.TryParse(maxHeadwayStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float val2)) generatePyramid.MaxHeadway = val2;
         if (float.TryParse(workingMinutesStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float val3)) generatePyramid.WorkingYearMinutes = val3;
+
+        generatePyramid.txtname = txtNameStr;
+        generatePyramid.csvitername = csvIterNameStr;
+        generatePyramid.csvrowname = csvRowNameStr;
+        generatePyramid.csvheadway = csvHeadwayNameStr;
+
+        generatePyramid.exportSubFolder = exportSubFolderStr;
+        generatePyramid.outputFileName = outputFileNameStr;
     }
 
     /// <summary>
@@ -377,6 +426,14 @@ public class PyramidGUIController : MonoBehaviour
         minHeadwayStr = generatePyramid.MinHeadway.ToString("F2", CultureInfo.InvariantCulture);
         maxHeadwayStr = generatePyramid.MaxHeadway.ToString("F2", CultureInfo.InvariantCulture);
         workingMinutesStr = generatePyramid.WorkingYearMinutes.ToString("F2", CultureInfo.InvariantCulture);
+
+        txtNameStr = generatePyramid.txtname;
+        csvIterNameStr = generatePyramid.csvitername;
+        csvRowNameStr = generatePyramid.csvrowname;
+        csvHeadwayNameStr = generatePyramid.csvheadway;
+
+        exportSubFolderStr = generatePyramid.exportSubFolder;
+        outputFileNameStr = generatePyramid.outputFileName;
     }
 
     // Utility to create a texture for the GUI background

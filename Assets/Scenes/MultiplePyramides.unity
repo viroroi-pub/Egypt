@@ -255,6 +255,12 @@ MonoBehaviour:
   WorkingYearMinutes: 187200
   PyramidHeadwayType: 0
   Sequenced: 0
+  ShowGUI: 0
+  notchC1: {fileID: 0}
+  notchC2: {fileID: 0}
+  notchN3: {fileID: 0}
+  ShowKhufuNotchs: 0
+  cameraPositionFace: 1
 --- !u!4 &86731661
 Transform:
   m_ObjectHideFlags: 0
@@ -421,6 +427,12 @@ MonoBehaviour:
   WorkingYearMinutes: 187200
   PyramidHeadwayType: 0
   Sequenced: 0
+  ShowGUI: 0
+  notchC1: {fileID: 0}
+  notchC2: {fileID: 0}
+  notchN3: {fileID: 0}
+  ShowKhufuNotchs: 0
+  cameraPositionFace: 1
 --- !u!114 &350862445
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -569,6 +581,12 @@ MonoBehaviour:
   WorkingYearMinutes: 187200
   PyramidHeadwayType: 0
   Sequenced: 0
+  ShowGUI: 0
+  notchC1: {fileID: 0}
+  notchC2: {fileID: 0}
+  notchN3: {fileID: 0}
+  ShowKhufuNotchs: 0
+  cameraPositionFace: 1
 --- !u!4 &407677652
 Transform:
   m_ObjectHideFlags: 0
@@ -719,6 +737,12 @@ MonoBehaviour:
   WorkingYearMinutes: 187200
   PyramidHeadwayType: 0
   Sequenced: 0
+  ShowGUI: 0
+  notchC1: {fileID: 0}
+  notchC2: {fileID: 0}
+  notchN3: {fileID: 0}
+  ShowKhufuNotchs: 0
+  cameraPositionFace: 1
 --- !u!4 &492941990
 Transform:
   m_ObjectHideFlags: 0
@@ -869,6 +893,12 @@ MonoBehaviour:
   WorkingYearMinutes: 187200
   PyramidHeadwayType: 0
   Sequenced: 0
+  ShowGUI: 0
+  notchC1: {fileID: 0}
+  notchC2: {fileID: 0}
+  notchN3: {fileID: 0}
+  ShowKhufuNotchs: 0
+  cameraPositionFace: 1
 --- !u!4 &532695885
 Transform:
   m_ObjectHideFlags: 0
@@ -1493,6 +1523,12 @@ MonoBehaviour:
   WorkingYearMinutes: 187200
   PyramidHeadwayType: 0
   Sequenced: 0
+  ShowGUI: 0
+  notchC1: {fileID: 0}
+  notchC2: {fileID: 0}
+  notchN3: {fileID: 0}
+  ShowKhufuNotchs: 0
+  cameraPositionFace: 1
 --- !u!4 &2055568746
 Transform:
   m_ObjectHideFlags: 0

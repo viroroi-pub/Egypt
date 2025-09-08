@@ -10,13 +10,15 @@ public class PyramidSequence : MonoBehaviour
  
     public bool capture= true; // Variable para controlar la captura de pantalla
     public float lapse = 0.2f; // Tiempo de espera entre capturas
+    public int startRow = 0;
+    public int endRow = 1000;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         GeneratePyramid = GetComponent<GeneratePyramid>();
         GeneratePyramid.DrawUntilRow = true;
-        GeneratePyramid.DrawRow = 0;
+        GeneratePyramid.DrawRow = startRow;
         GeneratePyramid.Dromader = null;
         GeneratePyramid.Palm = null;
         GeneratePyramid.Egyptian_body = null;
@@ -41,11 +43,11 @@ public class PyramidSequence : MonoBehaviour
     private IEnumerator RunSequence()
     {
         int ticks = 0;
-        GeneratePyramid.DrawRow = 0;
+        GeneratePyramid.DrawRow = startRow;
         GeneratePyramid.total_height = 0;
 
         // La condición está directamente en el bucle.
-        while (GeneratePyramid.total_height < GeneratePyramid.Height)
+        while (GeneratePyramid.total_height < GeneratePyramid.Height || GeneratePyramid.DrawRow<endRow)
         {
             ticks++;
             Debug.Log($"Tick número: {ticks}");
@@ -53,7 +55,7 @@ public class PyramidSequence : MonoBehaviour
             // delete previous row
             GeneratePyramid.ClearPyramid(false);
 
-            GeneratePyramid.cam.transform.localPosition = new Vector3(-GeneratePyramid.BaseSize * 3 / 4, GeneratePyramid.Height * 3 / 4, -GeneratePyramid.BaseSize * 3 / 4);
+            //GeneratePyramid.cam.transform.localPosition = new Vector3(-GeneratePyramid.BaseSize * 3 / 4, GeneratePyramid.Height * 3 / 4, -GeneratePyramid.BaseSize * 3 / 4);
             //cam.transform.localPosition = new Vector3(BaseSize, Height, BaseSize);
             //cam.transform.localPosition = new Vector3(-BaseSize, Height, BaseSize);
             //cam.transform.localPosition = new Vector3(-BaseSize, Height, -BaseSize);

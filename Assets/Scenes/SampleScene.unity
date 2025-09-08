@@ -130,12 +130,12 @@ GameObject:
   m_Component:
   - component: {fileID: 21606778}
   m_Layer: 0
-  m_Name: C2_notch
+  m_Name: N2_C2_notch
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &21606778
 Transform:
   m_ObjectHideFlags: 0
@@ -502,6 +502,11 @@ MonoBehaviour:
   PyramidHeadwayType: 0
   Sequenced: 0
   ShowGUI: 1
+  notchC1: {fileID: 1459464936}
+  notchC2: {fileID: 21606777}
+  notchN3: {fileID: 1172789008}
+  ShowKhufuNotchs: 0
+  cameraPositionFace: 1
 --- !u!114 &350862445
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -809,7 +814,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a5d1050bdc0d8ae4393d55f44f216ba9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PyramidGUIController
-  generatePyramid: {fileID: 350862444}
 --- !u!4 &636182818
 Transform:
   m_ObjectHideFlags: 0
@@ -1927,7 +1931,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1172789009
 Transform:
   m_ObjectHideFlags: 0
@@ -2169,6 +2173,11 @@ MonoBehaviour:
   PyramidHeadwayType: 2
   Sequenced: 0
   ShowGUI: 1
+  notchC1: {fileID: 0}
+  notchC2: {fileID: 0}
+  notchN3: {fileID: 0}
+  ShowKhufuNotchs: 0
+  cameraPositionFace: 1
 --- !u!114 &1315386617
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2183,6 +2192,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   capture: 0
   lapse: 2
+  startRow: 0
+  endRow: 1000
 --- !u!4 &1315386618
 Transform:
   m_ObjectHideFlags: 0
@@ -2208,12 +2219,12 @@ GameObject:
   m_Component:
   - component: {fileID: 1459464937}
   m_Layer: 0
-  m_Name: C1_notch
+  m_Name: N1_C1_notch
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1459464937
 Transform:
   m_ObjectHideFlags: 0
@@ -2819,7 +2830,7 @@ SceneRoots:
   - {fileID: 537717059}
   - {fileID: 3756642539122191799}
   - {fileID: 1315386618}
-  - {fileID: 21606778}
   - {fileID: 1459464937}
+  - {fileID: 21606778}
   - {fileID: 1172789009}
   - {fileID: 636182818}

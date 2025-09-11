@@ -1,6 +1,8 @@
-﻿using System;
+﻿using NUnit.Framework;
+using System;
 using System.Collections;
 using System.Globalization;
+using System.Security.Claims;
 using UnityEditor;
 using UnityEngine;
 
@@ -71,6 +73,9 @@ public class PyramidGUIController : MonoBehaviour
         GUILayout.BeginArea(new Rect(10, 10, 550, 550), boxStyle);
         GUIStyle headerStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
         GUILayout.Label("Pyramid Controller (F1 to toggle). Press 'P' for taking a screenshot.", headerStyle);
+        GUIStyle helpTextStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Italic, fontSize = 10 };
+        GUILayout.Label("Fly Cam: WASD/QE to move. Hold RMB to look. Shift to sprint.", helpTextStyle);
+        GUILayout.Space(5); // add space after the header
 
         scrollPosition = GUILayout.BeginScrollView(scrollPosition);
 
@@ -198,9 +203,10 @@ public class PyramidGUIController : MonoBehaviour
         DrawLabeledTextField("Passage Height (blocks)", ref holeHeightStr);
         DrawLabeledTextField("Passage Width (blocks)", ref holeWideStr);        
         generatePyramid.showRamps = GUILayout.Toggle(generatePyramid.showRamps, "Show Ramps");
-        GUILayout.BeginHorizontal();
-        generatePyramid.Method4Ramp = GUILayout.Toggle(generatePyramid.Method4Ramp, "4-Ramp Method");
         generatePyramid.MethodInsideRamp = GUILayout.Toggle(generatePyramid.MethodInsideRamp, "Inside Ramp");
+        GUILayout.BeginHorizontal();
+        generatePyramid.Method2Ramp = GUILayout.Toggle(generatePyramid.Method2Ramp, "2-Ramp Method");
+        generatePyramid.Method4Ramp = GUILayout.Toggle(generatePyramid.Method4Ramp, "4-Ramp Method");        
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
         generatePyramid.Method8Ramp = GUILayout.Toggle(generatePyramid.Method8Ramp, "8-Ramp Method");

@@ -74,7 +74,7 @@ All simulation scripts, block‑by‑row tables and the Unity scene are archived
 | **Assets/Scripts/PyramidGUIController.cs** | Interactive runtime GUI to control GeneratePyramid during Play Mode.                                                                 |
 | **Assets/Prefabs/**                   | Stones, wooden sled, Egyptians, vegetation…                                                                                               |
 | **Assets/Materials/**                 | Sandstone, wood, floor, corner, etc.                                                                                                      |
-| **AdditionalData/**                   | Companion dataset folder with the files used in the manuscript. Subfolders: `Montecarlo_ramp/`, `SimScale/`, `Tables/`. , `Images/`.      |
+| **AdditionalData/**                   | Companion dataset folder with the files used in the manuscript. Subfolders:`Montecarlo_ramp/`,`SimScale/`,`Tables/`.,`Images/`.,`Videos/`.|
 
 ---
 
@@ -100,7 +100,7 @@ All simulation scripts, block‑by‑row tables and the Unity scene are archived
 | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
 | **Geometry**          | `BaseSize`, `Height`, `PyramidInclination`, `RampInclination`                                                                             | Global pyramid and ramp angles/sizes.                                      |
 |                       | `DrawUntilRow`, `DrawOnlyRow`, `DrawRow`, `DrawBlocks`                                                                                    | Build up to a course, only a course, or a fixed number of outer layers.    |
-| **Ramp modes**        | `Method16Ramp`, `Method8Ramp`, `Method4Ramp`, `MethodInsideRamp`                                                                          | Select 16/8/4 edge‑ramps and inside/edge variant.                          |
+| **Ramp modes**        | `Method16Ramp`, `Method8Ramp`, `Method4Ramp`, `Method2Ramp`, `MethodInsideRamp`                                                           | Select 16/8/4/2 edge‑ramps and inside/edge variant.                          |
 | **Visuals**           | `DrawWall`, `DrawFloor`, `DrawWoodenCyl`, `DrawEgyptians`, `DrawGranite`, `DrawCover`, `showRamps`, `halfPyramid`                         | Rendering toggles for inspection.                                          |
 | **Logging (CSV/TXT)** | `showInfoLevel`, `showInfoLevelTotal`, `showInfoLevelDec`, `showInfoRow`; filenames: `csvitername`, `csvrowname`, `csvheadway`, `txtname` | Write iteration, per‑row and headway summaries to `/persistentDataPath/…`. |
 | **Headway model**     | `AverageHeadway`, `MinHeadway`, `MaxHeadway`, `WorkingYearMinutes`, `PyramidHeadwayType`                                                  | Throughput assumptions used in time estimates.                             |
@@ -177,6 +177,7 @@ The repository includes an **AdditionalData/** folder with the inputs/outputs us
 * **AdditionalData/SimScale/** — exported project files/reports from SimScale runs used for cross‑checks.
 * **AdditionalData/Tables/** — CSV/Excel tables referenced in the manuscript (e.g., per‑row counts, headway summaries, Table 1–4 sources).
 * **AdditionalData/Images/** — paper generated images.
+* **AdditionalData/Videos/** — paper timelapse videos: 1-Ramp, 4-Ramp and Adaptative Ramp System.
 
 These files mirror the archive on Zenodo so reviewers can reproduce every number in the paper.
 

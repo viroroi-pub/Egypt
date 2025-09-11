@@ -27,6 +27,7 @@ public enum PyramidType
 public enum PyramidHeadwayType
 {
     Single_Ramp,
+    Double_Ramp,
     Four_Ramp,
     Adaptative
 }
@@ -232,6 +233,10 @@ public class GeneratePyramid : MonoBehaviour
     /// </summary>
     public bool showManFinalRamp = false;
     /// <summary>
+    /// Toggles the 2-ramp construction method.
+    /// </summary>
+    public bool Method2Ramp = false;
+    /// <summary>
     /// Toggles the 4-ramp construction method.
     /// </summary>
     public bool Method4Ramp = false;
@@ -435,19 +440,27 @@ public class GeneratePyramid : MonoBehaviour
     /// </summary>
     public Boolean ShowGUI = true;
     /// <summary>
-    /// Notch C1
+    /// Notch N1
     /// </summary>
-    public GameObject notchC1;
+    public GameObject notchN1;
     /// <summary>
-    /// Notch C2
+    /// Notch N2
     /// </summary>
-    public GameObject notchC2;
+    public GameObject notchN2;
     /// <summary>
     /// Notch N3
     /// </summary>
     public GameObject notchN3;
     /// <summary>
-    /// Show GUI 
+    /// Cavity N1
+    /// </summary>
+    public GameObject CavityC1;
+    /// <summary>
+    /// Cavity N2
+    /// </summary>
+    public GameObject CavityC2;
+    /// <summary>
+    /// Show Notches and Cavities 
     /// </summary>
     public Boolean ShowKhufuNotchs = false;
     /// <summary>
@@ -477,7 +490,11 @@ public class GeneratePyramid : MonoBehaviour
     private int numberOfBlocksFinish = 0;
 
     private List<GameObject> blocksMidle;
-    private List<GameObject> blocksMidle2;    
+    private List<GameObject> blocksMidle2;   
+    
+    private GameObject cube1,cube2,cube3,cube4;
+    private GameObject cubefloor1, cubefloor2, cubefloor3, cubefloor4;
+    private GameObject cubewall1, cubewall2, cubewall3, cubewall4;
 
     // This runs in the editor whenever a value is changed in the Inspector.
     private void OnValidate()
@@ -559,17 +576,25 @@ public class GeneratePyramid : MonoBehaviour
         base_cube.GetComponent<MeshRenderer>().enabled = false;
 
         // Notchs
-        if (notchC1)
+        if (notchN1)
         {
-            notchC1.SetActive(ShowKhufuNotchs);
+            notchN1.SetActive(ShowKhufuNotchs);
         }
-        if (notchC2)
+        if (notchN2)
         {
-            notchC2.SetActive(ShowKhufuNotchs);
+            notchN2.SetActive(ShowKhufuNotchs);
         }
         if (notchN3)
         {
             notchN3.SetActive(ShowKhufuNotchs);
+        }
+        if (CavityC1)
+        {
+            CavityC1.SetActive(ShowKhufuNotchs);
+        }
+        if (CavityC2)
+        {
+            CavityC2.SetActive(ShowKhufuNotchs);
         }
 
         // look
@@ -1629,6 +1654,8 @@ public class GeneratePyramid : MonoBehaviour
                 if (showInfoRow)
                 {
                     int num_ramps_headways = 1;
+                    if (PyramidHeadwayType == PyramidHeadwayType.Double_Ramp)
+                        num_ramps_headways = 2;
                     if (PyramidHeadwayType == PyramidHeadwayType.Four_Ramp)
                         num_ramps_headways = 3;
                     if (PyramidHeadwayType == PyramidHeadwayType.Adaptative)
@@ -1646,7 +1673,7 @@ public class GeneratePyramid : MonoBehaviour
                         else
                             num_ramps_headways = 3;
                     }
-                    if (!Method4Ramp)
+                    if (!Method4Ramp && !Method2Ramp)
                         num_ramps_headways = 1;
 
                     float current_headway = MinHeadway + (old_length + distramprow) / ramp_total_length * (MaxHeadway - MinHeadway);
@@ -1744,7 +1771,7 @@ public class GeneratePyramid : MonoBehaviour
         if (showRamps)
         {
             // draw ramps
-            if (Method4Ramp && minBaseSize2Ramps < base_size)
+            if ((Method4Ramp || Method2Ramp) && minBaseSize2Ramps < base_size)
             {
                 if (MethodInsideRamp)
                     Draw4Ramps(level, base_size - 2 * blockwide, height, h, sep, length - blockwide,
@@ -2608,52 +2635,55 @@ public class GeneratePyramid : MonoBehaviour
         ramp_gameObject.transform.parent = iter_gameObject.transform;
         ramp_gameObject.isStatic = true;
         if (Sequenced)
-            ramp_gameObject = objParent;
+            ramp_gameObject = objParent;        
 
         float bh2 = blockheight / 2;        
         // angle      
         float a1 = Mathf.Atan(sep / (base_size - sep));
-        float a2 = Mathf.Atan(h / (base_size - sep));        
+        float a2 = Mathf.Atan(h / (base_size - sep));
         // Ramp 1
-        GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        cube.name = "4Ramp_" + level + "_" + row + "_1";
-        if (DrawUntilRow && row > DrawRow)
-            cube.transform.position = objParent.transform.position + (last_v0 + last_v1) / 2 + new Vector3(0, height + blockheight * holeHeight / 2, 0);
-        else
-            cube.transform.position = objParent.transform.position + new Vector3((base_size - sep) / 2, h / 2 + height + blockheight * holeHeight / 2, sep / 2);        
-        //    cube.transform.position = new Vector3((base_size - sep) / 2, h / 2 + height + blockheight, sep / 2);
-        cube.transform.rotation = Quaternion.Euler(0, 90 + radians_to_degrees(a1), radians_to_degrees(a2));
-        if (MethodInsideRamp)
+        if (!Method2Ramp || level % 2 == 1)
         {
-            cube.transform.position += Vector3.left * blockwide;            
+            GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            cube.name = "4Ramp_" + level + "_" + row + "_1";
             if (DrawUntilRow && row > DrawRow)
-                cube.transform.localScale = new Vector3(last_length*2 - blockwide, blockheight * (holeHeight+2), blockwide * (holeWide-1));
+                cube.transform.position = objParent.transform.position + (last_v0 + last_v1) / 2 + new Vector3(0, height + blockheight * holeHeight / 2, 0);
             else
-                cube.transform.localScale = new Vector3(length - blockwide, blockheight * (holeHeight+2), blockwide * (holeWide-1));
-        }
-        else
-        {
-            if (DrawUntilRow && row > DrawRow)
-                cube.transform.localScale = new Vector3(last_length*2, blockheight * holeHeight, blockwide * holeWide);
+                cube.transform.position = objParent.transform.position + new Vector3((base_size - sep) / 2, h / 2 + height + blockheight * holeHeight / 2, sep / 2);
+            //    cube.transform.position = new Vector3((base_size - sep) / 2, h / 2 + height + blockheight, sep / 2);
+            cube.transform.rotation = Quaternion.Euler(0, 90 + radians_to_degrees(a1), radians_to_degrees(a2));
+            if (MethodInsideRamp)
+            {
+                cube.transform.position += Vector3.left * blockwide;
+                if (DrawUntilRow && row > DrawRow)
+                    cube.transform.localScale = new Vector3(last_length * 2 - blockwide, blockheight * (holeHeight + 2), blockwide * (holeWide - 1));
+                else
+                    cube.transform.localScale = new Vector3(length - blockwide, blockheight * (holeHeight + 2), blockwide * (holeWide - 1));
+            }
             else
-                cube.transform.localScale = new Vector3(length, blockheight * holeHeight, blockwide * holeWide);
+            {
+                if (DrawUntilRow && row > DrawRow)
+                    cube.transform.localScale = new Vector3(last_length * 2, blockheight * holeHeight, blockwide * holeWide);
+                else
+                    cube.transform.localScale = new Vector3(length, blockheight * holeHeight, blockwide * holeWide);
+            }
+            //cube.transform.localScale = new Vector3(length, blockheight * 2, 3 * blockwide);
+            //cube.transform.parent = objParent.transform;
+            cube.transform.parent = ramp_gameObject.transform;
+            cube.isStatic = true;
+            cube.AddComponent<DeleteObject>();
+            cube.GetComponent<DeleteObject>().generatePyramid = this;
+            cube.GetComponent<DeleteObject>().CommonGameObject = objParent;
+            cube.GetComponent<MeshRenderer>().enabled = false;
+            //cube.GetComponent<ShowHideObject>().hide = true;
+            cube.GetComponent<BoxCollider>().isTrigger = true;
+            cube1 = cube;
         }
-        //cube.transform.localScale = new Vector3(length, blockheight * 2, 3 * blockwide);
-        //cube.transform.parent = objParent.transform;
-        cube.transform.parent = ramp_gameObject.transform;
-        cube.isStatic = true;
-        cube.AddComponent<DeleteObject>();
-        cube.GetComponent<DeleteObject>().generatePyramid = this;
-        cube.GetComponent<DeleteObject>().CommonGameObject = objParent;
-        cube.GetComponent<MeshRenderer>().enabled = false;
-        //cube.GetComponent<ShowHideObject>().hide = true;
-        cube.GetComponent<BoxCollider>().isTrigger = true;
-        GameObject cube1 = cube;
 
-        if (minBaseSize2Ramps < base_size)
-        {            
+        if (minBaseSize2Ramps < base_size && (!Method2Ramp || level % 2 == 0))
+        {
             // Ramp 2
-            cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cube.name = "4Ramp_" + level + "_" + row + "_2";
             if (DrawUntilRow && row > DrawRow)
                 cube.transform.position = objParent.transform.position + (Quaternion.Euler(0, 90f, 0) * last_v0 + Quaternion.Euler(0, 90f, 0) * last_v1) / 2 + new Vector3(0, height + blockheight * holeHeight/2, 0);
@@ -2685,51 +2715,54 @@ public class GeneratePyramid : MonoBehaviour
             cube.GetComponent<DeleteObject>().CommonGameObject = objParent;
             cube.GetComponent<MeshRenderer>().enabled = false;
             //cube.GetComponent<ShowHideObject>().hide = true;
-            cube.GetComponent<BoxCollider>().isTrigger = true;            
-        }
-        GameObject cube2 = cube;
+            cube.GetComponent<BoxCollider>().isTrigger = true;
+            cube2 = cube;
+        }        
 
         // Ramp 3
-        cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        cube.name = "4Ramp_" + level + "_" + row + "_3";
-        if (DrawUntilRow && row > DrawRow)
-            cube.transform.position = objParent.transform.position + (Quaternion.Euler(0, 180f, 0) * last_v0 + Quaternion.Euler(0, 180f, 0) * last_v1) / 2 + new Vector3(0, height + holeHeight / 2, 0);
-        else
-            cube.transform.position = objParent.transform.position + new Vector3(-(base_size - sep) / 2, h / 2 + height + blockheight * holeHeight / 2, -sep / 2);
-        cube.transform.rotation = Quaternion.Euler(0, 90 + radians_to_degrees(a1), -radians_to_degrees(a2));        
-        //cube.transform.position = new Vector3(-(base_size - sep) / 2, h / 2 + height + blockheight, -sep / 2);
-        cube.transform.rotation = Quaternion.Euler(0, 90 + radians_to_degrees(a1), -radians_to_degrees(a2));
-        if (MethodInsideRamp)
+        if (!Method2Ramp || level % 2 == 1)
         {
-            cube.transform.position -= Vector3.left * blockwide;
+            GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            cube.name = "4Ramp_" + level + "_" + row + "_3";
             if (DrawUntilRow && row > DrawRow)
-                cube.transform.localScale = new Vector3(last_length*2 - blockwide, blockheight * (holeHeight+2), blockwide * (holeWide - 1));
+                cube.transform.position = objParent.transform.position + (Quaternion.Euler(0, 180f, 0) * last_v0 + Quaternion.Euler(0, 180f, 0) * last_v1) / 2 + new Vector3(0, height + holeHeight / 2, 0);
             else
-                cube.transform.localScale = new Vector3(length - blockwide, blockheight * (holeHeight+2), blockwide * (holeWide - 1));
-        }
-        else
-        {
-            if (DrawUntilRow && row > DrawRow)
-                cube.transform.localScale = new Vector3(last_length*2, blockheight * holeHeight, blockwide * holeWide);
+                cube.transform.position = objParent.transform.position + new Vector3(-(base_size - sep) / 2, h / 2 + height + blockheight * holeHeight / 2, -sep / 2);
+            cube.transform.rotation = Quaternion.Euler(0, 90 + radians_to_degrees(a1), -radians_to_degrees(a2));
+            //cube.transform.position = new Vector3(-(base_size - sep) / 2, h / 2 + height + blockheight, -sep / 2);
+            cube.transform.rotation = Quaternion.Euler(0, 90 + radians_to_degrees(a1), -radians_to_degrees(a2));
+            if (MethodInsideRamp)
+            {
+                cube.transform.position -= Vector3.left * blockwide;
+                if (DrawUntilRow && row > DrawRow)
+                    cube.transform.localScale = new Vector3(last_length * 2 - blockwide, blockheight * (holeHeight + 2), blockwide * (holeWide - 1));
+                else
+                    cube.transform.localScale = new Vector3(length - blockwide, blockheight * (holeHeight + 2), blockwide * (holeWide - 1));
+            }
             else
-                cube.transform.localScale = new Vector3(length, blockheight * holeHeight, blockwide * holeWide);
+            {
+                if (DrawUntilRow && row > DrawRow)
+                    cube.transform.localScale = new Vector3(last_length * 2, blockheight * holeHeight, blockwide * holeWide);
+                else
+                    cube.transform.localScale = new Vector3(length, blockheight * holeHeight, blockwide * holeWide);
+            }
+            //cube.transform.localScale = new Vector3(length, blockheight * 2, 3 * blockwide);
+            //cube.transform.parent = objParent.transform;
+            cube.transform.parent = ramp_gameObject.transform;
+            cube.isStatic = true;
+            cube.AddComponent<DeleteObject>();
+            cube.GetComponent<DeleteObject>().generatePyramid = this;
+            cube.GetComponent<DeleteObject>().CommonGameObject = objParent;
+            cube.GetComponent<MeshRenderer>().enabled = false;
+            //cube.GetComponent<ShowHideObject>().hide = true;
+            cube.GetComponent<BoxCollider>().isTrigger = true;
+            cube3 = cube;
         }
-        //cube.transform.localScale = new Vector3(length, blockheight * 2, 3 * blockwide);
-        //cube.transform.parent = objParent.transform;
-        cube.transform.parent = ramp_gameObject.transform;
-        cube.isStatic = true;
-        cube.AddComponent<DeleteObject>();
-        cube.GetComponent<DeleteObject>().generatePyramid = this;
-        cube.GetComponent<DeleteObject>().CommonGameObject = objParent;
-        cube.GetComponent<MeshRenderer>().enabled = false;
-        //cube.GetComponent<ShowHideObject>().hide = true;
-        cube.GetComponent<BoxCollider>().isTrigger = true;
-        GameObject cube3 = cube;
 
-        if (minBaseSize2Ramps < base_size)
+        if (minBaseSize2Ramps < base_size && (!Method2Ramp || level % 2 == 0))
         {
             // Ramp 4
-            cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cube.name = "4Ramp_" + level + "_" + row + "_4";
             if (DrawUntilRow && row > DrawRow)
                 cube.transform.position = objParent.transform.position + (Quaternion.Euler(0, 270f, 0) * last_v0 + Quaternion.Euler(0, 270f, 0) * last_v1) / 2 + new Vector3(0, height + blockheight * holeHeight / 2, 0);
@@ -2762,29 +2795,33 @@ public class GeneratePyramid : MonoBehaviour
             cube.GetComponent<MeshRenderer>().enabled = false;
             //cube.GetComponent<ShowHideObject>().hide = true;
             cube.GetComponent<BoxCollider>().isTrigger = true;
-        }
-        GameObject cube4 = cube;
+            cube4 = cube;
+        }        
 
         // ramp corner wide
         // not remove blocks in the first level
         if (level > 0)
         {
-            GameObject cube_c = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            cube_c.name = "4Ramp-corner_" + level + "_" + row + "_1";
-            cube_c.transform.position = objParent.transform.position + new Vector3((base_size / 2) - (holeWide + 1) * blockwide / 2, height + holeHeight * blockheight * 3 / 2, (base_size / 2) - (holeWide + 1) * blockwide / 2);
-            cube_c.transform.localScale = new Vector3((holeWide + 1) * blockwide, holeHeight * blockheight * 3, (holeWide + 1) * blockwide);
-            //cube_c.transform.parent = objParent.transform;
-            cube_c.transform.parent = ramp_gameObject.transform;
-            cube_c.isStatic = true;
-            cube_c.AddComponent<DeleteObject>();
-            cube_c.GetComponent<DeleteObject>().generatePyramid = this;
-            cube_c.GetComponent<DeleteObject>().CommonGameObject = objParent;
-            cube_c.GetComponent<MeshRenderer>().enabled = false;
-            cube_c.GetComponent<BoxCollider>().isTrigger = true;
-
-            if (minBaseSize2Ramps < base_size)
+            // Ramp 1
+            if (!Method2Ramp || level % 2 == 1)
             {
-                cube_c = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                GameObject cube_c = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                cube_c.name = "4Ramp-corner_" + level + "_" + row + "_1";
+                cube_c.transform.position = objParent.transform.position + new Vector3((base_size / 2) - (holeWide + 1) * blockwide / 2, height + holeHeight * blockheight * 3 / 2, (base_size / 2) - (holeWide + 1) * blockwide / 2);
+                cube_c.transform.localScale = new Vector3((holeWide + 1) * blockwide, holeHeight * blockheight * 3, (holeWide + 1) * blockwide);
+                //cube_c.transform.parent = objParent.transform;
+                cube_c.transform.parent = ramp_gameObject.transform;
+                cube_c.isStatic = true;
+                cube_c.AddComponent<DeleteObject>();
+                cube_c.GetComponent<DeleteObject>().generatePyramid = this;
+                cube_c.GetComponent<DeleteObject>().CommonGameObject = objParent;
+                cube_c.GetComponent<MeshRenderer>().enabled = false;
+                cube_c.GetComponent<BoxCollider>().isTrigger = true;
+            }
+            // Ramp 2
+            if (minBaseSize2Ramps < base_size && (!Method2Ramp || level % 2 == 0))
+            {
+                GameObject cube_c = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 cube_c.name = "4Ramp-corner_" + level + "_" + row + "_2";
                 cube_c.transform.position = objParent.transform.position + new Vector3((base_size / 2) - (holeWide + 1) * blockwide / 2, height + holeHeight * blockheight * 3 / 2, -(base_size / 2) + (holeWide + 1) * blockwide / 2);
                 cube_c.transform.localScale = new Vector3((holeWide + 1) * blockwide, holeHeight * blockheight * 3, (holeWide + 1) * blockwide);
@@ -2798,22 +2835,25 @@ public class GeneratePyramid : MonoBehaviour
                 cube_c.GetComponent<BoxCollider>().isTrigger = true;
             }
 
-            cube_c = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            cube_c.name = "4Ramp-corner_" + level + "_" + row + "_3";
-            cube_c.transform.position = objParent.transform.position + new Vector3(-(base_size / 2) + (holeWide + 1) * blockwide / 2, height + holeHeight * blockheight * 3 / 2, -(base_size / 2) + (holeWide + 1) * blockwide / 2);
-            cube_c.transform.localScale = new Vector3((holeWide + 1) * blockwide, holeHeight * blockheight * 3, (holeWide + 1) * blockwide);
-            //cube_c.transform.parent = objParent.transform;
-            cube_c.transform.parent = ramp_gameObject.transform;
-            cube_c.isStatic = true;
-            cube_c.AddComponent<DeleteObject>();
-            cube_c.GetComponent<DeleteObject>().generatePyramid = this;
-            cube_c.GetComponent<DeleteObject>().CommonGameObject = objParent;
-            cube_c.GetComponent<MeshRenderer>().enabled = false;
-            cube_c.GetComponent<BoxCollider>().isTrigger = true;
-
-            if (minBaseSize2Ramps < base_size)
+            if (!Method2Ramp || level % 2 == 1)
             {
-                cube_c = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                GameObject cube_c = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                cube_c.name = "4Ramp-corner_" + level + "_" + row + "_3";
+                cube_c.transform.position = objParent.transform.position + new Vector3(-(base_size / 2) + (holeWide + 1) * blockwide / 2, height + holeHeight * blockheight * 3 / 2, -(base_size / 2) + (holeWide + 1) * blockwide / 2);
+                cube_c.transform.localScale = new Vector3((holeWide + 1) * blockwide, holeHeight * blockheight * 3, (holeWide + 1) * blockwide);
+                //cube_c.transform.parent = objParent.transform;
+                cube_c.transform.parent = ramp_gameObject.transform;
+                cube_c.isStatic = true;
+                cube_c.AddComponent<DeleteObject>();
+                cube_c.GetComponent<DeleteObject>().generatePyramid = this;
+                cube_c.GetComponent<DeleteObject>().CommonGameObject = objParent;
+                cube_c.GetComponent<MeshRenderer>().enabled = false;
+                cube_c.GetComponent<BoxCollider>().isTrigger = true;
+            }
+
+            if (minBaseSize2Ramps < base_size && (!Method2Ramp || level % 2 == 0))
+            {
+                GameObject cube_c = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 cube_c.name = "4Ramp-corner_" + level + "_" + row + "_4";
                 cube_c.transform.position = objParent.transform.position + new Vector3(-(base_size / 2) + (holeWide + 1) * blockwide / 2, height + holeHeight * blockheight * 3 / 2, (base_size / 2) - (holeWide + 1) * blockwide / 2);
                 cube_c.transform.localScale = new Vector3((holeWide + 1) * blockwide, holeHeight * blockheight * 3, (holeWide + 1) * blockwide);
@@ -2829,8 +2869,8 @@ public class GeneratePyramid : MonoBehaviour
         }
 
         // ramp floor
-        GameObject cubefloor = null;
-        if (DrawFloor)
+        GameObject cubefloor = null;        
+        if (DrawFloor && (!Method2Ramp || level % 2 == 1))
         {
             cubefloor = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cubefloor.name = "4Ramp_floor_" + level + "_" + row + "_1";
@@ -2851,10 +2891,10 @@ public class GeneratePyramid : MonoBehaviour
             if (m_Material_floor)
                 cubefloor.GetComponent<MeshRenderer>().material = m_Material_floor;
             cubefloor.isStatic = true;
+            cubefloor1 = cubefloor;
         }
-        GameObject cubefloor1 = cubefloor;
 
-        if (minBaseSize2Ramps < base_size && DrawFloor)
+        if (minBaseSize2Ramps < base_size && DrawFloor && (!Method2Ramp || level % 2 == 0))
         {
             cubefloor = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cubefloor.name = "4Ramp_floor_" + level + "_" + row + "_2";
@@ -2875,10 +2915,10 @@ public class GeneratePyramid : MonoBehaviour
             if (m_Material_floor)
                 cubefloor.GetComponent<MeshRenderer>().material = m_Material_floor;
             cubefloor.isStatic = true;
+            cubefloor2 = cubefloor;
         }
-        GameObject cubefloor2 = cubefloor;
 
-        if (DrawFloor)
+        if (DrawFloor && (!Method2Ramp || level % 2 == 1))
         {
             cubefloor = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cubefloor.name = "4Ramp_floor_" + level + "_" + row + "_3";
@@ -2899,10 +2939,10 @@ public class GeneratePyramid : MonoBehaviour
             if (m_Material_floor)
                 cubefloor.GetComponent<MeshRenderer>().material = m_Material_floor;
             cubefloor.isStatic = true;
+            cubefloor3 = cubefloor;
         }
-        GameObject cubefloor3 = cubefloor;
-
-        if (minBaseSize2Ramps < base_size && DrawFloor)
+        
+        if (minBaseSize2Ramps < base_size && DrawFloor && (!Method2Ramp || level % 2 == 0))
         {
             cubefloor = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cubefloor.name = "4Ramp_floor_" + level + "_" + row + "_4";
@@ -2922,13 +2962,13 @@ public class GeneratePyramid : MonoBehaviour
             cubefloor.GetComponent<MeshRenderer>().material = m_Material;
             if (m_Material_floor)
                 cubefloor.GetComponent<MeshRenderer>().material = m_Material_floor;
-            cubefloor.isStatic = true;          
+            cubefloor.isStatic = true;
+            cubefloor4 = cubefloor;
         }
-        GameObject cubefloor4 = cubefloor;
-
+        
         // ramp wall
-        GameObject cubewall = null;
-        if (DrawWall)
+        GameObject cubewall = null;        
+        if (DrawWall && (!Method2Ramp || level % 2 == 1))
         {
             cubewall = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cubewall.name = "4Ramp_wall_" + level + "_" + row + "_1";
@@ -2957,10 +2997,10 @@ public class GeneratePyramid : MonoBehaviour
             cubewall.transform.parent = ramp_gameObject.transform;
             cubewall.GetComponent<MeshRenderer>().material = m_Material;
             cubewall.isStatic = true;
+            cubewall1 = cubewall;
         }
-        GameObject cubewall1 = cubewall;
-
-        if (minBaseSize2Ramps < base_size && DrawWall)
+        
+        if (minBaseSize2Ramps < base_size && DrawWall && (!Method2Ramp || level % 2 == 0))
         {
             cubewall = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cubewall.name = "4Ramp_wall_" + level + "_" + row + "_2";
@@ -2988,11 +3028,11 @@ public class GeneratePyramid : MonoBehaviour
             //cubewall.transform.parent = objParent.transform;
             cubewall.transform.parent = ramp_gameObject.transform;
             cubewall.GetComponent<MeshRenderer>().material = m_Material;
-            cubewall.isStatic = true;           
+            cubewall.isStatic = true;
+            cubewall2 = cubewall;
         }
-        GameObject cubewall2 = cubewall;
-
-        if (DrawWall)
+        
+        if (DrawWall && (!Method2Ramp || level % 2 == 1))
         {
             cubewall = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cubewall.name = "4Ramp_wall_" + level + "_" + row + "_3";
@@ -3021,10 +3061,10 @@ public class GeneratePyramid : MonoBehaviour
             cubewall.transform.parent = ramp_gameObject.transform;
             cubewall.GetComponent<MeshRenderer>().material = m_Material;
             cubewall.isStatic = true;
+            cubewall3 = cubewall;
         }
-        GameObject cubewall3 = cubewall;
-
-        if (minBaseSize2Ramps < base_size && DrawWall)
+        
+        if (minBaseSize2Ramps < base_size && DrawWall && (!Method2Ramp || level % 2 == 0))
         {
             cubewall = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cubewall.name = "4Ramp_wall_" + level + "_" + row + "_4";
@@ -3052,26 +3092,29 @@ public class GeneratePyramid : MonoBehaviour
             //cubewall.transform.parent = objParent.transform;
             cubewall.transform.parent = ramp_gameObject.transform;
             cubewall.GetComponent<MeshRenderer>().material = m_Material;
-            cubewall.isStatic = true;           
+            cubewall.isStatic = true;
+            cubewall4 = cubewall;
         }
-        GameObject cubewall4 = cubewall;
-
+        
         // corner floor
         if (DrawFloor)
         {
-            GameObject cubecorner = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            cubecorner.name = "Ramp_corner_" + level + "_" + row + "_1";
-            cubecorner.transform.position = objParent.transform.position + new Vector3((base_size / 2 - holeWide * blockwide * 5 / 6), height, (base_size / 2 - holeWide * blockwide * 5 / 6));
-            cubecorner.transform.localRotation = Quaternion.Euler(100.0f, -27.0f, -32.0f);
-            cubecorner.transform.localScale = new Vector3(holeWide * blockwide * 2, holeWide * blockwide * 2, 0.1f);
-            //cubecorner.transform.parent = objParent.transform;
-            cubecorner.transform.parent = ramp_gameObject.transform;
-            cubecorner.GetComponent<MeshRenderer>().material = m_Material_corner;
-            cubecorner.isStatic = true;
-
-            if (minBaseSize2Ramps < base_size)
+            if (!Method2Ramp || level % 2 == 1)
             {
-                cubecorner = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                GameObject cubecorner = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                cubecorner.name = "Ramp_corner_" + level + "_" + row + "_1";
+                cubecorner.transform.position = objParent.transform.position + new Vector3((base_size / 2 - holeWide * blockwide * 5 / 6), height, (base_size / 2 - holeWide * blockwide * 5 / 6));
+                cubecorner.transform.localRotation = Quaternion.Euler(100.0f, -27.0f, -32.0f);
+                cubecorner.transform.localScale = new Vector3(holeWide * blockwide * 2, holeWide * blockwide * 2, 0.1f);
+                //cubecorner.transform.parent = objParent.transform;
+                cubecorner.transform.parent = ramp_gameObject.transform;
+                cubecorner.GetComponent<MeshRenderer>().material = m_Material_corner;
+                cubecorner.isStatic = true;
+            }
+
+            if (minBaseSize2Ramps < base_size && (!Method2Ramp || level % 2 == 1))
+            {
+                GameObject cubecorner = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 cubecorner.name = "Ramp_corner_" + level + "_" + row + "_2";
                 cubecorner.transform.position = objParent.transform.position + new Vector3((base_size / 2 - holeWide * blockwide * 5 / 6), height, -(base_size / 2 - holeWide * blockwide * 5 / 6));
                 cubecorner.transform.localRotation = Quaternion.Euler(100.0f, 53.0f, 48.0f);
@@ -3082,19 +3125,22 @@ public class GeneratePyramid : MonoBehaviour
                 cubecorner.isStatic = true;
             }
 
-            cubecorner = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            cubecorner.name = "Ramp_corner_" + level + "_" + row + "_3";
-            cubecorner.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - holeWide * blockwide * 5 / 6), height, -(base_size / 2 - holeWide * blockwide * 5 / 6));
-            cubecorner.transform.localRotation = Quaternion.Euler(80.0f, -42.0f, -48.0f);
-            cubecorner.transform.localScale = new Vector3(holeWide * blockwide * 2, holeWide * blockwide * 2, 0.1f);
-            //cubecorner.transform.parent = objParent.transform;
-            cubecorner.transform.parent = ramp_gameObject.transform;
-            cubecorner.GetComponent<MeshRenderer>().material = m_Material_corner;
-            cubecorner.isStatic = true;
-
-            if (minBaseSize2Ramps < base_size)
+            if (!Method2Ramp || level % 2 == 1)
             {
-                cubecorner = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                GameObject cubecorner = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                cubecorner.name = "Ramp_corner_" + level + "_" + row + "_3";
+                cubecorner.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - holeWide * blockwide * 5 / 6), height, -(base_size / 2 - holeWide * blockwide * 5 / 6));
+                cubecorner.transform.localRotation = Quaternion.Euler(80.0f, -42.0f, -48.0f);
+                cubecorner.transform.localScale = new Vector3(holeWide * blockwide * 2, holeWide * blockwide * 2, 0.1f);
+                //cubecorner.transform.parent = objParent.transform;
+                cubecorner.transform.parent = ramp_gameObject.transform;
+                cubecorner.GetComponent<MeshRenderer>().material = m_Material_corner;
+                cubecorner.isStatic = true;
+            }
+
+            if (minBaseSize2Ramps < base_size && (!Method2Ramp || level % 2 == 0))
+            {
+                GameObject cubecorner = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 cubecorner.name = "Ramp_corner_" + level + "_" + row + "_4";
                 cubecorner.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - holeWide * blockwide * 5 / 6), height, (base_size / 2 - holeWide * blockwide * 5 / 6));
                 cubecorner.transform.localRotation = Quaternion.Euler(80.0f, 32.0f, 27.0f);
@@ -3109,19 +3155,22 @@ public class GeneratePyramid : MonoBehaviour
         // corner wall
         if (DrawWall)
         {
-            GameObject cubecorner_wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            cubecorner_wall.name = "Ramp_cornerwall_" + level + "_" + row + "_1";
-            cubecorner_wall.transform.position = objParent.transform.position + new Vector3((base_size / 2) - holeWide * blockwide, height + blockheight * holeHeight, (base_size / 2) - holeWide * blockwide);
-            cubecorner_wall.transform.localRotation = Quaternion.Euler(180.0f, 60.0f, 0.0f);
-            cubecorner_wall.transform.localScale = new Vector3((holeWide + 1) * blockwide, blockheight * holeHeight * 2, 0.1f);
-            //cubecorner_wall.transform.parent = objParent.transform;
-            cubecorner_wall.transform.parent = ramp_gameObject.transform;
-            cubecorner_wall.GetComponent<MeshRenderer>().material = m_Material_corner;
-            cubecorner_wall.isStatic = true;
-
-            if (minBaseSize2Ramps < base_size)
+            if (!Method2Ramp || level % 2 == 1)
             {
-                cubecorner_wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                GameObject cubecorner_wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                cubecorner_wall.name = "Ramp_cornerwall_" + level + "_" + row + "_1";
+                cubecorner_wall.transform.position = objParent.transform.position + new Vector3((base_size / 2) - holeWide * blockwide, height + blockheight * holeHeight, (base_size / 2) - holeWide * blockwide);
+                cubecorner_wall.transform.localRotation = Quaternion.Euler(180.0f, 60.0f, 0.0f);
+                cubecorner_wall.transform.localScale = new Vector3((holeWide + 1) * blockwide, blockheight * holeHeight * 2, 0.1f);
+                //cubecorner_wall.transform.parent = objParent.transform;
+                cubecorner_wall.transform.parent = ramp_gameObject.transform;
+                cubecorner_wall.GetComponent<MeshRenderer>().material = m_Material_corner;
+                cubecorner_wall.isStatic = true;
+            }
+
+            if (minBaseSize2Ramps < base_size && (!Method2Ramp || level % 2 == 0))
+            {
+                GameObject cubecorner_wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 cubecorner_wall.name = "Ramp_cornerwall_" + level + "_" + row + "_2";
                 cubecorner_wall.transform.position = objParent.transform.position + new Vector3((base_size / 2) - holeWide * blockwide, height + blockheight * holeHeight, -(base_size / 2) + holeWide * blockwide);
                 cubecorner_wall.transform.localRotation = Quaternion.Euler(0.0f, -30.0f, 0.0f);
@@ -3132,19 +3181,22 @@ public class GeneratePyramid : MonoBehaviour
                 cubecorner_wall.isStatic = true;
             }
 
-            cubecorner_wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            cubecorner_wall.name = "Ramp_cornerwall_" + level + "_" + row + "_3";
-            cubecorner_wall.transform.position = objParent.transform.position + new Vector3(-(base_size / 2) + holeWide * blockwide, height + blockheight * holeHeight, -(base_size / 2) + holeWide * blockwide);
-            cubecorner_wall.transform.localRotation = Quaternion.Euler(0.0f, 60.0f, 90.0f);
-            cubecorner_wall.transform.localScale = new Vector3((holeWide + 1) * blockwide, blockheight * holeHeight * 2, 0.1f);
-            //cubecorner_wall.transform.parent = objParent.transform;
-            cubecorner_wall.transform.parent = ramp_gameObject.transform;
-            cubecorner_wall.GetComponent<MeshRenderer>().material = m_Material_corner;
-            cubecorner_wall.isStatic = true;
-
-            if (minBaseSize2Ramps < base_size)
+            if (!Method2Ramp || level % 2 == 1)
             {
-                cubecorner_wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                GameObject cubecorner_wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                cubecorner_wall.name = "Ramp_cornerwall_" + level + "_" + row + "_3";
+                cubecorner_wall.transform.position = objParent.transform.position + new Vector3(-(base_size / 2) + holeWide * blockwide, height + blockheight * holeHeight, -(base_size / 2) + holeWide * blockwide);
+                cubecorner_wall.transform.localRotation = Quaternion.Euler(0.0f, 60.0f, 90.0f);
+                cubecorner_wall.transform.localScale = new Vector3((holeWide + 1) * blockwide, blockheight * holeHeight * 2, 0.1f);
+                //cubecorner_wall.transform.parent = objParent.transform;
+                cubecorner_wall.transform.parent = ramp_gameObject.transform;
+                cubecorner_wall.GetComponent<MeshRenderer>().material = m_Material_corner;
+                cubecorner_wall.isStatic = true;
+            }
+
+            if (minBaseSize2Ramps < base_size && (!Method2Ramp || level % 2 == 0))
+            {
+                GameObject cubecorner_wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 cubecorner_wall.name = "Ramp_cornerwall_" + level + "_" + row + "_4";
                 cubecorner_wall.transform.position = objParent.transform.position + new Vector3(-(base_size / 2) + holeWide * blockwide, height + blockheight * holeHeight, (base_size / 2) - holeWide * blockwide);
                 cubecorner_wall.transform.localRotation = Quaternion.Euler(180.0f, -30.0f, 0.0f);
@@ -3164,19 +3216,22 @@ public class GeneratePyramid : MonoBehaviour
             float hypotenuse_wood = baseWidth / MathF.Cos(angleInRadians) * 2 / 3;
 
             // wooden cylinder
-            GameObject woodencyl = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            woodencyl.name = "Ramp_wooden_cylinder_" + level + "_" + row + "_1";
-            woodencyl.transform.position = objParent.transform.position + new Vector3((base_size / 2) - (holeWide + 1) * blockwide / 2, height + hypotenuse_wood / 2, (base_size / 2) - (holeWide + 1) * blockwide / 2);
-            woodencyl.transform.localRotation = Quaternion.Euler(-8.3f, -36.3f, 48.0f);
-            woodencyl.transform.localScale = new Vector3(0.3f, hypotenuse_wood, 0.3f);
-            //woodencyl.transform.parent = objParent.transform;
-            woodencyl.transform.parent = ramp_gameObject.transform;
-            woodencyl.GetComponent<MeshRenderer>().material = m_Material_wood;
-            woodencyl.isStatic = true;
-
-            if (minBaseSize2Ramps < base_size)
+            if (!Method2Ramp || level % 2 == 1)
             {
-                woodencyl = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                GameObject woodencyl = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                woodencyl.name = "Ramp_wooden_cylinder_" + level + "_" + row + "_1";
+                woodencyl.transform.position = objParent.transform.position + new Vector3((base_size / 2) - (holeWide + 1) * blockwide / 2, height + hypotenuse_wood / 2, (base_size / 2) - (holeWide + 1) * blockwide / 2);
+                woodencyl.transform.localRotation = Quaternion.Euler(-8.3f, -36.3f, 48.0f);
+                woodencyl.transform.localScale = new Vector3(0.3f, hypotenuse_wood, 0.3f);
+                //woodencyl.transform.parent = objParent.transform;
+                woodencyl.transform.parent = ramp_gameObject.transform;
+                woodencyl.GetComponent<MeshRenderer>().material = m_Material_wood;
+                woodencyl.isStatic = true;
+            }
+
+            if (minBaseSize2Ramps < base_size && (!Method2Ramp || level % 2 == 0))
+            {
+                GameObject woodencyl = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                 woodencyl.name = "Ramp_wooden_cylinder_" + level + "_" + row + "_2";
                 woodencyl.transform.position = objParent.transform.position + new Vector3((base_size / 2) - (holeWide + 1) * blockwide / 2, height + hypotenuse_wood / 2, -(base_size / 2 ) + (holeWide + 1) * blockwide / 2);
                 woodencyl.transform.localRotation = Quaternion.Euler(45.0f, -35.0f, 7.0f);
@@ -3187,19 +3242,22 @@ public class GeneratePyramid : MonoBehaviour
                 woodencyl.isStatic = true;
             }
 
-            woodencyl = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            woodencyl.name = "Ramp_wooden_cylinder_" + level + "_" + row + "_3";
-            woodencyl.transform.position = objParent.transform.position + new Vector3(-(base_size / 2) + (holeWide + 1) * blockwide / 2, height + hypotenuse_wood / 2, -(base_size / 2) + (holeWide + 1) * blockwide / 2);
-            woodencyl.transform.localRotation = Quaternion.Euler(45.0f, 14.0f, -23.0f);
-            woodencyl.transform.localScale = new Vector3(0.3f, hypotenuse_wood, 0.3f);
-            //woodencyl.transform.parent = objParent.transform;
-            woodencyl.transform.parent = ramp_gameObject.transform;
-            woodencyl.GetComponent<MeshRenderer>().material = m_Material_wood;
-            woodencyl.isStatic = true;
-
-            if (minBaseSize2Ramps < base_size)
+            if (!Method2Ramp || level % 2 == 1)
             {
-                woodencyl = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                GameObject woodencyl = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                woodencyl.name = "Ramp_wooden_cylinder_" + level + "_" + row + "_3";
+                woodencyl.transform.position = objParent.transform.position + new Vector3(-(base_size / 2) + (holeWide + 1) * blockwide / 2, height + hypotenuse_wood / 2, -(base_size / 2) + (holeWide + 1) * blockwide / 2);
+                woodencyl.transform.localRotation = Quaternion.Euler(45.0f, 14.0f, -23.0f);
+                woodencyl.transform.localScale = new Vector3(0.3f, hypotenuse_wood, 0.3f);
+                //woodencyl.transform.parent = objParent.transform;
+                woodencyl.transform.parent = ramp_gameObject.transform;
+                woodencyl.GetComponent<MeshRenderer>().material = m_Material_wood;
+                woodencyl.isStatic = true;
+            }
+
+            if (minBaseSize2Ramps < base_size && (!Method2Ramp || level % 2 == 0))
+            {
+                GameObject woodencyl = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                 woodencyl.name = "Ramp_wooden_cylinder_" + level + "_" + row + "_4";
                 woodencyl.transform.position = objParent.transform.position + new Vector3(-(base_size / 2)+ (holeWide + 1) * blockwide / 2, height + hypotenuse_wood / 2, (base_size / 2) - (holeWide + 1) * blockwide / 2);
                 woodencyl.transform.localRotation = Quaternion.Euler(135.0f, -18.0f, 20.0f);
@@ -3221,17 +3279,20 @@ public class GeneratePyramid : MonoBehaviour
         // stone sled
         if (DrawEgyptians && stone_sled && height < Height * 0.9f && !exportPyramidObj)
         {
-            GameObject stone_sled1 = Instantiate(stone_sled, objParent.transform.position + new Vector3(0, 0, 0), Quaternion.identity);
-            stone_sled1.name = "stone_sled_" + level + "_" + row + "_1";
-            stone_sled1.transform.position = objParent.transform.position + new Vector3((base_size / 2 - 1.0f * blockwide), height + 0.75f, (base_size / 2 - 2.5f * blockwide));
-            stone_sled1.transform.localRotation = Quaternion.Euler(0.0f, 95.0f, 7.0f);
-            //stone_sled1.transform.parent = objParent.transform;
-            stone_sled1.transform.parent = workers_gameObject.transform;
-            stone_sled1.isStatic = true;
-
-            if (minBaseSize2Ramps < base_size)
+            if (!Method2Ramp || level % 2 == 1)
             {
-                stone_sled1 = Instantiate(stone_sled, objParent.transform.position + new Vector3(0, 0, 0), Quaternion.identity);
+                GameObject stone_sled1 = Instantiate(stone_sled, objParent.transform.position + new Vector3(0, 0, 0), Quaternion.identity);
+                stone_sled1.name = "stone_sled_" + level + "_" + row + "_1";
+                stone_sled1.transform.position = objParent.transform.position + new Vector3((base_size / 2 - 1.0f * blockwide), height + 0.75f, (base_size / 2 - 2.5f * blockwide));
+                stone_sled1.transform.localRotation = Quaternion.Euler(0.0f, 95.0f, 7.0f);
+                //stone_sled1.transform.parent = objParent.transform;
+                stone_sled1.transform.parent = workers_gameObject.transform;
+                stone_sled1.isStatic = true;
+            }
+
+            if (minBaseSize2Ramps < base_size && (!Method2Ramp || level % 2 == 0))
+            {
+                GameObject stone_sled1 = Instantiate(stone_sled, objParent.transform.position + new Vector3(0, 0, 0), Quaternion.identity);
                 stone_sled1.name = "stone_sled_" + level + "_" + row + "_2";
                 stone_sled1.transform.position = objParent.transform.position + new Vector3((base_size / 2 - 2.5f * blockwide), height + 0.75f, -(base_size / 2 - 1.0f * blockwide));
                 stone_sled1.transform.localRotation = Quaternion.Euler(0.0f, 7.0f, -7.0f);
@@ -3240,17 +3301,20 @@ public class GeneratePyramid : MonoBehaviour
                 stone_sled1.isStatic = true;
             }
 
-            stone_sled1 = Instantiate(stone_sled, objParent.transform.position + new Vector3(0, 0, 0), Quaternion.identity);
-            stone_sled1.name = "stone_sled_" + level + "_" + row + "_3";
-            stone_sled1.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - 1.0f * blockwide), height + 0.75f, -(base_size / 2 - 2.5f * blockwide));
-            stone_sled1.transform.localRotation = Quaternion.Euler(0.0f, 95.0f, -7.0f);
-            //stone_sled1.transform.parent = objParent.transform;
-            stone_sled1.transform.parent = workers_gameObject.transform;
-            stone_sled1.isStatic = true;
-
-            if (minBaseSize2Ramps < base_size)
+            if (!Method2Ramp || level % 2 == 1)
             {
-                stone_sled1 = Instantiate(stone_sled, new Vector3(0, 0, 0), Quaternion.identity);
+                GameObject stone_sled1 = Instantiate(stone_sled, objParent.transform.position + new Vector3(0, 0, 0), Quaternion.identity);
+                stone_sled1.name = "stone_sled_" + level + "_" + row + "_3";
+                stone_sled1.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - 1.0f * blockwide), height + 0.75f, -(base_size / 2 - 2.5f * blockwide));
+                stone_sled1.transform.localRotation = Quaternion.Euler(0.0f, 95.0f, -7.0f);
+                //stone_sled1.transform.parent = objParent.transform;
+                stone_sled1.transform.parent = workers_gameObject.transform;
+                stone_sled1.isStatic = true;
+            }
+
+            if (minBaseSize2Ramps < base_size && (!Method2Ramp || level % 2 == 0))
+            {
+                GameObject stone_sled1 = Instantiate(stone_sled, new Vector3(0, 0, 0), Quaternion.identity);
                 stone_sled1.name = "stone_sled_" + level + "_" + row + "_4";
                 stone_sled1.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - 2.5f * blockwide), height + 0.75f, (base_size / 2 - 1.0f * blockwide));
                 stone_sled1.transform.localRotation = Quaternion.Euler(0.0f, 7.0f, 7.0f);
@@ -3266,17 +3330,20 @@ public class GeneratePyramid : MonoBehaviour
             for (int i = 0; i < 12; i++)
             {
                 // left hand
-                GameObject Egyptian = Instantiate(Egyptian_body, new Vector3(0, 0, 0), Quaternion.identity);
-                Egyptian.name = "Egyptian_left_" + level + "_" + row + "_" + i + "_1";
-                Egyptian.transform.position = objParent.transform.position + new Vector3((base_size / 2 - (0.75f + 0.1f * i) * blockwide), height + 2.25f + 0.16f * i, (base_size / 2 - (4.5f + i) * blockwide));
-                Egyptian.transform.localRotation = Quaternion.Euler(7.0f, 7.0f, 0.0f);
-                //Egyptian.transform.parent = objParent.transform;
-                Egyptian.transform.parent = workers_gameObject.transform;
-                Egyptian.isStatic = true;
-
-                if (minBaseSize2Ramps < base_size)
+                if (!Method2Ramp || level % 2 == 1)
                 {
-                    Egyptian = Instantiate(Egyptian_body, new Vector3(0, 0, 0), Quaternion.identity);
+                    GameObject Egyptian = Instantiate(Egyptian_body, new Vector3(0, 0, 0), Quaternion.identity);
+                    Egyptian.name = "Egyptian_left_" + level + "_" + row + "_" + i + "_1";
+                    Egyptian.transform.position = objParent.transform.position + new Vector3((base_size / 2 - (0.75f + 0.1f * i) * blockwide), height + 2.25f + 0.16f * i, (base_size / 2 - (4.5f + i) * blockwide));
+                    Egyptian.transform.localRotation = Quaternion.Euler(7.0f, 7.0f, 0.0f);
+                    //Egyptian.transform.parent = objParent.transform;
+                    Egyptian.transform.parent = workers_gameObject.transform;
+                    Egyptian.isStatic = true;
+                }
+
+                if (minBaseSize2Ramps < base_size && (!Method2Ramp || level % 2 == 0))
+                {
+                    GameObject Egyptian = Instantiate(Egyptian_body, new Vector3(0, 0, 0), Quaternion.identity);
                     Egyptian.name = "Egyptian_left_" + level + "_" + row + "_" + i + "_2";
                     Egyptian.transform.position = objParent.transform.position + new Vector3((base_size / 2 - (4.5f + i) * blockwide), height + 2.25f + 0.16f * i, -(base_size / 2 - (0.75f + 0.1f * i) * blockwide));
                     Egyptian.transform.localRotation = Quaternion.Euler(7.0f, 97.0f, 0.0f);
@@ -3285,17 +3352,20 @@ public class GeneratePyramid : MonoBehaviour
                     Egyptian.isStatic = true;
                 }
 
-                Egyptian = Instantiate(Egyptian_body, new Vector3(0, 0, 0), Quaternion.identity);
-                Egyptian.name = "Egyptian_left_" + level + "_" + row + "_" + i + "_3";
-                Egyptian.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - (0.75f + 0.1f * i) * blockwide), height + 2.25f + 0.16f * i, -(base_size / 2 - (4.5f + i) * blockwide));
-                Egyptian.transform.localRotation = Quaternion.Euler(7.0f, 187.0f, 0.0f);
-                //Egyptian.transform.parent = objParent.transform;
-                Egyptian.transform.parent = workers_gameObject.transform;
-                Egyptian.isStatic = true;
-
-                if (minBaseSize2Ramps < base_size)
+                if (!Method2Ramp || level % 2 == 1)
                 {
-                    Egyptian = Instantiate(Egyptian_body, new Vector3(0, 0, 0), Quaternion.identity);
+                    GameObject Egyptian = Instantiate(Egyptian_body, new Vector3(0, 0, 0), Quaternion.identity);
+                    Egyptian.name = "Egyptian_left_" + level + "_" + row + "_" + i + "_3";
+                    Egyptian.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - (0.75f + 0.1f * i) * blockwide), height + 2.25f + 0.16f * i, -(base_size / 2 - (4.5f + i) * blockwide));
+                    Egyptian.transform.localRotation = Quaternion.Euler(7.0f, 187.0f, 0.0f);
+                    //Egyptian.transform.parent = objParent.transform;
+                    Egyptian.transform.parent = workers_gameObject.transform;
+                    Egyptian.isStatic = true;
+                }
+
+                if (minBaseSize2Ramps < base_size && (!Method2Ramp || level % 2 == 0))
+                {
+                    GameObject Egyptian = Instantiate(Egyptian_body, new Vector3(0, 0, 0), Quaternion.identity);
                     Egyptian.name = "Egyptian_left_" + level + "_" + row + "_" + i + "_4";
                     Egyptian.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - (4.5f + i) * blockwide), height + 2.25f + 0.16f * i, (base_size / 2 - (0.75f + 0.1f * i) * blockwide));
                     Egyptian.transform.localRotation = Quaternion.Euler(7.0f, -75.0f, 0.0f);
@@ -3305,17 +3375,20 @@ public class GeneratePyramid : MonoBehaviour
                 }
 
                 // right hand
-                GameObject Egyptian2 = Instantiate(Egyptian_body, new Vector3(0, 0, 0), Quaternion.identity);
-                Egyptian2.name = "Egyptian_right_" + level + "_" + row + "_" + i + "_1";
-                Egyptian2.transform.position = objParent.transform.position + new Vector3((base_size / 2 - (1.5f + 0.1f * i) * blockwide), height + 2.25f + 0.16f * i, (base_size / 2 - (4.5f + i) * blockwide));
-                Egyptian2.transform.localRotation = Quaternion.Euler(7.0f, 7.0f, 0.0f);
-                //Egyptian2.transform.parent = objParent.transform;
-                Egyptian2.transform.parent = workers_gameObject.transform;
-                Egyptian2.isStatic = true;
-
-                if (minBaseSize2Ramps < base_size)
+                if (!Method2Ramp || level % 2 == 1)
                 {
-                    Egyptian2 = Instantiate(Egyptian_body, new Vector3(0, 0, 0), Quaternion.identity);
+                    GameObject Egyptian2 = Instantiate(Egyptian_body, new Vector3(0, 0, 0), Quaternion.identity);
+                    Egyptian2.name = "Egyptian_right_" + level + "_" + row + "_" + i + "_1";
+                    Egyptian2.transform.position = objParent.transform.position + new Vector3((base_size / 2 - (1.5f + 0.1f * i) * blockwide), height + 2.25f + 0.16f * i, (base_size / 2 - (4.5f + i) * blockwide));
+                    Egyptian2.transform.localRotation = Quaternion.Euler(7.0f, 7.0f, 0.0f);
+                    //Egyptian2.transform.parent = objParent.transform;
+                    Egyptian2.transform.parent = workers_gameObject.transform;
+                    Egyptian2.isStatic = true;
+                }
+
+                if (minBaseSize2Ramps < base_size && (!Method2Ramp || level % 2 == 0))
+                {
+                    GameObject Egyptian2 = Instantiate(Egyptian_body, new Vector3(0, 0, 0), Quaternion.identity);
                     Egyptian2.name = "Egyptian_right_" + level + "_" + row + "_" + i + "_2";
                     Egyptian2.transform.position = objParent.transform.position + new Vector3((base_size / 2 - (4.5f + i) * blockwide), height + 2.25f + 0.16f * i, -(base_size / 2 - (1.5f + 0.1f * i) * blockwide));
                     Egyptian2.transform.localRotation = Quaternion.Euler(7.0f, 97.0f, 0.0f);
@@ -3324,17 +3397,20 @@ public class GeneratePyramid : MonoBehaviour
                     Egyptian2.isStatic = true;
                 }
 
-                Egyptian2 = Instantiate(Egyptian_body, new Vector3(0, 0, 0), Quaternion.identity);
-                Egyptian2.name = "Egyptian_right_" + level + "_" + row + "_" + i + "_3";
-                Egyptian2.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - (1.5f + 0.1f * i) * blockwide), height + 2.25f + 0.16f * i, -(base_size / 2 - (4.5f + i) * blockwide));
-                Egyptian2.transform.localRotation = Quaternion.Euler(7.0f, 187.0f, 0.0f);
-                //Egyptian2.transform.parent = objParent.transform;
-                Egyptian2.transform.parent = workers_gameObject.transform;
-                Egyptian2.isStatic = true;
-
-                if (minBaseSize2Ramps < base_size)
+                if (!Method2Ramp || level % 2 == 1)
                 {
-                    Egyptian2 = Instantiate(Egyptian_body, new Vector3(0, 0, 0), Quaternion.identity);
+                    GameObject Egyptian2 = Instantiate(Egyptian_body, new Vector3(0, 0, 0), Quaternion.identity);
+                    Egyptian2.name = "Egyptian_right_" + level + "_" + row + "_" + i + "_3";
+                    Egyptian2.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - (1.5f + 0.1f * i) * blockwide), height + 2.25f + 0.16f * i, -(base_size / 2 - (4.5f + i) * blockwide));
+                    Egyptian2.transform.localRotation = Quaternion.Euler(7.0f, 187.0f, 0.0f);
+                    //Egyptian2.transform.parent = objParent.transform;
+                    Egyptian2.transform.parent = workers_gameObject.transform;
+                    Egyptian2.isStatic = true;
+                }
+
+                if (minBaseSize2Ramps < base_size && (!Method2Ramp || level % 2 == 0))
+                {
+                    GameObject Egyptian2 = Instantiate(Egyptian_body, new Vector3(0, 0, 0), Quaternion.identity);
                     Egyptian2.name = "Egyptian_right_" + level + "_" + row + "_" + i + "_4";
                     Egyptian2.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - (4.5f + i) * blockwide), height + 2.25f + 0.16f * i, (base_size / 2 - (1.5f + 0.1f * i) * blockwide));
                     Egyptian2.transform.localRotation = Quaternion.Euler(7.0f, -75.0f, 0.0f);
@@ -3349,7 +3425,7 @@ public class GeneratePyramid : MonoBehaviour
         if (level == 0 && Method8Ramp && DrawUntilRow && row < 21 && minBaseSize8Ramps < base_size)
         {
             // Middle Ramp 1
-            cube = Instantiate(cube1);
+            GameObject cube = Instantiate(cube1);
             //cube.transform.parent = objParent.transform;
             cube.transform.parent = ramp_gameObject.transform;
             cube.name = "Middle_4Ramp_" + level + "_" + row + "_1";
@@ -3648,6 +3724,7 @@ public class GeneratePyramid : MonoBehaviour
         // Reset new variables to their defaults
         holeHeight = 3;
         holeWide = 3;
+        Method2Ramp = false;
         Method4Ramp = false;
         MethodInsideRamp = false;
         Method8Ramp = false;

@@ -90,6 +90,10 @@ public class GeneratePyramid : MonoBehaviour
     /// The separation between individual blocks for visual clarity.
     /// </summary>
     public float blockSeparation = 0.01f; // separation between blocks
+    /// <summary>
+    /// Uset setback for the width of the path or ramp.
+    /// </summary>
+    public bool setback = false; 
 
     // --- Block and Calculation Data ---
     /// <summary>
@@ -308,6 +312,19 @@ public class GeneratePyramid : MonoBehaviour
     /// If true, only draws half of the pyramid for inspection.
     /// </summary>
     public bool halfPyramid = false;
+    /// <summary>
+    /// If true, Draw Pyramid interior
+    /// </summary>
+    public bool DrawPyramidInterior = false;
+    /// <summary>
+    /// If true, Draw Pyramid interior transparent
+    /// </summary>
+    public bool DrawPyramidInteriorTransparent = true;
+    /// <summary>
+    /// Pyramid interior GameObject
+    /// </summary>
+    public GameObject PyramidInterior;
+
 
     // --- Logging and Export Options ---
     /// <summary>
@@ -467,6 +484,10 @@ public class GeneratePyramid : MonoBehaviour
     /// Show GUI 
     /// </summary>
     public CameraPositionFace cameraPositionFace = CameraPositionFace.NorthFace;
+    /// <summary>
+    /// Progress Bar UI
+    /// </summary>
+    public ProgressBarUI progressBar;
 
     private float pyramid_inclination_tg = 0;
     private float ramp_inclination_tg;   
@@ -475,6 +496,7 @@ public class GeneratePyramid : MonoBehaviour
     private float g = 9.80665f;
     private string dir;   
     private string textPath;
+    private float setbackWide = 0.0f;
 
     private float x;
     private float z;
@@ -495,6 +517,8 @@ public class GeneratePyramid : MonoBehaviour
     private GameObject cube1,cube2,cube3,cube4;
     private GameObject cubefloor1, cubefloor2, cubefloor3, cubefloor4;
     private GameObject cubewall1, cubewall2, cubewall3, cubewall4;
+
+    private bool isGenerating = false;
 
     // This runs in the editor whenever a value is changed in the Inspector.
     private void OnValidate()
@@ -549,31 +573,99 @@ public class GeneratePyramid : MonoBehaviour
         }
     }
 
-    // Start is called before the first frame update
-    void Start()
+    /// <summary>
+    /// Public method to safely start the pyramid generation process.
+    /// </summary>
+    public void StartGeneration()
     {
-        string baseExportPath = Application.persistentDataPath;
+        if (!isGenerating)
+        {
+            StartCoroutine(CreatePyramidCoroutine());
+        }
+        else
+        {
+            Debug.LogWarning("Generation is already in progress.");
+        }
+    }
 
-        // Combines the base path with your subfolder name for the
-        string fullExportPath = Path.Combine(baseExportPath, exportSubFolder);
+    private void OpenLogFiles()
+    {
+        try
+        {
+            // Clear previous pyramid if any
+            dir = Application.dataPath + "/../";
+            textPath = Path.Combine(dir, txtname);
+            Debug.Log("File : " + textPath);
+            writer = new StreamWriter(textPath, false);
+            if (showInfoLevel || showInfoLevelTotal || showInfoLevelDec)
+            {
+                textPath = Path.Combine(dir, csvitername);
+                Debug.Log("File : " + textPath);
+                csviterwriter = new StreamWriter(textPath, false);
+                csviterwriter.WriteLine("Course;Height;blocks;Separation;New base size;Length;Ramp inclination;Start height;% total height;Ramp length (m)");
+            }
+            else
+                csviterwriter = null;
+            if (showInfoRow)
+            {
+                textPath = Path.Combine(dir, csvrowname);
+                Debug.Log("File : " + textPath);
+                csvrowwriter = new StreamWriter(textPath, false);
+                csvrowwriter.WriteLine("Row;blocks;ramp inclination;Ramp length (m);Ramp length total (m);distance blocks (Km);distance blocks Ramp (Km);distance blocks Horiz (Km);Sum force blocks (GJ);Sum Vert. force blocks (GJ);Sum Horiz. force blocks (GJ);Vert. force blocks row (GJ);Horiz. force blocks row (GJ);Total force blocks row (GJ);% Decrement blocks;% increase Distance;% increase Force");
 
-        pyramid_inclination_tg = getTanFromDegrees(PyramidInclination);
-        ramp_inclination_tg = getTanFromDegrees(RampInclination);
-        ramp_inclination_atg = Mathf.Atan(ramp_inclination_tg);
-        total_height = 0;
-        int rh = Mathf.CeilToInt(Height / blockheight);  // adjust to block height
-        Height = rh * blockheight;
-        float rampInclinationRadians = RampInclination * Mathf.Deg2Rad;
-        ramp_total_length = Height / Mathf.Sin(rampInclinationRadians);
+                textPath = Path.Combine(dir, csvheadway);
+                Debug.Log("File : " + textPath);
+                csvheadwaywriter = new StreamWriter(textPath, false);
+                csvheadwaywriter.WriteLine("Row;blocks;up ramps;blocks per ramp;fixed headway(min);adaptative headway(min);total time(min);adaptative total time(min);total time(working years);adaptativive total time(working years)");
+            }
+            else
+            {
+                csvrowwriter = null;
+                csvheadwaywriter = null;
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Failed to open log files: {e.Message}");
+        }
+    }
 
-        // base on base size
-        GameObject base_cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        base_cube.name = "Base";
-        base_cube.isStatic = true;
-        base_cube.transform.position = objParent.transform.position + new Vector3(0, -0.5f, 0);
-        base_cube.transform.parent = objParent.transform;
-        base_cube.transform.localScale = new Vector3(BaseSize, 1.0f, BaseSize);
-        base_cube.GetComponent<MeshRenderer>().enabled = false;
+    private void CloseLogFiles()
+    {
+        // This method is now safer. It checks if a writer is null before trying to close it.
+        try
+        {
+            writer.Flush();
+            writer.Close();
+            if (showInfoLevel)
+            {
+                csviterwriter.Flush();
+                csviterwriter.Close();
+            }
+            if (showInfoRow)
+            {
+                csvrowwriter.Flush();
+                csvrowwriter.Close();
+                csvheadwaywriter.Flush();
+                csvheadwaywriter.Close();
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Failed to close log files: {e.Message}");
+        }
+    }
+
+    /// <summary>
+    /// The main coroutine that handles the entire generation process without freezing the application.
+    /// </summary>
+    private IEnumerator CreatePyramidCoroutine()
+    {
+        isGenerating = true;
+        if (progressBar) progressBar.Show("Initializing...");
+        yield return null; // Wait a frame for UI to update
+
+        OpenLogFiles();
 
         // Notchs
         if (notchN1)
@@ -597,83 +689,44 @@ public class GeneratePyramid : MonoBehaviour
             CavityC2.SetActive(ShowKhufuNotchs);
         }
 
-        // look
-        if (cam)
-        { 
-            if (cameraPositionFace == CameraPositionFace.NorthFace)               
-                cam.transform.localPosition = new Vector3(-BaseSize * 4 / 5, Height * 3 / 4, -BaseSize * 4 / 5);
-            if (cameraPositionFace == CameraPositionFace.EastFace)
-                cam.transform.localPosition = new Vector3(BaseSize * 4 / 5, Height * 3 / 4, -BaseSize * 4 / 5);
-            if (cameraPositionFace == CameraPositionFace.SouthFace)
-                cam.transform.localPosition = new Vector3(BaseSize * 4 / 5, Height * 3 / 4, BaseSize * 4 / 5);
-            if (cameraPositionFace == CameraPositionFace.WestFace)
-                cam.transform.localPosition = new Vector3(-BaseSize * 4 / 5, Height * 3 / 4, BaseSize * 4 / 5);
-            //cam.transform.localPosition = new Vector3(BaseSize, Height, BaseSize);
-            //cam.transform.localPosition = new Vector3(-BaseSize, Height, BaseSize);
-            //cam.transform.localPosition = new Vector3(-BaseSize, Height, -BaseSize);
-            cam.transform.LookAt(new Vector3(0, Height / 12, 0));
+        // Pyramid interior
+        if (PyramidInterior)
+        {
+            PyramidInterior.SetActive(DrawPyramidInterior);
+            if (DrawPyramidInterior)
+                SetInteriorVisibility(!DrawPyramidInteriorTransparent);
         }
 
-        dir = Application.dataPath + "/../";
-        textPath = Path.Combine(dir, txtname);
-        Debug.Log("File : " + textPath);
-        writer = new StreamWriter(textPath, false);
-        if (showInfoLevel || showInfoLevelTotal || showInfoLevelDec)
-        {            
-            textPath = Path.Combine(dir, csvitername);
-            Debug.Log("File : " + textPath);
-            csviterwriter = new StreamWriter(textPath, false);
-            csviterwriter.WriteLine("Course;Height;blocks;Separation;New base size;Length;Ramp inclination;Start height;% total height;Ramp length (m)");
-        }
-        else
-            csviterwriter = null;        
-        if (showInfoRow)
-        {
-            textPath = Path.Combine(dir, csvrowname);
-            Debug.Log("File : " + textPath);
-            csvrowwriter = new StreamWriter(textPath, false);
-            csvrowwriter.WriteLine("Row;blocks;ramp inclination;Ramp length (m);Ramp length total (m);distance blocks (Km);distance blocks Ramp (Km);distance blocks Horiz (Km);Sum force blocks (GJ);Sum Vert. force blocks (GJ);Sum Horiz. force blocks (GJ);Vert. force blocks row (GJ);Horiz. force blocks row (GJ);Total force blocks row (GJ);% Decrement blocks;% increase Distance;% increase Force");
+        path_length = 0;
 
-            textPath = Path.Combine(dir, csvheadway);
-            Debug.Log("File : " + textPath);
-            csvheadwaywriter = new StreamWriter(textPath, false);
-            csvheadwaywriter.WriteLine("Row;blocks;up ramps;blocks per ramp;fixed headway(min);adaptative headway(min);total time(min);adaptative total time(min);total time(working years);adaptativive total time(working years)");
-        }
-        else
-        {
-            csvrowwriter = null;
-            csvheadwaywriter = null;
-        }
-        compute_size();
-        writer.Flush();
-        writer.Close();
-        if (showInfoLevel)
-        {            
-            csviterwriter.Flush();
-            csviterwriter.Close();
-        }
-        if (showInfoRow)
-        {
-            csvrowwriter.Flush();
-            csvrowwriter.Close();
-            csvheadwaywriter.Flush();
-            csvheadwaywriter.Close();
-        }
+        // hide Pyramide during generation
+        if (objParent) objParent.SetActive(false);
+
+        // start generation
+        yield return StartCoroutine(compute_size());
+
+        // Show Pyramide during generation
+        if (objParent) objParent.SetActive(true);
+
+        CloseLogFiles();
 
         // half pyramid
         if (halfPyramid)
         {
             GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cube.name = "HalfPyramidCut";
-            cube.transform.position = objParent.transform.position + new Vector3(BaseSize/2, Height / 2, 0);
+            cube.transform.position = objParent.transform.position + new Vector3(BaseSize / 2, Height / 2, 0);
             cube.transform.localScale = new Vector3(BaseSize, Height, BaseSize);
             cube.isStatic = true;
             cube.AddComponent<DeleteObject>();
-            cube.GetComponent<DeleteObject>().CommonGameObject=objParent;
             cube.GetComponent<DeleteObject>().CommonGameObject = objParent;
-            cube.GetComponent<MeshRenderer>().enabled = false;            
+            cube.GetComponent<DeleteObject>().CommonGameObject = objParent;
+            cube.GetComponent<MeshRenderer>().enabled = false;
             cube.GetComponent<BoxCollider>().isTrigger = true;
         }
+
+        if (progressBar) progressBar.Show("Finalizing...");
+        yield return null;
 
         // instanciate palms and dromer
         if (!exportPyramidObj)
@@ -699,10 +752,63 @@ public class GeneratePyramid : MonoBehaviour
         }
 
         if (exportPyramidObj)
-            StartCoroutine(ExportObj());       
+            StartCoroutine(ExportObj());
 
         blocksMidle = new List<GameObject>();
         blocksMidle2 = new List<GameObject>();
+
+        if (progressBar) progressBar.Hide();
+        isGenerating = false;
+        Debug.Log("Pyramid generation complete.");
+    }
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        if (progressBar) progressBar.Hide();
+
+        string baseExportPath = Application.persistentDataPath;
+
+        // Combines the base path with your subfolder name for the
+        string fullExportPath = Path.Combine(baseExportPath, exportSubFolder);
+
+        pyramid_inclination_tg = getTanFromDegrees(PyramidInclination);
+        ramp_inclination_tg = getTanFromDegrees(RampInclination);
+        ramp_inclination_atg = Mathf.Atan(ramp_inclination_tg);
+        total_height = 0;
+        int rh = Mathf.CeilToInt(Height / blockheight);  // adjust to block height
+        Height = rh * blockheight;
+        float rampInclinationRadians = RampInclination * Mathf.Deg2Rad;
+        ramp_total_length = Height / Mathf.Sin(rampInclinationRadians);
+
+        // base on base size
+        GameObject base_cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        base_cube.name = "Base";
+        base_cube.isStatic = true;
+        base_cube.transform.position = objParent.transform.position + new Vector3(0, -0.5f, 0);
+        base_cube.transform.parent = objParent.transform;
+        base_cube.transform.localScale = new Vector3(BaseSize, 1.0f, BaseSize);
+        base_cube.GetComponent<MeshRenderer>().enabled = false;
+
+        // look
+        if (cam)
+        { 
+            if (cameraPositionFace == CameraPositionFace.NorthFace)               
+                cam.transform.localPosition = new Vector3(-BaseSize * 4 / 5, Height * 3 / 4, -BaseSize * 4 / 5);
+            if (cameraPositionFace == CameraPositionFace.EastFace)
+                cam.transform.localPosition = new Vector3(BaseSize * 4 / 5, Height * 3 / 4, -BaseSize * 4 / 5);
+            if (cameraPositionFace == CameraPositionFace.SouthFace)
+                cam.transform.localPosition = new Vector3(BaseSize * 4 / 5, Height * 3 / 4, BaseSize * 4 / 5);
+            if (cameraPositionFace == CameraPositionFace.WestFace)
+                cam.transform.localPosition = new Vector3(-BaseSize * 4 / 5, Height * 3 / 4, BaseSize * 4 / 5);
+            //cam.transform.localPosition = new Vector3(BaseSize, Height, BaseSize);
+            //cam.transform.localPosition = new Vector3(-BaseSize, Height, BaseSize);
+            //cam.transform.localPosition = new Vector3(-BaseSize, Height, -BaseSize);
+            cam.transform.LookAt(new Vector3(0, Height / 12, 0));
+        }
+
+        // generate pyramid
+        StartGeneration();
     }
 
     void Update()
@@ -718,7 +824,16 @@ public class GeneratePyramid : MonoBehaviour
     // create Pyramid
     public void CreatePyramid()
     {
-        Start();
+        // Notchs
+        if (notchN1) notchN1.SetActive(false);
+        if (notchN2) notchN2.SetActive(false);
+        if (notchN3) notchN3.SetActive(false);
+        if (CavityC1) CavityC1.SetActive(false);
+        if (CavityC2) CavityC2.SetActive(false);
+        // Pyramid interior
+        if (PyramidInterior) PyramidInterior.SetActive(false);        
+
+        StartGeneration();
     }
 
 
@@ -744,7 +859,7 @@ public class GeneratePyramid : MonoBehaviour
         return Mathf.Tan(degrees * Mathf.PI / 180);
     }
 
-    public void compute_size()
+    public IEnumerator compute_size()
     {
         if (showInfoLevel || showInfoLevelDec || showInfoLevelTotal || showInfoRow)
         {
@@ -757,8 +872,21 @@ public class GeneratePyramid : MonoBehaviour
             Debug.Log("Pyramid inclination tangent : " + pyramid_inclination_tg + ", Ramp inclination tangent : " + ramp_inclination_tg);
             writer.WriteLine("Pyramid inclination tangent : " + pyramid_inclination_tg + ", Ramp inclination tangent : " + ramp_inclination_tg);
         }
-        path_length = compute_size_level(0, BaseSize, PathWide, PathSeparation, 0, 
-                                         0, 0, 0, 0, 0, 0, 0, 0);
+
+        if (progressBar && !Sequenced)
+        {
+            if (DrawUntilRow || DrawOnlyRow)
+                progressBar.SetMaxProgress(DrawRow);
+            else
+                progressBar.SetMaxProgress(Height/blockheight);
+            progressBar.SetProgress(0, "Starting...");
+            yield return null;
+        }
+
+        path_length = 0;
+
+        yield return StartCoroutine(compute_size_level(0, BaseSize, PathWide, PathSeparation, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+
         if (showInfoLevel || showInfoLevelDec || showInfoLevelTotal || showInfoRow)
         {
             Debug.Log("Total length : " + path_length + ", Total block distance : " + totalLength + ", Total block force : " + totalForce + ", Total block force ramp : " + totalForceRamp + ", % force ramp : " + totalForceRamp * 100 / totalForce);
@@ -766,22 +894,22 @@ public class GeneratePyramid : MonoBehaviour
         }
     }
 
-    private float compute_size_level(int level, float base_size, float path_wide, float separation, float height, 
+    private IEnumerator compute_size_level(int level, float base_size, float path_wide, float separation, float height, 
             float old_length, float beforeBlocks, float beforeDistance, float beforeForce, 
             float force_old_length, float force_old_vert, float force_old_horiz, 
             int row)
     {
         if (DrawUntilRow && row > DrawRow)
-        {            
-            return 0;
+        {
+            yield break;            
         }
 
         if (height > Height)
         {
             Debug.Log("Good solution! Total height: " + total_height);
             writer.WriteLine("Total height: " + total_height);
-            return 0;
-        }
+            yield break;
+        }        
 
         //float h = base_size * ramp_inclination_tg;  // height
         float h = base_size * ramp_inclination_tg * pyramid_inclination_tg / (ramp_inclination_tg + pyramid_inclination_tg);
@@ -792,6 +920,7 @@ public class GeneratePyramid : MonoBehaviour
         float sep = base_size * ramp_inclination_tg / (ramp_inclination_tg + pyramid_inclination_tg);
         total_height += h;
         float heightGranite = 0;
+        setbackWide = blockheight / Mathf.Tan(degrees_to_radians(PyramidInclination));
 
         GameObject lastCubeDrawn = null;
         int numberOfBlocksX = 0;
@@ -814,7 +943,7 @@ public class GeneratePyramid : MonoBehaviour
                 Debug.Log("Bad solution! Total height: " + total_height);
             if (showInfoLevel)
                 writer.WriteLine("Total height: " + total_height);
-            return 0;
+            yield break;
         }
 
         float new_base_size = base_size - 2 * path_wide - 2 * separation - 2 * sep;  // new base size
@@ -827,7 +956,7 @@ public class GeneratePyramid : MonoBehaviour
                 Debug.Log("Bad solution! Total height: " + total_height);
             if (showInfoLevel)
                 writer.WriteLine("Total height: " + total_height);
-            return 0;
+            yield break;
         }
 
         float bs2 = base_size / 2;
@@ -886,6 +1015,12 @@ public class GeneratePyramid : MonoBehaviour
         float forceblocksrow_total_total = force_old_length;
         for (int i = 0; i < ch; i++)
         {
+            if (progressBar && !Sequenced)
+            {
+                progressBar.IncProgress("Generating course "+i+ " at iteration " + (level+1));
+                yield return null;
+            }
+
             GameObject row_gameObject = new GameObject();
             row_gameObject.name = "Course_" + level +"_"+i;
             row_gameObject.transform.parent = iter_gameObject.transform;
@@ -1775,6 +1910,11 @@ public class GeneratePyramid : MonoBehaviour
         // do not draw ramps if the base size is too small
         if (showRamps && base_size > minBaseSize)
         {
+            if (progressBar && !Sequenced)
+            {
+                progressBar.Show("Drawing ramps at iteration "+(level+1));
+                yield return null;
+            }
 
             // draw ramps
             if ((Method4Ramp || Method2Ramp) && minBaseSize2Ramps < base_size)
@@ -1948,11 +2088,12 @@ public class GeneratePyramid : MonoBehaviour
         force_old_vert += forceblocksrow_vert_total;        
 
         //return length;
+        path_length += path_length + length;
         if (maxBlocks > 0 && numberOfBlocks > maxBlocks)
-            return length;
+            yield break;
         else
-            return length + compute_size_level(level + 1, new_base_size, path_wide, separation, height + h,
-                                            old_length + length, biter, distblocks, forceblocks, force_old_length, force_old_vert, force_old_horiz, row);
+            yield return StartCoroutine(compute_size_level(level + 1, new_base_size, path_wide, separation, height + h,
+                                            old_length + length, biter, distblocks, forceblocks, force_old_length, force_old_vert, force_old_horiz, row));
     }
 
     private void draw_one_size_level(int level, float base_size, float path_wide, float separation, float height, int index)
@@ -2197,36 +2338,36 @@ public class GeneratePyramid : MonoBehaviour
         if (level % 4 == 0)
         {
             if (DrawUntilRow && row > DrawRow)
-                cube.transform.position = objParent.transform.position + (last_v0 + last_v1) / 2 + new Vector3(-(holeWide - 3) * blockwide / 2, height + blockheight * holeHeight / 2, 0);
+                cube.transform.position = objParent.transform.position + (last_v0 + last_v1) / 2 + new Vector3(-(holeWide - 2) * blockwide / 2, height + blockheight * holeHeight / 2, 0);
             else
-                cube.transform.position = objParent.transform.position + new Vector3((base_size - sep) / 2 - (holeWide - 3) * blockwide / 2, h / 2 + height + blockheight * holeHeight / 2, sep / 2);
+                cube.transform.position = objParent.transform.position + new Vector3((base_size - sep) / 2 - (holeWide - 2) * blockwide / 2, h / 2 + height + blockheight * holeHeight / 2, sep / 2);
             cube.transform.rotation = Quaternion.Euler(0, 90 + radians_to_degrees(a1), radians_to_degrees(a2));
         }
         else
         if (level % 4 == 1)
         {
             if (DrawUntilRow && row > DrawRow)
-                cube.transform.position = objParent.transform.position + (last_v0 + last_v1) / 2 + new Vector3(0, height + blockheight * holeHeight / 2, (holeWide - 3) * blockwide / 2);
+                cube.transform.position = objParent.transform.position + (last_v0 + last_v1) / 2 + new Vector3(0, height + blockheight * holeHeight / 2, (holeWide - 2) * blockwide / 2);
             else
-                cube.transform.position = objParent.transform.position + new Vector3(sep / 2, h / 2 + height + blockheight * holeHeight / 2, -(base_size - sep) / 2 + (holeWide - 3) * blockwide / 2);
+                cube.transform.position = objParent.transform.position + new Vector3(sep / 2, h / 2 + height + blockheight * holeHeight / 2, -(base_size - sep) / 2 + (holeWide - 2) * blockwide / 2);
             cube.transform.rotation = Quaternion.Euler(0, radians_to_degrees(a1), -radians_to_degrees(a2));
         }
         else
         if (level % 4 == 2)
         {
             if (DrawUntilRow && row > DrawRow)
-                cube.transform.position = objParent.transform.position + (last_v0 + last_v1) / 2 + new Vector3((holeWide - 3) * blockwide / 2, height + blockheight * holeHeight / 2, 0);
+                cube.transform.position = objParent.transform.position + (last_v0 + last_v1) / 2 + new Vector3((holeWide - 2) * blockwide / 2, height + blockheight * holeHeight / 2, 0);
             else
-                cube.transform.position = objParent.transform.position + new Vector3(-(base_size - sep) / 2 + (holeWide - 3) * blockwide / 2, h / 2 + height + blockheight * holeHeight / 2, -sep / 2);
+                cube.transform.position = objParent.transform.position + new Vector3(-(base_size - sep) / 2 + (holeWide - 2) * blockwide / 2, h / 2 + height + blockheight * holeHeight / 2, -sep / 2);
             cube.transform.rotation = Quaternion.Euler(0, 90 + radians_to_degrees(a1), -radians_to_degrees(a2));
         }
         else
         if (level % 4 == 3)
         {
             if (DrawUntilRow && row > DrawRow)
-                cube.transform.position = objParent.transform.position + (last_v0 + last_v1) / 2 + new Vector3(0, height + blockheight * holeHeight / 2, -(holeWide - 3) * blockwide / 2);
+                cube.transform.position = objParent.transform.position + (last_v0 + last_v1) / 2 + new Vector3(0, height + blockheight * holeHeight / 2, -(holeWide - 2) * blockwide / 2);
             else
-                cube.transform.position = objParent.transform.position + new Vector3(-sep / 2, h / 2 + height + blockheight * holeHeight / 2, (base_size - sep) / 2 - (holeWide - 3) * blockwide / 2);
+                cube.transform.position = objParent.transform.position + new Vector3(-sep / 2, h / 2 + height + blockheight * holeHeight / 2, (base_size - sep) / 2 - (holeWide - 2) * blockwide / 2);
             cube.transform.rotation = Quaternion.Euler(0, radians_to_degrees(a1), radians_to_degrees(a2));
         }
         if (MethodInsideRamp)
@@ -2306,6 +2447,8 @@ public class GeneratePyramid : MonoBehaviour
                     cubefloor.transform.position = objParent.transform.position + (last_v0 + last_v1) / 2 + new Vector3(-(holeWide-2) * blockwide / 2, height - bh2, 0);
                 else
                     cubefloor.transform.position = objParent.transform.position + new Vector3((base_size - sep) / 2 - (holeWide - 2) * blockwide/2, h / 2 + height - bh2, sep / 2);
+                if (setback)
+                    cubefloor.transform.position += new Vector3(setbackWide / 2, 0, 0);
                 cubefloor.transform.rotation = Quaternion.Euler(0, 90 + radians_to_degrees(a1), radians_to_degrees(a2));
             }
             else
@@ -2315,6 +2458,8 @@ public class GeneratePyramid : MonoBehaviour
                     cubefloor.transform.position = objParent.transform.position + (last_v0 + last_v1) / 2 + new Vector3(0, height - bh2, (holeWide - 2) * blockwide / 2);
                 else
                     cubefloor.transform.position = objParent.transform.position + new Vector3(sep / 2, h / 2 + height - bh2, -(base_size - sep) / 2 + (holeWide - 2) * blockwide / 2);
+                if (setback)
+                    cubefloor.transform.position += new Vector3(0, 0, -setbackWide / 2);
                 cubefloor.transform.rotation = Quaternion.Euler(0, radians_to_degrees(a1), -radians_to_degrees(a2));
             }
             else
@@ -2324,6 +2469,8 @@ public class GeneratePyramid : MonoBehaviour
                     cubefloor.transform.position = objParent.transform.position + (last_v0 + last_v1) / 2 + new Vector3((holeWide - 2) * blockwide / 2, height - bh2, 0);
                 else
                     cubefloor.transform.position = objParent.transform.position + new Vector3(-(base_size - sep) / 2 + (holeWide - 2) * blockwide / 2, h / 2 + height - bh2, -sep / 2);
+                if (setback)
+                    cubefloor.transform.position += new Vector3(-setbackWide / 2, 0, 0);
                 cubefloor.transform.rotation = Quaternion.Euler(0, 90 + radians_to_degrees(a1), -radians_to_degrees(a2));
             }
             else
@@ -2333,12 +2480,24 @@ public class GeneratePyramid : MonoBehaviour
                     cubefloor.transform.position = objParent.transform.position + (last_v0 + last_v1) / 2 + new Vector3(0, height - bh2, -(holeWide - 2) * blockwide / 2);
                 else
                     cubefloor.transform.position = objParent.transform.position + new Vector3(-sep / 2, h / 2 + height - bh2, (base_size - sep) / 2 - (holeWide - 2) * blockwide / 2);
+                if (setback)
+                    cubefloor.transform.position += new Vector3(0, 0, setbackWide / 2);
                 cubefloor.transform.rotation = Quaternion.Euler(0, radians_to_degrees(a1), radians_to_degrees(a2));
             }
             if (DrawUntilRow && row > DrawRow)
-                cubefloor.transform.localScale = new Vector3(last_length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide);
+            {
+                if (setback)
+                    cubefloor.transform.localScale = new Vector3(last_length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide + setbackWide);
+                else
+                    cubefloor.transform.localScale = new Vector3(last_length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide);
+            }
             else
-                cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide);
+            {
+                if (setback)
+                    cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide + setbackWide);
+                else
+                    cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide);
+            }
             //cubefloor.transform.parent = objParent.transform;
             cubefloor.transform.parent = ramp_gameObject.transform;
             cubefloor.GetComponent<MeshRenderer>().material = m_Material;
@@ -2417,27 +2576,38 @@ public class GeneratePyramid : MonoBehaviour
             if (level % 4 == 0)
             {
                 cubecorner.transform.position = objParent.transform.position + new Vector3((base_size / 2 - holeDiag), height, (base_size / 2 - holeDiag));
+                if (setback)
+                    cubecorner.transform.position += new Vector3(setbackWide, 0, setbackWide);
                 cubecorner.transform.localRotation = Quaternion.Euler(100.0f, -27.0f, -32.0f);
             }
             else
             if (level % 4 == 1)
             {
                 cubecorner.transform.position = objParent.transform.position + new Vector3((base_size / 2 - holeDiag), height, -(base_size / 2 - holeDiag));
+                if (setback)
+                    cubecorner.transform.position += new Vector3(setbackWide, 0, -setbackWide);
                 cubecorner.transform.localRotation = Quaternion.Euler(100.0f, 53.0f, 48.0f);
             }
             else
             if (level % 4 == 2)
             {
                 cubecorner.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - holeDiag), height, -(base_size / 2 - holeDiag));
+                if (setback)
+                    cubecorner.transform.position += new Vector3(-setbackWide, 0, -setbackWide);
                 cubecorner.transform.localRotation = Quaternion.Euler(80.0f, -42.0f, -48.0f);
             }
             else
             if (level % 4 == 3)
             {
                 cubecorner.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - holeDiag), height, (base_size / 2 - holeDiag));
+                if (setback)
+                    cubecorner.transform.position += new Vector3(-setbackWide, 0, setbackWide);
                 cubecorner.transform.localRotation = Quaternion.Euler(80.0f, 32.0f, 27.0f);
             }
-            cubecorner.transform.localScale = new Vector3(holeWide * blockwide * 2, holeWide * blockwide * 2, 0.1f);
+            if (setback)
+                cubecorner.transform.localScale = new Vector3(holeWide * blockwide * 2 + setbackWide, holeWide * blockwide * 2 + setbackWide, 0.1f);
+            else
+                cubecorner.transform.localScale = new Vector3(holeWide * blockwide * 2, holeWide * blockwide * 2, 0.1f);
             //cubecorner.transform.parent = objParent.transform;
             cubecorner.transform.parent = ramp_gameObject.transform;
             cubecorner.GetComponent<MeshRenderer>().material = m_Material_corner;
@@ -2538,26 +2708,26 @@ public class GeneratePyramid : MonoBehaviour
             stone_sled1.name = "stone_sled_" + level + "_" + row;
             if (level % 4 == 0)
             {
-                stone_sled1.transform.position = objParent.transform.position + new Vector3((base_size / 2 - 1.0f * blockwide), height + 0.75f, (base_size / 2 - 2.5f * blockwide));
-                stone_sled1.transform.localRotation = Quaternion.Euler(0.0f, 95.0f, 7.0f);
+                stone_sled1.transform.position = objParent.transform.position + new Vector3((base_size / 2 - holeWide * blockwide / 2 + 0.75f), height + 0.75f, (base_size / 2 - 2.5f * blockwide));
+                stone_sled1.transform.localRotation = Quaternion.Euler(0.0f, 90.0f+ RampInclination, RampInclination);
             }
             else
             if (level % 4 == 1)
             {
-                stone_sled1.transform.position = objParent.transform.position + new Vector3((base_size / 2 - 2.5f * blockwide), height + 0.75f, -(base_size / 2 - 1.0f * blockwide));
-                stone_sled1.transform.localRotation = Quaternion.Euler(0.0f, 7.0f, -7.0f);
+                stone_sled1.transform.position = objParent.transform.position + new Vector3((base_size / 2 - 2.5f * blockwide), height + 0.75f, -(base_size / 2 - holeWide * blockwide / 2 + 0.75f));
+                stone_sled1.transform.localRotation = Quaternion.Euler(0.0f, RampInclination, -RampInclination);
             }
             else
             if (level % 4 == 2)
             {
-                stone_sled1.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - 1.0f * blockwide), height + 0.75f, -(base_size / 2 - 2.5f * blockwide));
-                stone_sled1.transform.localRotation = Quaternion.Euler(0.0f, 95.0f, -7.0f);
+                stone_sled1.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - holeWide * blockwide / 2 + 0.75f), height + 0.75f, -(base_size / 2 - 2.5f * blockwide));
+                stone_sled1.transform.localRotation = Quaternion.Euler(0.0f, 90.0f+ RampInclination, -RampInclination);
             }
             else
             if (level % 4 == 3)
             {
-                stone_sled1.transform.position = new Vector3(-(base_size / 2 - 2.5f * blockwide), height + 0.75f, (base_size / 2 - 1.0f * blockwide));
-                stone_sled1.transform.localRotation = Quaternion.Euler(0.0f, 7.0f, 7.0f);
+                stone_sled1.transform.position = new Vector3(-(base_size / 2 - 2.5f * blockwide), height + 0.75f, (base_size / 2 - holeWide * blockwide / 2 + 0.75f));
+                stone_sled1.transform.localRotation = Quaternion.Euler(0.0f, RampInclination, RampInclination);
             }
             //stone_sled1.transform.parent = objParent.transform;
             stone_sled1.transform.parent = workers_gameObject.transform;
@@ -2576,26 +2746,26 @@ public class GeneratePyramid : MonoBehaviour
                 Egyptian.name = "Egyptian_left_" + level + "_" + row+"_"+i;
                 if (level % 4 == 0)
                 {
-                    Egyptian.transform.position = objParent.transform.position + new Vector3((base_size / 2 - (0.75f + 0.1f*i) * blockwide), height + 2.25f + 0.16f*i, (base_size / 2 - (4.5f + i) * blockwide));
-                    Egyptian.transform.localRotation = Quaternion.Euler(7.0f, 7.0f, 0.0f);
+                    Egyptian.transform.position = objParent.transform.position + new Vector3((base_size / 2 - (0.75f + 0.1f*i) - holeWide * blockwide / 2), height + 2.25f + 0.16f*i, (base_size / 2 - (4.5f + i) * blockwide));
+                    Egyptian.transform.localRotation = Quaternion.Euler(RampInclination, RampInclination, 0.0f);
                 }
                 else
                 if (level % 4 == 1)
                 {
-                    Egyptian.transform.position = objParent.transform.position + new Vector3((base_size / 2 - (4.5f + i) * blockwide), height + 2.25f + 0.16f * i, -(base_size / 2 - (0.75f + 0.1f * i) * blockwide));
-                    Egyptian.transform.localRotation = Quaternion.Euler(7.0f, 97.0f, 0.0f);
+                    Egyptian.transform.position = objParent.transform.position + new Vector3((base_size / 2 - (4.5f + i) * blockwide), height + 2.25f + 0.16f * i, -(base_size / 2 - (0.75f + 0.1f * i) - holeWide * blockwide / 2));
+                    Egyptian.transform.localRotation = Quaternion.Euler(RampInclination, 90.0f+ RampInclination, 0.0f);
                 }
                 else
                 if (level % 4 == 2)
                 {
-                    Egyptian.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - (0.75f + 0.1f * i) * blockwide), height + 2.25f + 0.16f * i, -(base_size / 2 - (4.5f + i) * blockwide));
-                    Egyptian.transform.localRotation = Quaternion.Euler(7.0f, 187.0f, 0.0f);
+                    Egyptian.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - (0.75f + 0.1f * i) - holeWide * blockwide / 2), height + 2.25f + 0.16f * i, -(base_size / 2 - (4.5f + i) * blockwide));
+                    Egyptian.transform.localRotation = Quaternion.Euler(RampInclination, 180.0f+ RampInclination, 0.0f);
                 }
                 else
                 if (level % 4 == 3)
                 {
-                    Egyptian.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - (4.5f + i) * blockwide), height + 2.25f + 0.16f * i, (base_size / 2 - (0.75f + 0.1f * i) * blockwide));
-                    Egyptian.transform.localRotation = Quaternion.Euler(7.0f, -75.0f, 0.0f);
+                    Egyptian.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - (4.5f + i) * blockwide), height + 2.25f + 0.16f * i, (base_size / 2 - (0.75f + 0.1f * i) - holeWide * blockwide / 2));
+                    Egyptian.transform.localRotation = Quaternion.Euler(RampInclination, -90f + RampInclination, 0.0f);
                 }
                 //Egyptian.transform.parent = objParent.transform;
                 Egyptian.transform.parent = workers_gameObject.transform;
@@ -2605,26 +2775,26 @@ public class GeneratePyramid : MonoBehaviour
                 Egyptian2.name = "Egyptian_right_" + level + "_" + row + "_" + i;
                 if (level % 4 == 0)
                 {
-                    Egyptian2.transform.position = objParent.transform.position + new Vector3((base_size / 2 - (1.5f + 0.1f * i) * blockwide), height + 2.25f + 0.16f * i, (base_size / 2 - (4.5f + i) * blockwide));
-                    Egyptian2.transform.localRotation = Quaternion.Euler(7.0f, 7.0f, 0.0f);
+                    Egyptian2.transform.position = objParent.transform.position + new Vector3((base_size / 2 + (1.5f - 0.1f * i) - holeWide * blockwide / 2), height + 2.25f + 0.16f * i, (base_size / 2 - (4.5f + i) * blockwide));
+                    Egyptian2.transform.localRotation = Quaternion.Euler(RampInclination, RampInclination, 0.0f);
                 }
                 else
                 if (level % 4 == 1)
                 {
-                    Egyptian2.transform.position = objParent.transform.position + new Vector3((base_size / 2 - (4.5f + i) * blockwide), height + 2.25f + 0.16f * i, -(base_size / 2 - (1.5f + 0.1f * i) * blockwide));
-                    Egyptian2.transform.localRotation = Quaternion.Euler(7.0f, 97.0f, 0.0f);
+                    Egyptian2.transform.position = objParent.transform.position + new Vector3((base_size / 2 - (4.5f + i) * blockwide), height + 2.25f + 0.16f * i, -(base_size / 2 + (1.5f - 0.1f * i) - holeWide * blockwide / 2));
+                    Egyptian2.transform.localRotation = Quaternion.Euler(RampInclination, 90.0f+ RampInclination, 0.0f);
                 }
                 else
                 if (level % 4 == 2)
                 {
-                    Egyptian2.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - (1.5f + 0.1f * i) * blockwide), height + 2.25f + 0.16f * i, -(base_size / 2 - (4.5f + i) * blockwide));
-                    Egyptian2.transform.localRotation = Quaternion.Euler(7.0f, 187.0f, 0.0f);
+                    Egyptian2.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 + (1.5f - 0.1f * i) - holeWide * blockwide / 2), height + 2.25f + 0.16f * i, -(base_size / 2 - (4.5f + i) * blockwide));
+                    Egyptian2.transform.localRotation = Quaternion.Euler(RampInclination, 180.0f+ RampInclination, 0.0f);
                 }
                 else
                 if (level % 4 == 3)
                 {
-                    Egyptian2.transform.position = new Vector3(-(base_size / 2 - (4.5f + i) * blockwide), height + 2.25f + 0.16f * i, (base_size / 2 - (1.5f + 0.1f * i) * blockwide));
-                    Egyptian2.transform.localRotation = Quaternion.Euler(7.0f, -75.0f, 0.0f);
+                    Egyptian2.transform.position = new Vector3(-(base_size / 2 - (4.5f + i) * blockwide), height + 2.25f + 0.16f * i, (base_size / 2 + (1.5f - 0.1f * i) - holeWide * blockwide / 2));
+                    Egyptian2.transform.localRotation = Quaternion.Euler(RampInclination, -90f + RampInclination, 0.0f);
                 }
                 //Egyptian2.transform.parent = objParent.transform;
                 Egyptian2.transform.parent = workers_gameObject.transform;
@@ -2656,9 +2826,9 @@ public class GeneratePyramid : MonoBehaviour
             GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cube.name = "4Ramp_" + level + "_" + row + "_1";
             if (DrawUntilRow && row > DrawRow)
-                cube.transform.position = objParent.transform.position + (last_v0 + last_v1) / 2 + new Vector3(-(holeWide - 3) * blockwide / 2, height + blockheight * holeHeight / 2, 0);
+                cube.transform.position = objParent.transform.position + (last_v0 + last_v1) / 2 + new Vector3(-(holeWide - 2) * blockwide / 2, height + blockheight * holeHeight / 2, 0);
             else
-                cube.transform.position = objParent.transform.position + new Vector3((base_size - sep) / 2 - (holeWide - 3) * blockwide / 2, h / 2 + height + blockheight * holeHeight / 2, sep / 2);
+                cube.transform.position = objParent.transform.position + new Vector3((base_size - sep) / 2 - (holeWide - 2) * blockwide / 2, h / 2 + height + blockheight * holeHeight / 2, sep / 2);
             //    cube.transform.position = new Vector3((base_size - sep) / 2, h / 2 + height + blockheight, sep / 2);
             cube.transform.rotation = Quaternion.Euler(0, 90 + radians_to_degrees(a1), radians_to_degrees(a2));
             if (MethodInsideRamp)
@@ -2695,9 +2865,9 @@ public class GeneratePyramid : MonoBehaviour
             GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cube.name = "4Ramp_" + level + "_" + row + "_2";
             if (DrawUntilRow && row > DrawRow)
-                cube.transform.position = objParent.transform.position + (Quaternion.Euler(0, 90f, 0) * last_v0 + Quaternion.Euler(0, 90f, 0) * last_v1) / 2 + new Vector3(0, height + blockheight * holeHeight/2, (holeWide - 3) * blockwide / 2);
+                cube.transform.position = objParent.transform.position + (Quaternion.Euler(0, 90f, 0) * last_v0 + Quaternion.Euler(0, 90f, 0) * last_v1) / 2 + new Vector3(0, height + blockheight * holeHeight/2, (holeWide - 2) * blockwide / 2);
             else
-                cube.transform.position = objParent.transform.position + new Vector3(sep / 2, h / 2 + height + blockheight * holeHeight/2, -(base_size - sep) / 2 + (holeWide - 3) * blockwide / 2);
+                cube.transform.position = objParent.transform.position + new Vector3(sep / 2, h / 2 + height + blockheight * holeHeight/2, -(base_size - sep) / 2 + (holeWide - 2) * blockwide / 2);
             //cube.transform.position = new Vector3(sep / 2, h / 2 + height + blockheight, -(base_size - sep) / 2);
             cube.transform.rotation = Quaternion.Euler(0, radians_to_degrees(a1), -radians_to_degrees(a2));
             if (MethodInsideRamp)
@@ -2734,9 +2904,9 @@ public class GeneratePyramid : MonoBehaviour
             GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cube.name = "4Ramp_" + level + "_" + row + "_3";
             if (DrawUntilRow && row > DrawRow)
-                cube.transform.position = objParent.transform.position + (Quaternion.Euler(0, 180f, 0) * last_v0 + Quaternion.Euler(0, 180f, 0) * last_v1) / 2 + new Vector3((holeWide - 3) * blockwide / 2, height + blockheight * holeHeight / 2, 0);
+                cube.transform.position = objParent.transform.position + (Quaternion.Euler(0, 180f, 0) * last_v0 + Quaternion.Euler(0, 180f, 0) * last_v1) / 2 + new Vector3((holeWide - 2) * blockwide / 2, height + blockheight * holeHeight / 2, 0);
             else
-                cube.transform.position = objParent.transform.position + new Vector3(-(base_size - sep) / 2 + (holeWide - 3) * blockwide / 2, h / 2 + height + blockheight * holeHeight / 2, -sep / 2);
+                cube.transform.position = objParent.transform.position + new Vector3(-(base_size - sep) / 2 + (holeWide - 2) * blockwide / 2, h / 2 + height + blockheight * holeHeight / 2, -sep / 2);
             cube.transform.rotation = Quaternion.Euler(0, 90 + radians_to_degrees(a1), -radians_to_degrees(a2));
             //cube.transform.position = new Vector3(-(base_size - sep) / 2, h / 2 + height + blockheight, -sep / 2);
             cube.transform.rotation = Quaternion.Euler(0, 90 + radians_to_degrees(a1), -radians_to_degrees(a2));
@@ -2774,9 +2944,9 @@ public class GeneratePyramid : MonoBehaviour
             GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cube.name = "4Ramp_" + level + "_" + row + "_4";
             if (DrawUntilRow && row > DrawRow)
-                cube.transform.position = objParent.transform.position + (Quaternion.Euler(0, 270f, 0) * last_v0 + Quaternion.Euler(0, 270f, 0) * last_v1) / 2 + new Vector3(0, height + blockheight * holeHeight / 2, -(holeWide - 3) * blockwide / 2);
+                cube.transform.position = objParent.transform.position + (Quaternion.Euler(0, 270f, 0) * last_v0 + Quaternion.Euler(0, 270f, 0) * last_v1) / 2 + new Vector3(0, height + blockheight * holeHeight / 2, -(holeWide - 2) * blockwide / 2);
             else
-                cube.transform.position = objParent.transform.position + new Vector3(-sep / 2, h / 2 + height + blockheight * holeHeight / 2, (base_size - sep) / 2 - (holeWide - 3) * blockwide / 2);
+                cube.transform.position = objParent.transform.position + new Vector3(-sep / 2, h / 2 + height + blockheight * holeHeight / 2, (base_size - sep) / 2 - (holeWide - 2) * blockwide / 2);
             //cube.transform.position = new Vector3(-sep / 2, h / 2 + height + blockheight, (base_size - sep) / 2);
             cube.transform.rotation = Quaternion.Euler(0, radians_to_degrees(a1), radians_to_degrees(a2));
             if (MethodInsideRamp)
@@ -2885,14 +3055,24 @@ public class GeneratePyramid : MonoBehaviour
             cubefloor = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cubefloor.name = "4Ramp_floor_" + level + "_" + row + "_1";
             if (DrawUntilRow && row > DrawRow)
-                cubefloor.transform.position = objParent.transform.position + (last_v0 + last_v1) / 2 + new Vector3(-(holeWide - 2) * blockwide / 2, height - bh2 + blockheight, 0);
+                cubefloor.transform.position = objParent.transform.position + (last_v0 + last_v1) / 2 + new Vector3(-(holeWide - 2) * blockwide / 2, height - bh2, 0);
             else
                 cubefloor.transform.position = objParent.transform.position + new Vector3((base_size - sep) / 2 - (holeWide - 2) * blockwide / 2, h / 2 + height - bh2, sep / 2);
+            if (setback)
+                cubefloor.transform.position += new Vector3(setbackWide / 2, 0, 0);
             //cubefloor.transform.position = new Vector3((base_size - sep) / 2 - 1, h / 2 + height - bh2, sep / 2);
             if (DrawUntilRow && row > DrawRow)
-                cubefloor.transform.localScale = new Vector3(last_length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide);
+                if (setback)
+                    cubefloor.transform.localScale = new Vector3(last_length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide + setbackWide);
+                else
+                    cubefloor.transform.localScale = new Vector3(last_length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide);
             else
-                cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide);
+            {
+                if (setback)
+                    cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide + setbackWide);
+                else
+                    cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide);
+            }
             cubefloor.transform.rotation = Quaternion.Euler(0, 90 + radians_to_degrees(a1), radians_to_degrees(a2));
             //cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 1, bh2 + 0.4f, 3 * blockwide);
             //cubefloor.transform.parent = objParent.transform;
@@ -2909,15 +3089,27 @@ public class GeneratePyramid : MonoBehaviour
             cubefloor = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cubefloor.name = "4Ramp_floor_" + level + "_" + row + "_2";
             if (DrawUntilRow && row > DrawRow)
-                cubefloor.transform.position = objParent.transform.position + (Quaternion.Euler(0, 90f, 0) * last_v0 + Quaternion.Euler(0, 90f, 0) * last_v1) / 2 + new Vector3(0, height - bh2 + blockheight, (holeWide - 2) * blockwide / 2);
+                cubefloor.transform.position = objParent.transform.position + (Quaternion.Euler(0, 90f, 0) * last_v0 + Quaternion.Euler(0, 90f, 0) * last_v1) / 2 + new Vector3(0, height - bh2, (holeWide - 2) * blockwide / 2);
             else
                 cubefloor.transform.position = objParent.transform.position + new Vector3(sep / 2, h / 2 + height - bh2, -(base_size - sep) / 2 + (holeWide - 2) * blockwide / 2);
+            if (setback)
+                cubefloor.transform.position += new Vector3(0, 0, -setbackWide / 2);
             //cubefloor.transform.position = new Vector3(sep / 2, h / 2 + height - bh2, -(base_size - sep) / 2 + 1);
             cubefloor.transform.rotation = Quaternion.Euler(0, radians_to_degrees(a1), -radians_to_degrees(a2));
             if (DrawUntilRow && row > DrawRow)
-                cubefloor.transform.localScale = new Vector3(last_length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide);
+            {
+                if (setback)
+                    cubefloor.transform.localScale = new Vector3(last_length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide + setbackWide);
+                else
+                    cubefloor.transform.localScale = new Vector3(last_length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide);
+            }
             else
-                cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide);
+            {
+                if (setback)
+                    cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide + setbackWide);
+                else
+                    cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide);
+            }
             //cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 1, bh2 + 0.4f, 3 * blockwide);
             //cubefloor.transform.parent = objParent.transform;
             cubefloor.transform.parent = ramp_gameObject.transform;
@@ -2933,15 +3125,27 @@ public class GeneratePyramid : MonoBehaviour
             cubefloor = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cubefloor.name = "4Ramp_floor_" + level + "_" + row + "_3";
             if (DrawUntilRow && row > DrawRow)
-                cubefloor.transform.position = objParent.transform.position + (Quaternion.Euler(0, 180f, 0) * last_v0 + Quaternion.Euler(0, 180f, 0) * last_v1) / 2 + new Vector3((holeWide - 2) * blockwide / 2, height - bh2 + blockheight, 0);
+                cubefloor.transform.position = objParent.transform.position + (Quaternion.Euler(0, 180f, 0) * last_v0 + Quaternion.Euler(0, 180f, 0) * last_v1) / 2 + new Vector3((holeWide - 2) * blockwide / 2, height - bh2, 0);
             else
                 cubefloor.transform.position = objParent.transform.position + new Vector3(-(base_size - sep) / 2 + (holeWide - 2) * blockwide / 2, h / 2 + height - bh2 + 0.2f, -sep / 2);
+            if (setback)
+                cubefloor.transform.position += new Vector3(-setbackWide / 2, 0, 0);
             //cubefloor.transform.position = new Vector3(-(base_size - sep) / 2 + 1, h / 2 + height - bh2, -sep / 2);
             cubefloor.transform.rotation = Quaternion.Euler(0, 90 + radians_to_degrees(a1), -radians_to_degrees(a2));
             if (DrawUntilRow && row > DrawRow)
-                cubefloor.transform.localScale = new Vector3(last_length + 2 * blockwide - 1, bh2 + 0.5f, holeWide * blockwide);
+            {
+                if (setback)
+                    cubefloor.transform.localScale = new Vector3(last_length + 2 * blockwide - 1, bh2 + 0.5f, holeWide * blockwide + setbackWide);
+                else
+                    cubefloor.transform.localScale = new Vector3(last_length + 2 * blockwide - 1, bh2 + 0.5f, holeWide * blockwide);
+            }
             else
-                cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide);
+            {
+                if (setback)
+                    cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 1, bh2 + 0.5f, holeWide * blockwide + setbackWide);
+                else
+                    cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide);
+            }
             //cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 1, bh2 + 0.4f, 3 * blockwide);
             //cubefloor.transform.parent = objParent.transform;
             cubefloor.transform.parent = ramp_gameObject.transform;
@@ -2957,15 +3161,27 @@ public class GeneratePyramid : MonoBehaviour
             cubefloor = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cubefloor.name = "4Ramp_floor_" + level + "_" + row + "_4";
             if (DrawUntilRow && row > DrawRow)
-                cubefloor.transform.position = objParent.transform.position + (Quaternion.Euler(0, 270f, 0) * last_v0 + Quaternion.Euler(0, 270f, 0) * last_v1) / 2 + new Vector3(0, height - bh2 + blockheight, -(holeWide - 2) * blockwide / 2);
+                cubefloor.transform.position = objParent.transform.position + (Quaternion.Euler(0, 270f, 0) * last_v0 + Quaternion.Euler(0, 270f, 0) * last_v1) / 2 + new Vector3(0, height - bh2, -(holeWide - 2) * blockwide / 2);
             else
                 cubefloor.transform.position = objParent.transform.position + new Vector3(-sep / 2, h / 2 + height - bh2, (base_size - sep) / 2 - (holeWide - 2) * blockwide / 2);
+            if (setback)
+                cubefloor.transform.position += new Vector3(0, 0, setbackWide / 2);
             //cubefloor.transform.position = new Vector3(-sep / 2, h / 2 + height - bh2, (base_size - sep) / 2 - 1);
             cubefloor.transform.rotation = Quaternion.Euler(0, radians_to_degrees(a1), radians_to_degrees(a2));
             if (DrawUntilRow && row > DrawRow)
-                cubefloor.transform.localScale = new Vector3(last_length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide);
+            {
+                if (setback)
+                    cubefloor.transform.localScale = new Vector3(last_length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide + setbackWide);
+                else
+                    cubefloor.transform.localScale = new Vector3(last_length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide);
+            }
             else
-                cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide);
+            {
+                if (setback)
+                    cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide + setbackWide);
+                else
+                    cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide);
+            }
             //cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 1, bh2 + 0.4f, 3 * blockwide);
             //cubefloor.transform.parent = objParent.transform;
             cubefloor.transform.parent = ramp_gameObject.transform;
@@ -3115,8 +3331,13 @@ public class GeneratePyramid : MonoBehaviour
                 GameObject cubecorner = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 cubecorner.name = "4Ramp_corner_" + level + "_" + row + "_1";
                 cubecorner.transform.position = objParent.transform.position + new Vector3((base_size / 2 - holeDiag), height, (base_size / 2 - holeDiag));
+                if (setback)
+                    cubecorner.transform.position += new Vector3(setbackWide, 0, setbackWide);
                 cubecorner.transform.localRotation = Quaternion.Euler(100.0f, -27.0f, -32.0f);
-                cubecorner.transform.localScale = new Vector3(holeWide * blockwide * 2, holeWide * blockwide * 2, 0.1f);
+                if (setback)
+                    cubecorner.transform.localScale = new Vector3(holeWide * blockwide * 2 + setbackWide, holeWide * blockwide * 2 + setbackWide, 0.1f);
+                else
+                    cubecorner.transform.localScale = new Vector3(holeWide * blockwide * 2, holeWide * blockwide * 2, 0.1f);
                 //cubecorner.transform.parent = objParent.transform;
                 cubecorner.transform.parent = ramp_gameObject.transform;
                 cubecorner.GetComponent<MeshRenderer>().material = m_Material_corner;
@@ -3128,8 +3349,13 @@ public class GeneratePyramid : MonoBehaviour
                 GameObject cubecorner = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 cubecorner.name = "4Ramp_corner_" + level + "_" + row + "_2";
                 cubecorner.transform.position = objParent.transform.position + new Vector3((base_size / 2 - holeDiag), height, -(base_size / 2 - holeDiag));
+                if (setback)
+                    cubecorner.transform.position += new Vector3(setbackWide, 0, -setbackWide);
                 cubecorner.transform.localRotation = Quaternion.Euler(100.0f, 53.0f, 48.0f);
-                cubecorner.transform.localScale = new Vector3(holeWide * blockwide * 2, holeWide * blockwide * 2, 0.1f);
+                if (setback)
+                    cubecorner.transform.localScale = new Vector3(holeWide * blockwide * 2 + setbackWide, holeWide * blockwide * 2 + setbackWide, 0.1f);
+                else 
+                    cubecorner.transform.localScale = new Vector3(holeWide * blockwide * 2, holeWide * blockwide * 2, 0.1f);
                 //cubecorner.transform.parent = objParent.transform;
                 cubecorner.transform.parent = ramp_gameObject.transform;
                 cubecorner.GetComponent<MeshRenderer>().material = m_Material_corner;
@@ -3141,8 +3367,13 @@ public class GeneratePyramid : MonoBehaviour
                 GameObject cubecorner = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 cubecorner.name = "4Ramp_corner_" + level + "_" + row + "_3";
                 cubecorner.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - holeDiag), height, -(base_size / 2 - holeDiag));
+                if (setback)
+                    cubecorner.transform.position += new Vector3(-setbackWide, 0, -setbackWide);
                 cubecorner.transform.localRotation = Quaternion.Euler(80.0f, -42.0f, -48.0f);
-                cubecorner.transform.localScale = new Vector3(holeWide * blockwide * 2, holeWide * blockwide * 2, 0.1f);
+                if (setback)
+                    cubecorner.transform.localScale = new Vector3(holeWide * blockwide * 2 + setbackWide, holeWide * blockwide * 2 + setbackWide, 0.1f);
+                else
+                    cubecorner.transform.localScale = new Vector3(holeWide * blockwide * 2, holeWide * blockwide * 2, 0.1f);
                 //cubecorner.transform.parent = objParent.transform;
                 cubecorner.transform.parent = ramp_gameObject.transform;
                 cubecorner.GetComponent<MeshRenderer>().material = m_Material_corner;
@@ -3154,8 +3385,13 @@ public class GeneratePyramid : MonoBehaviour
                 GameObject cubecorner = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 cubecorner.name = "4Ramp_corner_" + level + "_" + row + "_4";
                 cubecorner.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - holeDiag), height, (base_size / 2 - holeDiag));
+                if (setback)
+                    cubecorner.transform.position += new Vector3(-setbackWide, 0, setbackWide);
                 cubecorner.transform.localRotation = Quaternion.Euler(80.0f, 32.0f, 27.0f);
-                cubecorner.transform.localScale = new Vector3(holeWide * blockwide * 2, holeWide * blockwide * 2, 0.1f);
+                if (setback)
+                    cubecorner.transform.localScale = new Vector3(holeWide * blockwide * 2 + setbackWide, holeWide * blockwide * 2 + setbackWide, 0.1f);
+                else
+                    cubecorner.transform.localScale = new Vector3(holeWide * blockwide * 2, holeWide * blockwide * 2, 0.1f);
                 //cubecorner.transform.parent = objParent.transform;
                 cubecorner.transform.parent = ramp_gameObject.transform;
                 cubecorner.GetComponent<MeshRenderer>().material = m_Material_corner;
@@ -3295,8 +3531,8 @@ public class GeneratePyramid : MonoBehaviour
             {
                 GameObject stone_sled1 = Instantiate(stone_sled, objParent.transform.position + new Vector3(0, 0, 0), Quaternion.identity);
                 stone_sled1.name = "stone_sled_" + level + "_" + row + "_1";
-                stone_sled1.transform.position = objParent.transform.position + new Vector3((base_size / 2 - 1.0f * blockwide), height + 0.75f, (base_size / 2 - 2.5f * blockwide));
-                stone_sled1.transform.localRotation = Quaternion.Euler(0.0f, 95.0f, 7.0f);
+                stone_sled1.transform.position = objParent.transform.position + new Vector3((base_size / 2 - holeWide * blockwide / 2 + 0.75f), height + 0.75f, (base_size / 2 - 2.5f * blockwide));
+                stone_sled1.transform.localRotation = Quaternion.Euler(0.0f, 90.0f + RampInclination, RampInclination);
                 //stone_sled1.transform.parent = objParent.transform;
                 stone_sled1.transform.parent = workers_gameObject.transform;
                 stone_sled1.isStatic = true;
@@ -3306,8 +3542,8 @@ public class GeneratePyramid : MonoBehaviour
             {
                 GameObject stone_sled1 = Instantiate(stone_sled, objParent.transform.position + new Vector3(0, 0, 0), Quaternion.identity);
                 stone_sled1.name = "stone_sled_" + level + "_" + row + "_2";
-                stone_sled1.transform.position = objParent.transform.position + new Vector3((base_size / 2 - 2.5f * blockwide), height + 0.75f, -(base_size / 2 - 1.0f * blockwide));
-                stone_sled1.transform.localRotation = Quaternion.Euler(0.0f, 7.0f, -7.0f);
+                stone_sled1.transform.position = objParent.transform.position + new Vector3((base_size / 2 - 2.5f * blockwide), height + 0.75f, -(base_size / 2 - holeWide * blockwide / 2 + 0.75f));
+                stone_sled1.transform.localRotation = Quaternion.Euler(0.0f, RampInclination, -RampInclination);
                 //stone_sled1.transform.parent = objParent.transform;
                 stone_sled1.transform.parent = workers_gameObject.transform;
                 stone_sled1.isStatic = true;
@@ -3317,8 +3553,8 @@ public class GeneratePyramid : MonoBehaviour
             {
                 GameObject stone_sled1 = Instantiate(stone_sled, objParent.transform.position + new Vector3(0, 0, 0), Quaternion.identity);
                 stone_sled1.name = "stone_sled_" + level + "_" + row + "_3";
-                stone_sled1.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - 1.0f * blockwide), height + 0.75f, -(base_size / 2 - 2.5f * blockwide));
-                stone_sled1.transform.localRotation = Quaternion.Euler(0.0f, 95.0f, -7.0f);
+                stone_sled1.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - holeWide * blockwide / 2 + 0.75f), height + 0.75f, -(base_size / 2 - 2.5f * blockwide));
+                stone_sled1.transform.localRotation = Quaternion.Euler(0.0f, 90.0f+ RampInclination, -RampInclination);
                 //stone_sled1.transform.parent = objParent.transform;
                 stone_sled1.transform.parent = workers_gameObject.transform;
                 stone_sled1.isStatic = true;
@@ -3328,8 +3564,8 @@ public class GeneratePyramid : MonoBehaviour
             {
                 GameObject stone_sled1 = Instantiate(stone_sled, new Vector3(0, 0, 0), Quaternion.identity);
                 stone_sled1.name = "stone_sled_" + level + "_" + row + "_4";
-                stone_sled1.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - 2.5f * blockwide), height + 0.75f, (base_size / 2 - 1.0f * blockwide));
-                stone_sled1.transform.localRotation = Quaternion.Euler(0.0f, 7.0f, 7.0f);
+                stone_sled1.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - 2.5f * blockwide), height + 0.75f, (base_size / 2 - holeWide * blockwide / 2 + 0.75f));
+                stone_sled1.transform.localRotation = Quaternion.Euler(0.0f, RampInclination, RampInclination);
                 //stone_sled1.transform.parent = objParent.transform;
                 stone_sled1.transform.parent = workers_gameObject.transform;
                 stone_sled1.isStatic = true;
@@ -3346,19 +3582,19 @@ public class GeneratePyramid : MonoBehaviour
                 {
                     GameObject Egyptian = Instantiate(Egyptian_body, new Vector3(0, 0, 0), Quaternion.identity);
                     Egyptian.name = "Egyptian_left_" + level + "_" + row + "_" + i + "_1";
-                    Egyptian.transform.position = objParent.transform.position + new Vector3((base_size / 2 - (0.75f + 0.1f * i) * blockwide), height + 2.25f + 0.16f * i, (base_size / 2 - (4.5f + i) * blockwide));
-                    Egyptian.transform.localRotation = Quaternion.Euler(7.0f, 7.0f, 0.0f);
+                    Egyptian.transform.position = objParent.transform.position + new Vector3((base_size / 2 - (0.75f + 0.1f * i) - holeWide * blockwide / 2), height + 2.25f + 0.16f * i, (base_size / 2 - (4.5f + i) * blockwide));
+                    Egyptian.transform.localRotation = Quaternion.Euler(RampInclination, RampInclination, 0.0f);
                     //Egyptian.transform.parent = objParent.transform;
                     Egyptian.transform.parent = workers_gameObject.transform;
-                    Egyptian.isStatic = true;
+                    Egyptian.isStatic = true;                    
                 }
 
                 if (minBaseSize2Ramps < base_size && (!Method2Ramp || level % 2 == 0))
                 {
                     GameObject Egyptian = Instantiate(Egyptian_body, new Vector3(0, 0, 0), Quaternion.identity);
                     Egyptian.name = "Egyptian_left_" + level + "_" + row + "_" + i + "_2";
-                    Egyptian.transform.position = objParent.transform.position + new Vector3((base_size / 2 - (4.5f + i) * blockwide), height + 2.25f + 0.16f * i, -(base_size / 2 - (0.75f + 0.1f * i) * blockwide));
-                    Egyptian.transform.localRotation = Quaternion.Euler(7.0f, 97.0f, 0.0f);
+                    Egyptian.transform.position = objParent.transform.position + new Vector3((base_size / 2 - (4.5f + i) * blockwide), height + 2.25f + 0.16f * i, -(base_size / 2 - (0.75f + 0.1f * i) - holeWide * blockwide / 2));
+                    Egyptian.transform.localRotation = Quaternion.Euler(RampInclination, 90.0f+ RampInclination, 0.0f);
                     //Egyptian.transform.parent = objParent.transform;
                     Egyptian.transform.parent = workers_gameObject.transform;
                     Egyptian.isStatic = true;
@@ -3368,8 +3604,8 @@ public class GeneratePyramid : MonoBehaviour
                 {
                     GameObject Egyptian = Instantiate(Egyptian_body, new Vector3(0, 0, 0), Quaternion.identity);
                     Egyptian.name = "Egyptian_left_" + level + "_" + row + "_" + i + "_3";
-                    Egyptian.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - (0.75f + 0.1f * i) * blockwide), height + 2.25f + 0.16f * i, -(base_size / 2 - (4.5f + i) * blockwide));
-                    Egyptian.transform.localRotation = Quaternion.Euler(7.0f, 187.0f, 0.0f);
+                    Egyptian.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - (0.75f + 0.1f * i) - holeWide * blockwide / 2), height + 2.25f + 0.16f * i, -(base_size / 2 - (4.5f + i) * blockwide));
+                    Egyptian.transform.localRotation = Quaternion.Euler(RampInclination, 180.0f+ RampInclination, 0.0f);
                     //Egyptian.transform.parent = objParent.transform;
                     Egyptian.transform.parent = workers_gameObject.transform;
                     Egyptian.isStatic = true;
@@ -3379,8 +3615,8 @@ public class GeneratePyramid : MonoBehaviour
                 {
                     GameObject Egyptian = Instantiate(Egyptian_body, new Vector3(0, 0, 0), Quaternion.identity);
                     Egyptian.name = "Egyptian_left_" + level + "_" + row + "_" + i + "_4";
-                    Egyptian.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - (4.5f + i) * blockwide), height + 2.25f + 0.16f * i, (base_size / 2 - (0.75f + 0.1f * i) * blockwide));
-                    Egyptian.transform.localRotation = Quaternion.Euler(7.0f, -75.0f, 0.0f);
+                    Egyptian.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - (4.5f + i) * blockwide), height + 2.25f + 0.16f * i, (base_size / 2 - (0.75f + 0.1f * i) - holeWide * blockwide / 2));
+                    Egyptian.transform.localRotation = Quaternion.Euler(RampInclination, -90.0f+ RampInclination, 0.0f);
                     //Egyptian.transform.parent = objParent.transform;
                     Egyptian.transform.parent = workers_gameObject.transform;
                     Egyptian.isStatic = true;
@@ -3391,19 +3627,19 @@ public class GeneratePyramid : MonoBehaviour
                 {
                     GameObject Egyptian2 = Instantiate(Egyptian_body, new Vector3(0, 0, 0), Quaternion.identity);
                     Egyptian2.name = "Egyptian_right_" + level + "_" + row + "_" + i + "_1";
-                    Egyptian2.transform.position = objParent.transform.position + new Vector3((base_size / 2 - (1.5f + 0.1f * i) * blockwide), height + 2.25f + 0.16f * i, (base_size / 2 - (4.5f + i) * blockwide));
-                    Egyptian2.transform.localRotation = Quaternion.Euler(7.0f, 7.0f, 0.0f);
+                    Egyptian2.transform.position = objParent.transform.position + new Vector3((base_size / 2 + (1.5f - 0.1f * i) - holeWide * blockwide / 2), height + 2.25f + 0.16f * i, (base_size / 2 - (4.5f + i) * blockwide));
+                    Egyptian2.transform.localRotation = Quaternion.Euler(RampInclination, RampInclination, 0.0f);
                     //Egyptian2.transform.parent = objParent.transform;
                     Egyptian2.transform.parent = workers_gameObject.transform;
-                    Egyptian2.isStatic = true;
+                    Egyptian2.isStatic = true;      
                 }
 
                 if (minBaseSize2Ramps < base_size && (!Method2Ramp || level % 2 == 0))
                 {
                     GameObject Egyptian2 = Instantiate(Egyptian_body, new Vector3(0, 0, 0), Quaternion.identity);
                     Egyptian2.name = "Egyptian_right_" + level + "_" + row + "_" + i + "_2";
-                    Egyptian2.transform.position = objParent.transform.position + new Vector3((base_size / 2 - (4.5f + i) * blockwide), height + 2.25f + 0.16f * i, -(base_size / 2 - (1.5f + 0.1f * i) * blockwide));
-                    Egyptian2.transform.localRotation = Quaternion.Euler(7.0f, 97.0f, 0.0f);
+                    Egyptian2.transform.position = objParent.transform.position + new Vector3((base_size / 2 - (4.5f + i) * blockwide), height + 2.25f + 0.16f * i, -(base_size / 2 + (1.5f - 0.1f * i) - holeWide * blockwide / 2));
+                    Egyptian2.transform.localRotation = Quaternion.Euler(RampInclination, 90.0f+ RampInclination, 0.0f);
                     //Egyptian2.transform.parent = objParent.transform;
                     Egyptian2.transform.parent = workers_gameObject.transform;
                     Egyptian2.isStatic = true;
@@ -3413,8 +3649,8 @@ public class GeneratePyramid : MonoBehaviour
                 {
                     GameObject Egyptian2 = Instantiate(Egyptian_body, new Vector3(0, 0, 0), Quaternion.identity);
                     Egyptian2.name = "Egyptian_right_" + level + "_" + row + "_" + i + "_3";
-                    Egyptian2.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - (1.5f + 0.1f * i) * blockwide), height + 2.25f + 0.16f * i, -(base_size / 2 - (4.5f + i) * blockwide));
-                    Egyptian2.transform.localRotation = Quaternion.Euler(7.0f, 187.0f, 0.0f);
+                    Egyptian2.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 + (1.5f - 0.1f * i) - holeWide * blockwide / 2), height + 2.25f + 0.16f * i, -(base_size / 2 - (4.5f + i) * blockwide));
+                    Egyptian2.transform.localRotation = Quaternion.Euler(RampInclination, 180.0f+ RampInclination, 0.0f);
                     //Egyptian2.transform.parent = objParent.transform;
                     Egyptian2.transform.parent = workers_gameObject.transform;
                     Egyptian2.isStatic = true;
@@ -3424,8 +3660,8 @@ public class GeneratePyramid : MonoBehaviour
                 {
                     GameObject Egyptian2 = Instantiate(Egyptian_body, new Vector3(0, 0, 0), Quaternion.identity);
                     Egyptian2.name = "Egyptian_right_" + level + "_" + row + "_" + i + "_4";
-                    Egyptian2.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - (4.5f + i) * blockwide), height + 2.25f + 0.16f * i, (base_size / 2 - (1.5f + 0.1f * i) * blockwide));
-                    Egyptian2.transform.localRotation = Quaternion.Euler(7.0f, -75.0f, 0.0f);
+                    Egyptian2.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - (4.5f + i) * blockwide), height + 2.25f + 0.16f * i, (base_size / 2 + (1.5f - 0.1f * i) - holeWide * blockwide / 2));
+                    Egyptian2.transform.localRotation = Quaternion.Euler(RampInclination, -90.0f+ RampInclination, 0.0f);
                     //Egyptian2.transform.parent = objParent.transform;
                     Egyptian2.transform.parent = workers_gameObject.transform;
                     Egyptian2.isStatic = true;
@@ -3809,5 +4045,23 @@ public class GeneratePyramid : MonoBehaviour
                     break;
             }
         }
+    }
+
+    /// <summary>
+    /// Sets the visibility of all MeshRenderers in the children of the PyramidInterior GameObject.
+    /// </summary>
+    /// <param name="isVisible">True to make them visible, false to hide them.</param>
+    public void SetInteriorVisibility(bool isVisible)
+    {
+        if (PyramidInterior == null)
+            return;
+        
+        // Get all MeshRenderer components in the children, including the parent itself.
+        MeshRenderer[] renderers = PyramidInterior.GetComponentsInChildren<MeshRenderer>(true);
+
+        foreach (MeshRenderer renderer in renderers)
+        {
+            renderer.enabled = isVisible;
+        }        
     }
 }

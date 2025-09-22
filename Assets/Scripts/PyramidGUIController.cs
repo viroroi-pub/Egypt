@@ -30,12 +30,12 @@ public class PyramidGUIController : MonoBehaviour
     private bool showGUI = true; // To toggle GUI visibility
 
     // Booleans to control the state of each collapsible panel
-    private bool showCoreParams = true;
+    private bool showCoreParams = false;
     private bool showRampDetails = false;
     private bool showGraniteSettings = false;
     private bool showAdaptiveRamps = false;
     private bool showHeadway = false;
-    private bool showDrawingOptions = true;
+    private bool showDrawingOptions = false;
     private bool showVisibility = false;
     private bool showLogging = false;
 
@@ -266,6 +266,10 @@ public class PyramidGUIController : MonoBehaviour
         GUILayout.BeginHorizontal();
         generatePyramid.DrawGranite = GUILayout.Toggle(generatePyramid.DrawGranite, "Granite");        
         generatePyramid.halfPyramid = GUILayout.Toggle(generatePyramid.halfPyramid, "Half Pyramid");        
+        GUILayout.EndHorizontal();
+        GUILayout.BeginHorizontal();
+        generatePyramid.DrawPyramidInterior = GUILayout.Toggle(generatePyramid.DrawPyramidInterior, "Pyramid interior");
+        generatePyramid.DrawPyramidInteriorTransparent = GUILayout.Toggle(generatePyramid.DrawPyramidInteriorTransparent, "Pyramid interior transparent");
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
         generatePyramid.ShowKhufuNotchs = GUILayout.Toggle(generatePyramid.ShowKhufuNotchs, "Show Khufu Notchs");

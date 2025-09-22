@@ -60,8 +60,8 @@ public class PyramidSequence : MonoBehaviour
             //cam.transform.localPosition = new Vector3(-BaseSize, Height, BaseSize);
             //cam.transform.localPosition = new Vector3(-BaseSize, Height, -BaseSize);
 
-            GeneratePyramid.total_height = 0;            
-            GeneratePyramid.compute_size();
+            GeneratePyramid.total_height = 0;
+            yield return StartCoroutine(GeneratePyramid.compute_size());
 
             Debug.Log("Total height " + GeneratePyramid.total_height);
 

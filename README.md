@@ -34,6 +34,9 @@ If you use this dataset or code, please cite:
 * `.stl`, `.obj` – 3D meshes of pyramid and ramp geometry.  
 * `.mp4` – supplementary videos (course-by-course and ramp sequences).  
 * `.zip` – bundled project exports from SimScale.  
+* `.cs`  – C# scripts.  
+* `.py` – Phyton.  
+* `.ipynb` – Python Notebook.  
 
 ---
 
@@ -198,7 +201,7 @@ These files mirror the archive on Zenodo so reviewers can reproduce every number
 
 For transparency, the SimScale setup used for cross‑checks is shared publicly:
 
-* **piramide\_keops\_4\_rampas** — [https://www.simscale.com/projects/alux/pyramid_keops_4_ramps/)
+* **piramide\_keops\_4\_rampas** — [https://www.simscale.com/projects/alux/pyramid_keops_4_ramps/]
 
 *(Exports of these projects are also mirrored under `AdditionalData/SimScale/`.)*
 

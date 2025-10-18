@@ -13,7 +13,7 @@
 
 If you use this dataset or code, please cite:  
 
-> Rosell Roig, V.L. (2025). *Parametric Algorithm, Finite Element Models, and Stochastic Simulations for the Integrated Edge-Ramp Theory of Khufu’s Great Pyramid* [Data set]. Zenodo. https://doi.org/10.5281/zenodo.16732345
+> Rosell Roig, V.L. (2025). *Computational evaluation and finite-element analysis of an edge-integrated, multi-ramp model for constructing the Great Pyramid of Giza* [Data set]. Zenodo. https://doi.org/10.5281/zenodo.16732345
 
 ---
 

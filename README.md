@@ -2,9 +2,6 @@
 
 ![Unity simulation screenshot](AdditionalData/Images/UnityPyramid.png)
 
-Adaptive method video
-AdditionalData/Videos/adaptative_ramps.mp4
-
 ---
 
 ## 📊 Metadata & Citation

@@ -1,7 +1,9 @@
 # Khufu Pyramid – Unity Simulation (Integrated Edge-Ramp)
 
 ![Unity simulation screenshot](AdditionalData/Images/UnityPyramid.png)
-![Video Simulation: Adaptive Ramp Strategy](AdditionalData/Videos/adaptative_ramps.mp4)
+
+Adaptive method video
+https://github.com/viroroi-pub/Egypt/AdditionalData/Videos/adaptative_ramps.mp4
 
 ---
 

@@ -1,0 +1,82 @@
+edge_ramp_montecarlo_10000x5.CSV:
+
+Method:
+The dataset was created using a Monte Carlo simulation of the adaptive edge-ramp model. Each trial propagated uncertainty in the key logistical parameters:
+
+hauling speed varied by ±25% around the baseline,
+
+block dispatch headway varied by ±1 minute,
+
+additional stochastic delays were added at corners, modeled as log-normal with median ≈ 2.8 minutes and σ ≈ 0.35.
+
+The simulation engine generated 10,000 independent trials for each of the five construction phases (16-ramp, 8-ramp, 4-ramp, 2-ramp, and 1-ramp), yielding the 50,000-row CSV table. Each row reports ramp capacity, queue length, waiting probability, and blocking probability for one simulated trial.
+
+Random seed:
+The Monte Carlo generator was initialized with a fixed seed = 42 (Python numpy.random.default_rng(42)), ensuring reproducibility of the dataset.
+
+montecarlo_edge_ramp_trials.csv:
+
+Method used
+
+A discrete-event simulation of block hauling on the Integrated Edge-Ramp (IER) system.
+
+Each ramp was discretized into cells; one team per cell to maintain safety spacing.
+
+Baseline speeds: 0.15 m/s on ramps, 0.20 m/s on terraces.
+
+Baseline dispatch headway: 4 minutes per ramp (with scenarios tested at 3–8 minutes).
+
+Corner maneuver times modeled as lognormal delays (median ≈ 2.8 min, σ = 0.35), reflecting lever-and-drag experiments.
+
+Stochasticity introduced as:
+
+±25% hauling speed variation
+
+±1 minute headway variation
+
+Occasional random stoppages (MTBF ≈ 6 h; repair 5–12 min).
+
+Monte Carlo sampling: 10,000 trials per phase (16 → 8 → 4 → 2 → 1 ramps), giving ≈ 50,000 rows total.
+
+Random seed
+
+To ensure reproducibility, the runs were initialized with a fixed Python RNG seed = 42 (numpy.random.default_rng(seed=42)).
+
+This guarantees that the CSV can be regenerated identically from the archived code.
+
+montecarlo_edge_ramp_trials_mu015_mu030_theta6_7_8.zip 
+
+It was generated using a Monte Carlo discrete-event simulation of block flows along the Integrated Edge-Ramp system.
+
+Method:
+
+A recursive parametric algorithm (Unity/C# with Python analysis scripts) modeled ramp geometry and logistics.
+
+Each trial simulated hauling speeds (±25%), dispatch headways (±1 minute), and corner turning delays (lognormal distribution) across the adaptive 16→8→4→2→1 ramp sequence.
+
+Output metrics included ramp capacity (blocks/hour), mean corner queue length, waiting probability, blocking probability, and total on-site duration.
+
+N = 10,000 trials per parameter set, covering friction coefficients μ = 0.15–0.30 and ramp slopes θ = 6–8°.
+
+Seed:
+The simulations used a fixed random seed = 42 (Python numpy.random.seed(42)) to ensure full reproducibility of the stochastic outputs archived on Zenodo.
+
+So the dataset represents 10,000 reproducible stochastic trials per scenario, with random variability in haul speeds, headways, and corner delays, controlled by seed 42.
+
+edge_ramp_montecarlo_byphase_Sadjusted_ALL.zip:
+
+Method
+
+A discrete-event, stochastic simulation was run to model block transport through the integrated edge-ramp system.
+
+Each phase of the adaptive sequence (16 → 8 → 4 → 2 → 1 ramps) was simulated separately.
+
+The simulation parameters incorporated uncertainty in block hauling speed (±25%), dispatch headway (±1 minute), and corner-turn delays (modeled as lognormal distributions).
+
+10,000 Monte Carlo trials per phase were run, producing distributions of ramp capacity (blocks/hour), corner queue lengths, waiting probabilities, and blocking probabilities.
+
+Results were consolidated into CSV tables, and the bundled .zip file includes all per-phase stochastic outputs for reproducibility.
+
+Seed
+
+The Monte Carlo trials were initialized with a fixed random seed = 42, ensuring full reproducibility of all results in the Zenodo dataset.

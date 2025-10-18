@@ -19,10 +19,10 @@ If you use this dataset or code, please cite:
 
 ## 🔍 Software dependencies
 
-* **Unity 2021 LTS** or newer (tested with Unity 2021.3.x, Unity 6000.2).  
+* **Unity 6000 LTS** or newer (tested with Unity 6000.2).  
 * **C# 9.0** (scripts in `Assets/Scripts`).  
 * **Python 3.11** with `numpy`, `pandas`, `matplotlib` (for additional analysis).  
-* **SimScale / Code_Aster** (for FEA runs; models exported under `AdditionalData/SimScale/`).  
+* **SimScale / Code_Aster v15.6.10/MUMPS v5.2.1** (for FEA runs; models exported under `AdditionalData/SimScale/`).  
 * **Blender 4.4** (for optional 3D visualization of OBJ exports).  
 
 ---
@@ -80,7 +80,7 @@ All simulation scripts, block‑by‑row tables and the Unity scene are archived
 
 ## 🚀 Quick start
 
-1. **Open** the project in **Unity 2021 LTS or newer** and load *SampleScene* **or** *MultiplePyramides*.
+1. **Open** the project in **Unity 6000 or newer** and load *SampleScene* **or** *MultiplePyramides*.
 2. Add an empty object (e.g., **Pyramid**) and **Add Component → GeneratePyramid**. Press **Play** to build the full model.
 3. *(Optional)* For a **course‑by‑course animation**, also add **PyramidSequence** and press **Play**. It will increment rows, clean previous geometry and (if enabled) capture PNGs.
 
@@ -149,6 +149,19 @@ ps.LapseSeconds = 0.5f; // wait between steps
 ```
 
 ---
+## 📤 Log export
+
+```csharp
+ps.showInfoLevel = true;
+ps.showInfoLevelTotal = true;
+ps.showInfoLevelDec = true;
+ps.showInfoRow = true;
+```
+pyramid_row.csv      // Row;blocks;ramp inclination;Ramp length (m);Ramp length total (m);distance blocks (Km);distance blocks Ramp (Km);distance blocks Horiz (Km);Sum force blocks (GJ);Sum Vert. force blocks (GJ);Sum Horiz. force blocks (GJ);Vert. force blocks row (GJ);Horiz. force blocks row (GJ);Total force blocks row (GJ);% Decrement blocks;% increase Distance;% increase Force
+pyramid_iter.csv     // Course;Height;blocks;Separation;New base size;Length;Ramp inclination;Start height;% total height;Ramp length (m)
+pyramid_headway.csv  // Row;blocks;up ramps;blocks per ramp;fixed headway(min);adaptative headway(min);total time(min);adaptative total time(min);total time(working years);adaptativive total time(working years)
+
+---
 
 ## 📤 OBJ export
 
@@ -185,9 +198,16 @@ These files mirror the archive on Zenodo so reviewers can reproduce every number
 
 For transparency, the SimScale setup used for cross‑checks is shared publicly:
 
-* **piramide\_keops\_4\_rampas** — [https://www.simscale.com/projects/viroroi/piramide\_keops\_4\_rampas/](https://www.simscale.com/projects/viroroi/piramide_keops_4_rampas/)
+* **piramide\_keops\_4\_rampas** — [https://www.simscale.com/projects/alux/pyramid_keops_4_ramps/)
 
 *(Exports of these projects are also mirrored under `AdditionalData/SimScale/`.)*
+
+---
+
+## Dependencies
+All Python dependencies are listed in the requirements.txt file. To create the necessary environment, navigate to the repository's root directory and run:
+
+pip install -r requirements.txt
 
 ---
 

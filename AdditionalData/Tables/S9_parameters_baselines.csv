@@ -1,0 +1,8 @@
+parameter,baseline,tested_range,justification,impact_on_on_site_duration_pct,notes
+Headway_per_active_ramp,4.0_min,3–7_min,"Separation rule; Monte Carlo N=10,000",~±20%,"Near-linear scaling when not saturated"
+Corner_delay_logmedian,2.8_min,"±25% about median","Stocks lever/pivot trials; lognormal",~±1–3%,"Small except at upper courses"
+Ramp_speed,0.15_m_per_s,0.12–0.18_m_per_s,"Conservative sledge speeds",~5–8%∓,"Inverse relation if headway non-binding"
+Terrace_speed,0.20_m_per_s,0.16–0.24_m_per_s,"As above; dominates early courses",~3–6%∓,"Largest effect in first 30–40 courses"
+Friction_mu,0.20,0.15–0.30,"Wet sand optimum ~5% water (Harrell & Brown; Fall et al.)",~±5.5%,"From +50% μ ⇒ +1.91 y at baseline"
+Ramp_grade_theta,7_deg,6–8_deg,"Trade-off of force vs path length",−2.7% (to 6°); +1.5% (to 8°),"Relative to 7°"
+Random_stops_MTBF/repair,"6h / 5–12min","scenario variants","Incidental disruptions","sub-% to few %","Mostly absorbed by buffers/headways"

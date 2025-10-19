@@ -1,0 +1,7 @@
+theta_deg,mu,team_size,team_length_m,total_min_safety_distance_m,calculated_avg_headway_min,assumptions
+6,0.20,23,17.0,35.0,3.89,"Double-file spacing 1.5 m/man; +3 m sledge +15 m buffer; v_ramp=0.15 m/s; v_terrace=0.20 m/s"
+6,0.30,30,21.5,39.5,4.39,"Same assumptions"
+7,0.20,24,17.0,35.0,3.89,"Same assumptions"
+7,0.30,32,23.0,41.0,4.56,"Same assumptions"
+8,0.20,25,18.5,36.5,4.06,"Same assumptions"
+8,0.30,33,24.5,42.5,4.72,"Same assumptions"

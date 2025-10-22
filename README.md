@@ -19,11 +19,30 @@ If you use this dataset or code, please cite:
 
 ## 🔍 Software dependencies
 
-* **Unity 6000 LTS** or newer (tested with Unity 6000.2).  
+* **Unity 6000 ** or newer (tested with Unity 6000.2).  
 * **C# 9.0** (scripts in `Assets/Scripts`).  
 * **Python 3.11** with `numpy`, `pandas`, `matplotlib` (for additional analysis).  
 * **SimScale / Code_Aster v15.6.10/MUMPS v5.2.1** (for FEA runs; models exported under `AdditionalData/SimScale/`).  
 * **Blender 4.4** (for optional 3D visualization of OBJ exports).  
+
+---
+
+## 🏗️ Available Ramp Construction Methods
+
+**Straight** - Straight external ramp approaching one face (Arnold 1991, Lehner 1997)
+
+**Spiral** - External spiral ramp wrapping around pyramid perimeter (Arnold 1991, Lehner 1997)
+
+**Internal** - Internal spiral ramp within pyramid core (Houdin 2006)
+
+**Integrated** - Edge-integrated ramp using temporarily omitted perimeter courses
+- Single helical ramp (baseline)
+- 4-ramp parallel configuration
+- Adaptive sequence (16→8→4→2→1 ramps)
+- Parapet-enhanced safety variant
+- Macro-terrace compatible version
+
+All methods implement identical physical parameters for direct comparative analysis.
 
 ---
 
@@ -207,6 +226,16 @@ For transparency, the SimScale setup used for cross‑checks is shared publicly:
 * **piramide\_keops\_4\_rampas** — [https://www.simscale.com/projects/alux/pyramid_keops_4_ramps/]
 
 *(Exports of these projects are also mirrored under `AdditionalData/SimScale/`.)*
+Note: project may require login (free).
+
+---
+
+## 📐 Geometric Registration & Error Budget
+
+- **Source Data**: Canonical dimensions from Lehner (2008) with ±0.3m uncertainty
+- **Control Points**: Base corners, apex position from literature
+- **Propagated Errors**: ±1.2% in ramp lengths, ±0.8° in turn elevations
+- **Validation**: Compared against McKenzie (2016) course height data (RMS: 0.42m)
 
 ---
 

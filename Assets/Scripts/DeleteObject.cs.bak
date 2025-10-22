@@ -7,7 +7,6 @@ public class DeleteObject : MonoBehaviour
     public GeneratePyramid  generatePyramid; // Reference to the GeneratePyramid script
     public GameObject CommonGameObject;
     public bool decreaseBlocks = true;
-    public bool deleteObject = true;
 
     void OnTriggerEnter(Collider other)
     {
@@ -15,13 +14,7 @@ public class DeleteObject : MonoBehaviour
         {
             if (CommonGameObject == null)
             {
-                if (deleteObject)
-                    Destroy(other.gameObject);
-                else
-                {
-                    other.gameObject.SetActive(false);
-                    generatePyramid.AddDetectedBlock(other.gameObject);
-                }
+                Destroy(other.gameObject);
                 if (generatePyramid != null && decreaseBlocks)
                 {
                     generatePyramid.DeletedBlocks++; // Call the method to decrease the block count
@@ -31,13 +24,7 @@ public class DeleteObject : MonoBehaviour
             {
                 if (FindAncestor(other.transform, CommonGameObject.transform))
                 {
-                    if (deleteObject)
-                        Destroy(other.gameObject);
-                    else
-                    { 
-                        other.gameObject.SetActive(false);
-                        generatePyramid.AddDetectedBlock(other.gameObject);
-                    }
+                    Destroy(other.gameObject);
                     if (generatePyramid != null && decreaseBlocks)
                     {
                         generatePyramid.DeletedBlocks++; // Call the method to decrease the block count

@@ -25,6 +25,9 @@ public class PyramidGUIController : MonoBehaviour
     private string avgHeadwayStr, minHeadwayStr, maxHeadwayStr, workingMinutesStr;
     private string txtNameStr, csvIterNameStr, csvRowNameStr, csvHeadwayNameStr;
     private string exportSubFolderStr, outputFileNameStr;
+    private string decommissioningTimeLapseStr, decommissioningStepStr;
+    private string sideSlopeAngleStr;
+    private string spiralRampSeparationStr, internalRampStraightRampHighStr;
 
     private Vector2 scrollPosition; // For the scrollbar
     private bool showGUI = true; // To toggle GUI visibility
@@ -38,6 +41,8 @@ public class PyramidGUIController : MonoBehaviour
     private bool showDrawingOptions = false;
     private bool showVisibility = false;
     private bool showLogging = false;
+    private bool showDecommissioning = false;
+    private bool showRampMethod = false;
 
     void Start()
     {
@@ -108,14 +113,16 @@ public class PyramidGUIController : MonoBehaviour
         //GUI.enabled = generatePyramid.selectedPyramid == PyramidType.Default;
 
         // --- MANUAL PARAMETERS ---
+        DrawCollapsiblePanel("Ramp Method", ref showRampMethod, DrawRampMethodPanel);
         DrawCollapsiblePanel("Core Parameters", ref showCoreParams, DrawCoreParameters);
         DrawCollapsiblePanel("Ramp Details", ref showRampDetails, DrawRampDetails);
         DrawCollapsiblePanel("Granite Settings", ref showGraniteSettings, DrawGraniteSettings);
         DrawCollapsiblePanel("Adaptive Ramp System", ref showAdaptiveRamps, DrawAdaptiveRampSystem);
         DrawCollapsiblePanel("Headway & Timings", ref showHeadway, DrawHeadwayAndTimings);
         DrawCollapsiblePanel("Drawing Options", ref showDrawingOptions, DrawDrawingOptions);
-        DrawCollapsiblePanel("Element Visibility", ref showVisibility, DrawElementVisibility);
-        DrawCollapsiblePanel("Logging & Export", ref showLogging, DrawLoggingOptions); // New Panel
+        DrawCollapsiblePanel("Element Visibility", ref showVisibility, DrawElementVisibility);        
+        DrawCollapsiblePanel("Decommissioning", ref showDecommissioning, DrawDecommissioningPanel);
+        DrawCollapsiblePanel("Logging & Export", ref showLogging, DrawLoggingOptions);
 
         // --- exit ---
         GUILayout.FlexibleSpace(); 
@@ -190,6 +197,11 @@ public class PyramidGUIController : MonoBehaviour
         GUILayout.EndVertical();
     }
 
+    private void DrawRampMethodPanel()
+    {
+        generatePyramid.rampMethod = (RampMethodType)GUILayout.Toolbar((int)generatePyramid.rampMethod, Enum.GetNames(typeof(RampMethodType)));
+    }
+
     private void DrawCoreParameters()
     {
         DrawLabeledTextField("Base Size (m)", ref baseSizeStr);
@@ -212,6 +224,14 @@ public class PyramidGUIController : MonoBehaviour
         generatePyramid.Method8Ramp = GUILayout.Toggle(generatePyramid.Method8Ramp, "8-Ramp Method");
         generatePyramid.Method16Ramp = GUILayout.Toggle(generatePyramid.Method16Ramp, "16-Ramp Method");
         GUILayout.EndHorizontal();
+
+        GUILayout.Space(10);
+        GUIStyle subHeaderStyle = new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold };
+        GUILayout.Label("Straight Ramp Orientation", subHeaderStyle);
+        generatePyramid.StraightRampFace = (CameraPositionFace)GUILayout.Toolbar((int)generatePyramid.StraightRampFace, Enum.GetNames(typeof(CameraPositionFace)));
+        DrawLabeledTextField("Side Slope Angle (°)", ref sideSlopeAngleStr);
+        DrawLabeledTextField("Spiral Sep. (m)", ref spiralRampSeparationStr);
+        DrawLabeledTextField("Internal Ramp H (m)", ref internalRampStraightRampHighStr);
     }
 
     private void DrawGraniteSettings()
@@ -256,7 +276,7 @@ public class PyramidGUIController : MonoBehaviour
         generatePyramid.DrawFloor = GUILayout.Toggle(generatePyramid.DrawFloor, "Floors");
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
-        generatePyramid.DrawCover = GUILayout.Toggle(generatePyramid.DrawCover, "Cover");
+        generatePyramid.DrawCasing = GUILayout.Toggle(generatePyramid.DrawCasing, "Casing");
         generatePyramid.DrawAll = GUILayout.Toggle(generatePyramid.DrawAll, "Draw All");
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
@@ -277,7 +297,7 @@ public class PyramidGUIController : MonoBehaviour
         GUILayout.Space(10);
         GUIStyle subHeaderStyle = new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold };
         GUILayout.Label("Camera Position", subHeaderStyle);
-        generatePyramid.cameraPositionFace = (CameraPositionFace)GUILayout.Toolbar((int)generatePyramid.cameraPositionFace, Enum.GetNames(typeof(CameraPositionFace)));
+        generatePyramid.cameraPositionFace = (CameraPositionFace)GUILayout.Toolbar((int)generatePyramid.cameraPositionFace, Enum.GetNames(typeof(CameraPositionFace)));       
     }
 
     private void DrawLoggingOptions()
@@ -307,6 +327,18 @@ public class PyramidGUIController : MonoBehaviour
         DrawLabeledTextField("Export Subfolder", ref exportSubFolderStr);
         DrawLabeledTextField("Export Filename", ref outputFileNameStr);
 
+        GUI.enabled = wasEnabled;
+    }
+
+    private void DrawDecommissioningPanel()
+    {
+        generatePyramid.Decomisioning = GUILayout.Toggle(generatePyramid.Decomisioning, "Enable Decommissioning");
+        generatePyramid.AnimateDecommissioning = GUILayout.Toggle(generatePyramid.AnimateDecommissioning, "Animate Decommissioning");
+
+        bool wasEnabled = GUI.enabled;
+        GUI.enabled = generatePyramid.AnimateDecommissioning;
+        DrawLabeledTextField("Time Lapse (s)", ref decommissioningTimeLapseStr);
+        DrawLabeledTextField("Step (%)", ref decommissioningStepStr);
         GUI.enabled = wasEnabled;
     }
 
@@ -401,6 +433,15 @@ public class PyramidGUIController : MonoBehaviour
 
         generatePyramid.exportSubFolder = exportSubFolderStr;
         generatePyramid.outputFileName = outputFileNameStr;
+
+        if (float.TryParse(decommissioningTimeLapseStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float timeLapse)) generatePyramid.DecommissioningTimeLapse = timeLapse;
+        if (float.TryParse(decommissioningStepStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float step)) generatePyramid.DecommissioningStep = step / 100.0f;
+
+        // Apply Ramp Geometry
+        if (float.TryParse(rampInclinationStr, NumberStyles.Any, CultureInfo.InvariantCulture, out val)) generatePyramid.RampInclination = val;
+        if (float.TryParse(sideSlopeAngleStr, NumberStyles.Any, CultureInfo.InvariantCulture, out val)) generatePyramid.SideSlopeAngle = val;
+        if (int.TryParse(spiralRampSeparationStr, NumberStyles.Any, CultureInfo.InvariantCulture, out int valVal9)) generatePyramid.spiralRampSeparation = valVal9;
+        if (float.TryParse(internalRampStraightRampHighStr, NumberStyles.Any, CultureInfo.InvariantCulture, out val)) generatePyramid.internalRampStraightRampHigh = val;
     }
 
     /// <summary>
@@ -444,6 +485,15 @@ public class PyramidGUIController : MonoBehaviour
 
         exportSubFolderStr = generatePyramid.exportSubFolder;
         outputFileNameStr = generatePyramid.outputFileName;
+
+        decommissioningTimeLapseStr = generatePyramid.DecommissioningTimeLapse.ToString("F2", CultureInfo.InvariantCulture);
+        decommissioningStepStr = (generatePyramid.DecommissioningStep * 100.0f).ToString("F2", CultureInfo.InvariantCulture);
+
+        // Update Ramp Geometry
+        rampInclinationStr = generatePyramid.RampInclination.ToString("F2", CultureInfo.InvariantCulture);
+        sideSlopeAngleStr = generatePyramid.SideSlopeAngle.ToString("F2", CultureInfo.InvariantCulture);
+        spiralRampSeparationStr = generatePyramid.spiralRampSeparation.ToString("F2", CultureInfo.InvariantCulture);
+        internalRampStraightRampHighStr = generatePyramid.internalRampStraightRampHigh.ToString("F2", CultureInfo.InvariantCulture);
     }
 
     // Utility to create a texture for the GUI background

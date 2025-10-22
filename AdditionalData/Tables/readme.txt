@@ -54,3 +54,29 @@ table2_headway_min_per_ramp.csv — Main Table 2 — Per-ramp dispatch headway n
 
 S9_parameters_baselines.csv — Supplement Table S9.1 — Parameter baselines, tested ranges, justification, and approximate impact (Δ%) on on-site duration (headway, corner delay, speeds, μ, θ, MTBF/repair); aligns with S9 sensitivity narrative.
 
+Compare methods.xlsx	Aggregate comparison of the four implemented geometries (Straight 4°, Spiral 4°, Houdin 4° + 5°, IER 7°) under identical parameters. Used for Tables S13.1 and Fig. 13.1.
+
+Compare methods Spiral_IER.xlsx	Cross-check spreadsheet comparing Spiral 4° and IER 7° outputs (distance, work, headway) used in Results – Comparative framework.
+
+pyramid_row_Houdin_straight_ramp_40m.csv	Course-by-course geometry and work data for the external straight ramp phase of the Houdin model (4°, h ≈ 40 m).
+
+pyramid_row_Internal_56_5.csv	Internal Houdin phase starting at course 56, slope 5°; per-course ramp/terrace distances and work.
+
+pyramid_row_Internal_100_5.csv	Internal Houdin ramp extended to apex (5°); cumulative results for total internal phase.
+
+pyramid_row_Spiral_100.csv	External spiral ramp (4°, 5 m offset, 6.35 m lane) up to course 100; per-course distances, ramp share, and work.
+
+pyramid_row_IER_100.csv	IER (7°) single-lane model to course 100; distances, ramp / terrace split, work, and energy. Basis for IER (single-ramp) comparison.
+
+pyramid_row_Keops_100_straight.csv	Straight external ramp (4°) to course 100; complete course-by-course data for distances, work, and energy totals.
+
+pyramid_row_Keops_100_IER.csv	IER (7°) four-lane adaptive configuration to course 100; used for multi-ramp results in Results – Adaptive IER.
+pyramid_row_Keops_100_IER.xlsx  
+
+pyramid_row_Keops_100_spiral.csv	Spiral 4° variant for Keops model; alternative comparison dataset for cross-validation.
+
+pyramid_row_Keops_100_Houdin.csv	Combined Houdin (straight + internal 5°) dataset up to course 100; used for the aggregate Houdin totals.
+
+Comparison_Spiral_IER.xlsx	Secondary check of Spiral vs IER distance/work ratios used in Supplement S13.
+
+

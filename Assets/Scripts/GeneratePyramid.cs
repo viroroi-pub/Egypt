@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using UMA;
 using UnityEngine;
@@ -10,6 +11,29 @@ using UnityEngine.Rendering;
 using UnityEngine.UIElements;
 using static UnityEngine.Rendering.DebugUI.Table;
 using static UnityEngine.UI.GridLayoutGroup;
+
+/// <summary>
+/// Defines the type of ramp construction method to be used.
+/// </summary>
+public enum RampMethodType
+{
+    /// <summary>
+    /// A straight ramp approaching one face of the pyramid. Arnold (1991), Lehner (1997)
+    /// </summary>
+    Straight,
+    /// <summary>
+    /// A spiral ramp that wraps around the pyramid.
+    /// </summary>
+    Spiral,
+    /// <summary>
+    /// A ramp built inside the body of the pyramid (Houdin).
+    /// </summary>
+    Internal,
+    /// <summary>
+    /// Ramps integrated into the main axis or edges of the pyramid structure.
+    /// </summary>
+    Integrated
+}
 
 // Defines the pyramid types for the dropdown menu in the Inspector.
 public enum PyramidType
@@ -42,8 +66,26 @@ public enum CameraPositionFace
     WestFace
 }
 
+/// <summary>
+/// Helper class to compare GameObjects based on their Y position in descending order.
+/// This is necessary for the BinarySearch method to work correctly.
+/// </summary>
+public class GameObjectYComparer : IComparer<GameObject>
+{
+    public int Compare(GameObject a, GameObject b)
+    {
+        if (a == null && b == null) return 0;
+        if (a == null) return 1;
+        if (b == null) return -1;
+
+        // Use CompareTo for robust comparison and sort in descending order (highest first).
+        return b.transform.position.y.CompareTo(a.transform.position.y);
+    }
+}
+
 public class GeneratePyramid : MonoBehaviour
 {
+    public RampMethodType rampMethod = RampMethodType.Integrated;
     // --- Pyramid and Ramp Geometry ---
     /// <summary>
     /// Select a predefined pyramid type to automatically set its dimensions.
@@ -91,9 +133,25 @@ public class GeneratePyramid : MonoBehaviour
     /// </summary>
     public float blockSeparation = 0.01f; // separation between blocks
     /// <summary>
-    /// Uset setback for the width of the path or ramp.
+    /// Used setback for the width of the path or ramp.
     /// </summary>
-    public bool setback = false; 
+    public bool setback = false;
+    /// <summary>
+    /// SideSloped, for straight and spiral rmaps
+    /// </summary>
+    public float SideSlopeAngle = 30.0f;
+    /// <summary>
+    /// spiral/internal ramp separation in block units.
+    /// </summary>
+    public int spiralRampSeparation = 2;
+    /// <summary>
+    /// internal ramp with straight ramp maximum height.
+    /// </summary>
+    public float internalRampStraightRampHigh = 40.0f;
+    /// <summary>
+    /// Transparency for see internal ramp
+    /// </summary>
+    public float pyramidTransparency = 0.25f;
 
     // --- Block and Calculation Data ---
     /// <summary>
@@ -144,6 +202,14 @@ public class GeneratePyramid : MonoBehaviour
     /// The portion of the total distance traveled on the ramp.
     /// </summary>
     public float totalLengthRamp = 0;
+    /// <summary>
+    /// Pyramid Volume
+    /// </summary>
+    public float PyramidVolume = 0f;
+    /// <summary>
+    /// Embankment Volume
+    /// </summary>
+    public float EmbankmentVolume = 0f;
 
     // --- Materials and GameObjects ---
     /// <summary>
@@ -166,6 +232,10 @@ public class GeneratePyramid : MonoBehaviour
     /// Material for the ramp floor.
     /// </summary>
     public Material m_Material_floor;
+    /// <summary>
+    /// Material for the adobe.
+    /// </summary>
+    public Material m_Material_adobe;
     /// <summary>
     /// Reference to the main camera in the scene.
     /// </summary>
@@ -267,7 +337,7 @@ public class GeneratePyramid : MonoBehaviour
     /// <summary>
     /// Toggles drawing the outer casing stones.
     /// </summary>
-    public bool DrawCover = false;
+    public bool DrawCasing = false;
     /// <summary>
     /// The specific row to draw for DrawUntilRow or DrawOnlyRow.
     /// </summary>
@@ -324,7 +394,30 @@ public class GeneratePyramid : MonoBehaviour
     /// Pyramid interior GameObject
     /// </summary>
     public GameObject PyramidInterior;
-
+    /// <summary>
+    /// decomisioning Pyramid 
+    /// </summary>
+    public bool Decomisioning = false;
+    /// <summary>
+    /// decomisioning Pyramid timelapse
+    /// </summary>
+    public bool AnimateDecommissioning = false;
+    /// <summary>
+    /// decomisioning Pyramid timelapse
+    /// </summary>
+    public float DecommissioningTimeLapse = 0.1f;
+    /// <summary>
+    /// % decomisioning Pyramid step
+    /// </summary>
+    public float DecommissioningStep = 0.05f; 
+    /// <summary>
+    /// Ommited Pyramid blocks 
+    /// </summary>
+    public List<GameObject> DetectedDeletedBlocks;
+    /// <summary>
+    /// Straight Ramp Face starting position
+    /// </summary>
+    public CameraPositionFace StraightRampFace = CameraPositionFace.NorthFace;
 
     // --- Logging and Export Options ---
     /// <summary>
@@ -488,6 +581,16 @@ public class GeneratePyramid : MonoBehaviour
     /// Progress Bar UI
     /// </summary>
     public ProgressBarUI progressBar;
+    /// <summary>
+    /// use blocks course thickness
+    /// </summary>
+    public bool useKhufuCourseHeights = false;
+
+    // Static, read-only list of the heights of the Cheops courses.
+    private static readonly List<float> khufuCourseHeights = new List<float>
+    {
+        1.5f, 1.24f, 1.2f, 1.02f, 0.99f, 0.9f, 1.0f, 0.97f, 0.93f, 0.915f, 0.865f, 0.76f, 0.76f, 0.75f, 0.75f, 0.735f, 0.75f, 0.83f, 0.95f, 0.62f, 0.58f, 0.87f, 0.89f, 0.83f, 0.8f, 0.74f, 0.78f, 0.69f, 0.65f, 0.64f, 0.73f, 0.72f, 0.54f, 0.66f, 1.27f, 1.0f, 0.97f, 0.95f, 0.84f, 0.84f, 0.83f, 0.72f, 0.83f, 1.06f, 0.97f, 0.73f, 0.9f, 0.905f, 0.86f, 0.7f, 0.725f, 0.61f, 0.68f, 0.63f, 0.69f, 0.55f, 0.62f, 0.685f, 0.75f, 0.7f, 0.675f, 0.635f, 0.655f, 0.675f, 0.66f, 0.605f, 0.86f, 0.835f, 0.78f, 0.64f, 0.71f, 0.675f, 0.66f, 0.8f, 0.76f, 0.62f, 0.64f, 0.6f, 0.595f, 0.625f, 0.6f, 0.6f, 0.6f, 0.67f, 0.575f, 0.67f, 0.66f, 0.58f, 0.61f, 0.97f, 0.905f, 0.835f, 0.775f, 0.68f, 0.63f, 0.605f, 0.61f, 1.0f, 0.995f, 0.905f, 0.85f, 0.74f, 0.76f, 0.68f, 0.675f, 0.64f, 0.635f, 0.755f, 0.68f, 0.59f, 0.605f, 0.595f, 0.6f, 0.58f, 0.575f, 0.675f, 0.58f, 0.905f, 0.83f, 0.75f, 0.745f, 0.67f, 0.66f, 0.63f, 0.58f, 0.605f, 0.595f, 0.59f, 0.7f, 0.65f, 0.605f, 0.565f, 0.555f, 0.545f, 0.61f, 0.58f, 0.68f, 0.65f, 0.57f, 0.56f, 0.56f, 0.565f, 0.74f, 0.685f, 0.6f, 0.59f, 0.56f, 0.56f, 0.7f, 0.635f, 0.595f, 0.59f, 0.55f, 0.55f, 0.54f, 0.545f, 0.545f, 0.545f, 0.545f, 0.545f, 0.6f, 0.59f, 0.645f, 0.56f, 0.54f, 0.54f, 0.545f, 0.525f, 0.535f, 0.54f, 0.53f, 0.52f, 0.495f, 0.53f, 0.53f, 0.525f, 0.53f, 0.53f, 0.675f, 0.635f, 0.6f, 0.58f, 0.56f, 0.545f, 0.53f, 0.52f, 0.525f, 0.52f, 0.525f, 0.54f, 0.515f, 0.52f, 0.52f, 0.52f, 0.585f, 0.605f, 0.565f, 0.55f, 0.575f, 0.565f, 1.12f
+    };
 
     private float pyramid_inclination_tg = 0;
     private float ramp_inclination_tg;   
@@ -519,6 +622,9 @@ public class GeneratePyramid : MonoBehaviour
     private GameObject cubewall1, cubewall2, cubewall3, cubewall4;
 
     private bool isGenerating = false;
+
+    // Static instance of the comparer to avoid creating a new one for each insertion.
+    private static readonly GameObjectYComparer yComparer = new GameObjectYComparer();
 
     // This runs in the editor whenever a value is changed in the Inspector.
     private void OnValidate()
@@ -571,6 +677,12 @@ public class GeneratePyramid : MonoBehaviour
                     break;
             }
         }
+    }
+
+    void Awake()
+    {
+        // Initialize the list to prevent errors
+        DetectedDeletedBlocks = new List<GameObject>();
     }
 
     /// <summary>
@@ -720,7 +832,7 @@ public class GeneratePyramid : MonoBehaviour
             cube.isStatic = true;
             cube.AddComponent<DeleteObject>();
             cube.GetComponent<DeleteObject>().CommonGameObject = objParent;
-            cube.GetComponent<DeleteObject>().CommonGameObject = objParent;
+            cube.GetComponent<DeleteObject>().CommonGameObject = objParent;            
             cube.GetComponent<MeshRenderer>().enabled = false;
             cube.GetComponent<BoxCollider>().isTrigger = true;
         }
@@ -758,6 +870,13 @@ public class GeneratePyramid : MonoBehaviour
         blocksMidle2 = new List<GameObject>();
 
         if (progressBar) progressBar.Hide();
+
+        // After generation, check if we should run the decommissioning animation.
+        if (AnimateDecommissioning && DetectedDeletedBlocks.Count > 0)
+        {
+            yield return StartCoroutine(DecommissionCoroutine());
+        }
+
         isGenerating = false;
         Debug.Log("Pyramid generation complete.");
     }
@@ -885,7 +1004,23 @@ public class GeneratePyramid : MonoBehaviour
 
         path_length = 0;
 
-        yield return StartCoroutine(compute_size_level(0, BaseSize, PathWide, PathSeparation, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+        yield return StartCoroutine(compute_size_level(0, BaseSize, PathWide, PathSeparation, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+
+        if (DrawUntilRow && DrawRow > 0)
+            CalculateVolumeUntilRow(DrawRow);
+        else 
+            CalculateTotalVolume();
+        if (rampMethod == RampMethodType.Straight && DrawUntilRow)
+        {
+            DrawStraightRamp();
+        }
+        if (rampMethod == RampMethodType.Internal)
+        {
+            // 40 meters frontal ramp
+            if (DrawUntilRow && DrawRow< internalRampStraightRampHigh / blockheight)
+                DrawStraightRamp();
+            SetPyramidTransparency(pyramidTransparency);
+        }
 
         if (showInfoLevel || showInfoLevelDec || showInfoLevelTotal || showInfoRow)
         {
@@ -897,7 +1032,7 @@ public class GeneratePyramid : MonoBehaviour
     private IEnumerator compute_size_level(int level, float base_size, float path_wide, float separation, float height, 
             float old_length, float beforeBlocks, float beforeDistance, float beforeForce, 
             float force_old_length, float force_old_vert, float force_old_horiz, 
-            int row)
+            int row, float old_length_spiral)
     {
         if (DrawUntilRow && row > DrawRow)
         {
@@ -918,9 +1053,31 @@ public class GeneratePyramid : MonoBehaviour
         h = ch * blockheight; // adjust
         //float sep = h / pyramid_inclination_tg; // separation
         float sep = base_size * ramp_inclination_tg / (ramp_inclination_tg + pyramid_inclination_tg);
+
+        float currentCourseHeight = blockheight;
+        // uses thickness from Khufu courses
+        if (selectedPyramid==PyramidType.Khufu && useKhufuCourseHeights)
+        {
+            // Now, calculate the *actual* total height of this level by summing the real course heights.
+            float h1 = 0;
+            int last_i = 0;
+            for (int i = 0; i < ch; i++)
+            {
+                last_i = i;
+                h1 += GetBlockHeightForRow(row + i);
+                if (DrawUntilRow && row > DrawRow || h1>h) break;
+            }
+            if (h1 > h)
+            {
+                ch = last_i;
+                h1 -= GetBlockHeightForRow(row + last_i);                
+            }
+            h = h1;
+        }
+
         total_height += h;
         float heightGranite = 0;
-        setbackWide = blockheight / Mathf.Tan(degrees_to_radians(PyramidInclination));
+        setbackWide = currentCourseHeight / Mathf.Tan(degrees_to_radians(PyramidInclination));
 
         GameObject lastCubeDrawn = null;
         int numberOfBlocksX = 0;
@@ -965,6 +1122,17 @@ public class GeneratePyramid : MonoBehaviour
         //float length = Mathf.Sqrt(new_base_size * new_base_size + h * h);
         float length = Vector3.Distance(v0, v1);
 
+        // spiral / internal ramp calculations
+        float length_spiral = 0;
+        float base_size_spiral = base_size + (blockwide + 1) * spiralRampSeparation;
+        if (rampMethod == RampMethodType.Internal)
+            base_size_spiral = base_size - (blockwide + 1) * spiralRampSeparation;
+        float bs2_spiral = base_size_spiral / 2;
+        float sep_spiral = base_size_spiral * ramp_inclination_tg / (ramp_inclination_tg + pyramid_inclination_tg);
+        float h_spiral = base_size_spiral * ramp_inclination_tg * pyramid_inclination_tg / (ramp_inclination_tg + pyramid_inclination_tg);
+        int ch_spiral = Mathf.RoundToInt(h / blockheight);
+        h_spiral = ch_spiral * blockheight; // adjust
+
         if (showManFinalRamp && level==0)
         { 
              if (MethodInsideRamp)
@@ -1000,10 +1168,10 @@ public class GeneratePyramid : MonoBehaviour
         float forceblocksramp = 0;
         float nbs2 = new_base_size / 2;
         float bw2 = blockwide / 2;
-        float bh2 = blockheight / 2;
+        float bh2 = currentCourseHeight / 2;
         float b1 = (base_size - sep) / ch;
         float bht2 = bh2 / pyramid_inclination_tg;
-        float bhtl = Mathf.Sqrt(blockheight * blockheight + bht2 * bht2)+0.3f;       
+        float bhtl = Mathf.Sqrt(currentCourseHeight * currentCourseHeight + bht2 * bht2)+0.3f;       
         int biter = 0;
         int blockant = 0;
         int num_block_real = 0;
@@ -1013,12 +1181,25 @@ public class GeneratePyramid : MonoBehaviour
         float forceblocksrow_horiz_total = force_old_horiz;
         float forceblocksrow_vert_total = force_old_vert;
         float forceblocksrow_total_total = force_old_length;
+        float rampInclinationRad = RampInclination * Mathf.Deg2Rad;
+        int row_ori = row;
+        float distramprow_last = 0;
         for (int i = 0; i < ch; i++)
         {
             if (progressBar && !Sequenced)
             {
                 progressBar.IncProgress("Generating course "+i+ " at iteration " + (level+1));
                 yield return null;
+            }
+
+            // uses thickness from Khufu courses
+            if (selectedPyramid == PyramidType.Khufu && useKhufuCourseHeights)
+            {
+                currentCourseHeight = GetBlockHeightForRow(row_ori+i);
+                bh2 = currentCourseHeight / 2;
+                bht2 = bh2 / pyramid_inclination_tg;
+                bhtl = Mathf.Sqrt(currentCourseHeight * currentCourseHeight + bht2 * bht2) + 0.3f;
+                setbackWide = currentCourseHeight / Mathf.Tan(degrees_to_radians(PyramidInclination));
             }
 
             GameObject row_gameObject = new GameObject();
@@ -1041,21 +1222,43 @@ public class GeneratePyramid : MonoBehaviour
             float distramprow = 0;
             float incliramprow = 0;
             float forceramprow = 0;
+            float totalHeightUpToCurrentCourse = 0;
+            float totalHeightUpToCurrentCourseTotal = 0;
+            if (selectedPyramid == PyramidType.Khufu && useKhufuCourseHeights)
+            {                
+                for (int hIndex = 0; hIndex < i; hIndex++)
+                {
+                    totalHeightUpToCurrentCourse += GetBlockHeightForRow(row_ori + hIndex);
+                }
+            }
+            else
+                totalHeightUpToCurrentCourse = i * currentCourseHeight;
+            if (rampMethod == RampMethodType.Straight || rampMethod == RampMethodType.Internal)
+                if (selectedPyramid == PyramidType.Khufu && useKhufuCourseHeights)
+                {
+                    for (int hIndex = 0; hIndex < row_ori + i; hIndex++)
+                    {
+                        totalHeightUpToCurrentCourseTotal += GetBlockHeightForRow(hIndex);
+                    }
+                }
+                else
+                    totalHeightUpToCurrentCourseTotal = (row_ori + i) * currentCourseHeight;
+
             v0 = new Vector3(bs2, 0, bs2);
             if (optionRamp == 0)
             {
-                v1 = new Vector3(bs2 - sepi, i * blockheight, -(bs2 - sepi));
+                v1 = new Vector3(bs2 - sepi, totalHeightUpToCurrentCourse, -(bs2 - sepi));                    
+                incliramprow = Mathf.Atan(totalHeightUpToCurrentCourse / (base_size - sepi));                    
                 distramprow = Vector3.Distance(v0, v1);
-                incliramprow = Mathf.Atan(i * blockheight / (base_size - sepi));
                 forceramprow = (old_length + distramprow) * massBlock * g * (Mathf.Sin(incliramprow) + frictionCoef * Mathf.Cos(incliramprow));
             }
             else
             {
-                v1 = new Vector3(bs2 - sep * (i + 1) / ch, i * blockheight, bs2 - b1 * i);
+                v1 = new Vector3(bs2 - sep * (i + 1) / ch, totalHeightUpToCurrentCourse, bs2 - b1 * i);
                 if (i > 0)
                 {
                     distramprow = Vector3.Distance(v0, v1);
-                    incliramprow = Mathf.Atan(i * blockheight / distramprow);
+                    incliramprow = Mathf.Atan(totalHeightUpToCurrentCourse / distramprow);
                     forceramprow = (old_length + distramprow) * massBlock * g * (Mathf.Sin(incliramprow) + frictionCoef * Mathf.Cos(incliramprow));
                 }
                 else
@@ -1067,14 +1270,64 @@ public class GeneratePyramid : MonoBehaviour
             }
             last_sepi = sepi;
             last_length = distramprow;
-            last_h = i * blockheight;
+            if (rampMethod == RampMethodType.Straight)
+            {
+                v1 = GetStraightRampTerraceEntryPoint(totalHeightUpToCurrentCourseTotal);
+                incliramprow = ramp_inclination_atg;
+                distramprow = totalHeightUpToCurrentCourseTotal / Mathf.Sin(rampInclinationRad);
+                forceramprow = distramprow * massBlock * g * (Mathf.Sin(incliramprow) + frictionCoef * Mathf.Cos(incliramprow));
+            }
+            else
+            if (rampMethod == RampMethodType.Spiral || rampMethod == RampMethodType.Internal)
+            {                                   
+                float sepi_spiral = sep * i / ch_spiral;
+                float b1_spiral = (base_size_spiral - sep_spiral) / ch_spiral;
+                Vector3 v0_spiral = new Vector3(bs2_spiral, 0, bs2_spiral);
+                Vector3 v1_spiral;
+                if (optionRamp == 0)
+                {
+                    //v1 = new Vector3(bs2 - sepi, totalHeightUpToCurrentCourse, -(bs2 - sepi));
+                    v1_spiral = new Vector3(bs2_spiral - sepi_spiral, totalHeightUpToCurrentCourse, -(bs2_spiral - sepi_spiral));
+                    incliramprow = Mathf.Atan(totalHeightUpToCurrentCourse / (base_size_spiral - sepi_spiral));
+                    distramprow = Vector3.Distance(v0_spiral, v1_spiral);
+                    forceramprow = (old_length_spiral + distramprow) * massBlock * g * (Mathf.Sin(incliramprow) + frictionCoef * Mathf.Cos(incliramprow));                    
+                }
+                else
+                {
+                    //v1 = new Vector3(bs2 - sep * (i + 1) / ch, totalHeightUpToCurrentCourse, bs2 - b1 * i);
+                    v1_spiral = new Vector3(bs2_spiral - sep_spiral * (i + 1) / ch_spiral, totalHeightUpToCurrentCourse, bs2_spiral - b1_spiral * i);
+                    if (i > 0)
+                    {
+                        distramprow = Vector3.Distance(v0_spiral, v1_spiral);
+                        incliramprow = Mathf.Atan(totalHeightUpToCurrentCourse / distramprow);
+                        forceramprow = (old_length_spiral + distramprow) * massBlock * g * (Mathf.Sin(incliramprow) + frictionCoef * Mathf.Cos(incliramprow));
+                    }
+                    else
+                    {
+                        distramprow = 0;
+                        incliramprow = getTanFromDegrees(RampInclination);
+                        forceramprow = old_length_spiral * massBlock * g * (Mathf.Sin(incliramprow) + frictionCoef * Mathf.Cos(incliramprow));
+                    }
+                }
+                // the last one
+                if (rampMethod == RampMethodType.Spiral && (i == ch-1))
+                {
+                    v1_spiral = new Vector3(bs2_spiral - sep_spiral * (i + 2) / ch_spiral, totalHeightUpToCurrentCourse, bs2_spiral - b1_spiral * (i+1));
+                    distramprow = Vector3.Distance(v0_spiral, v1_spiral);
+                    incliramprow = Mathf.Atan(totalHeightUpToCurrentCourse / distramprow);
+                    forceramprow = (old_length_spiral + distramprow) * massBlock * g * (Mathf.Sin(incliramprow) + frictionCoef * Mathf.Cos(incliramprow));
+                }
+                length_spiral = distramprow;
+            }
+
+            last_h = totalHeightUpToCurrentCourse;
             last_v0 = v0;
             last_v1 = v1;
             numberOfBlocksX = 0;
             lastNumberOfBlockDrawnX = -1;
             GameObject[] createdObjectsArray = new GameObject[(int) (base_size / blockwide)+1];
             x = -bs2 + sepi + bw2;
-            v0 = new Vector3(bs2 - sepi, i * blockheight, -(bs2 - sepi));
+            v0 = new Vector3(bs2 - sepi, totalHeightUpToCurrentCourse, -(bs2 - sepi));
             while (x < bs2 - sepi - bw2)
             {
                 lastCubeDrawn = null;
@@ -1095,11 +1348,8 @@ public class GeneratePyramid : MonoBehaviour
                         int rnd = UnityEngine.Random.Range(0, RockPrefab.Length);
                         if (!halfPyramid || x < 0)
                         {                            
-                            /*if (i==0)
-                                obj = Instantiate(RockDivPrefab, new Vector3(x, height + bh2 + i * blockheight, z), Quaternion.identity);
-                            else*/
-                            obj = Instantiate(RockPrefab[rnd], objParent.transform.position + new Vector3(x, height + bh2 + i * blockheight, z), Quaternion.identity);
-                            obj.transform.localScale = new Vector3(blockwide - blockSeparation, blockheight, blockwide - blockSeparation);
+                            obj = Instantiate(RockPrefab[rnd], objParent.transform.position + new Vector3(x, height + bh2 + totalHeightUpToCurrentCourse, z), Quaternion.identity);
+                            obj.transform.localScale = new Vector3(blockwide - blockSeparation, currentCourseHeight, blockwide - blockSeparation);
                             obj.transform.name = "Block_" + row + "_" + numberOfBlocksX + "_" + numberOfBlocksZ;
                             /*if (objParent)
                                 obj.transform.parent = objParent.transform;*/
@@ -1137,7 +1387,7 @@ public class GeneratePyramid : MonoBehaviour
                                 if (row > 0)
                                 {
                                     RaycastHit hit;
-                                    if (Physics.Raycast(obj.transform.position, Vector3.down, out hit, blockheight, blockLayer))
+                                    if (Physics.Raycast(obj.transform.position, Vector3.down, out hit, currentCourseHeight, blockLayer))
                                     {
                                         Rigidbody otherRb = hit.collider.GetComponent<Rigidbody>();
                                         if (otherRb != null)
@@ -1151,6 +1401,9 @@ public class GeneratePyramid : MonoBehaviour
                                     }
                                 }
                             }
+                            // internal ramp not to draw blocks in the last terrace
+                            if (rampMethod == RampMethodType.Internal && DrawUntilRow && row == DrawRow)
+                                obj.SetActive(false);
                             lastobj = obj;
                         }
                         // draw all blocks
@@ -1162,10 +1415,15 @@ public class GeneratePyramid : MonoBehaviour
                             large_cube.transform.parent = row_gameObject.transform;
                             large_cube.transform.position = (lastCubeDrawn.transform.position + obj.transform.position) / 2;
                             float distance = Vector3.Distance(lastCubeDrawn.transform.position, obj.transform.position);
-                            large_cube.transform.localScale = new Vector3(blockwide-blockSeparation, blockheight, distance - blockwide - blockSeparation);
+                            large_cube.transform.localScale = new Vector3(blockwide-blockSeparation, currentCourseHeight, distance - blockwide - blockSeparation);
                             large_cube.GetComponent<MeshRenderer>().material = m_Material;
                             large_cube.tag = "Block";
                             large_cube.isStatic = isStatic || row == 0;
+
+                            // internal ramp not to draw blocks in the last terrace
+                            if (rampMethod == RampMethodType.Internal && DrawUntilRow && row == DrawRow)
+                                large_cube.SetActive(false);                            
+
                             if (isRigidBody)
                             {
                                 Rigidbody rb = large_cube.AddComponent<Rigidbody>();
@@ -1191,7 +1449,7 @@ public class GeneratePyramid : MonoBehaviour
                                 if (row > 0)
                                 {
                                     RaycastHit hit;
-                                    if (Physics.Raycast(large_cube.transform.position, Vector3.down, out hit, blockheight , blockLayer))
+                                    if (Physics.Raycast(large_cube.transform.position, Vector3.down, out hit, currentCourseHeight, blockLayer))
                                     {
                                         Rigidbody otherRb = hit.collider.GetComponent<Rigidbody>();
                                         if (otherRb != null)
@@ -1221,26 +1479,26 @@ public class GeneratePyramid : MonoBehaviour
                         {
                             if (x < -bs2 + sepi + blockwide)
                             {
-                                obj = Instantiate(RockPrefab[rnd], objParent.transform.position + new Vector3(x - bw2 / 2, height + bh2 + i * blockheight, z), Quaternion.identity);
-                                obj.transform.localScale = new Vector3(0.5f * blockwide, blockheight, blockwide);
+                                obj = Instantiate(RockPrefab[rnd], objParent.transform.position + new Vector3(x - bw2 / 2, height + bh2 + totalHeightUpToCurrentCourse, z), Quaternion.identity);
+                                obj.transform.localScale = new Vector3(0.5f * blockwide, currentCourseHeight, blockwide);
                             }
                             else
                             if (x > bs2 - sepi - blockwide)
                             {
-                                obj = Instantiate(RockPrefab[rnd], objParent.transform.position + new Vector3(x + bw2 / 2, height + bh2 + i * blockheight, z), Quaternion.identity);
-                                obj.transform.localScale = new Vector3(0.5f * blockwide, blockheight, blockwide);
+                                obj = Instantiate(RockPrefab[rnd], objParent.transform.position + new Vector3(x + bw2 / 2, height + bh2 + totalHeightUpToCurrentCourse, z), Quaternion.identity);
+                                obj.transform.localScale = new Vector3(0.5f * blockwide, currentCourseHeight, blockwide);
                             }
                             else
                             if (z < -bs2 + sepi + blockwide)
                             {
-                                obj = Instantiate(RockPrefab[rnd], objParent.transform.position + new Vector3(x, height + bh2 + i * blockheight, z - bw2 / 2), Quaternion.identity);
-                                obj.transform.localScale = new Vector3(blockwide, blockheight, 0.5f * blockwide);
+                                obj = Instantiate(RockPrefab[rnd], objParent.transform.position + new Vector3(x, height + bh2 + totalHeightUpToCurrentCourse, z - bw2 / 2), Quaternion.identity);
+                                obj.transform.localScale = new Vector3(blockwide, currentCourseHeight, 0.5f * blockwide);
                             }
                             else
                             if (z > bs2 - sepi - blockwide)
                             {
-                                obj = Instantiate(RockPrefab[rnd], objParent.transform.position + new Vector3(x, height + bh2 + i * blockheight, z + bw2 / 2), Quaternion.identity);
-                                obj.transform.localScale = new Vector3(blockwide, blockheight, 0.5f * blockwide);
+                                obj = Instantiate(RockPrefab[rnd], objParent.transform.position + new Vector3(x, height + bh2 + totalHeightUpToCurrentCourse, z + bw2 / 2), Quaternion.identity);
+                                obj.transform.localScale = new Vector3(blockwide, currentCourseHeight, 0.5f * blockwide);
                             }
                             obj.isStatic = isStatic || row == 0;
                             if (isRigidBody && row > 0)
@@ -1257,19 +1515,19 @@ public class GeneratePyramid : MonoBehaviour
                                 obj.transform.parent = objParent.transform;*/
                             obj.transform.parent = row_gameObject.transform;
                         }
-                        if (DrawCover && (!halfPyramid || x < 0) && ((x < -bs2 + sepi + blockwide) || (z < -bs2 + sepi + blockwide)))
+                        if (DrawCasing && (!halfPyramid || x < 0) && ((x < -bs2 + sepi + blockwide) || (z < -bs2 + sepi + blockwide)))
                         {
                             GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
                             if (x < -bs2 + sepi + blockwide)
                             {
-                                cube.transform.position = objParent.transform.position + new Vector3(x - bw2 - bht2, height + bh2 + i * blockheight, z);
+                                cube.transform.position = objParent.transform.position + new Vector3(x - bw2 - bht2, height + bh2 + totalHeightUpToCurrentCourse, z);
                                 cube.transform.localScale = new Vector3(0.1f, bhtl, blockwide);
                                 cube.transform.rotation = Quaternion.Euler(0, 0, -(90 - PyramidInclination));
                             }
                             else
                             if (z < -bs2 + sepi + blockwide)
                             {
-                                cube.transform.position = objParent.transform.position + new Vector3(x, height + bh2 + i * blockheight, z - bw2 - bht2);
+                                cube.transform.position = objParent.transform.position + new Vector3(x, height + bh2 + totalHeightUpToCurrentCourse, z - bw2 - bht2);
                                 cube.transform.localScale = new Vector3(blockwide, bhtl, 0.1f);
                                 cube.transform.rotation = Quaternion.Euler(90 - PyramidInclination, 0, 0);
                             }
@@ -1282,16 +1540,33 @@ public class GeneratePyramid : MonoBehaviour
                             /*if (objParent)
                                 cube.transform.parent = objParent.transform;*/
                             cube.transform.parent = row_gameObject.transform;
+                            // internal ramp not to draw blocks in the last terrace
+                            if (rampMethod == RampMethodType.Internal && DrawUntilRow && row == DrawRow)
+                                cube.SetActive(false);
                         }
                     }
                     z += blockwide;
                     numberOfBlocks++;
                     bxi++;
                     biter++;
-                    v0 = new Vector3(x, i * blockheight, z);
-                    var dist_horiz = Vector3.Distance(v0, v1);                              // distance horizontal
-                    distblocksrow += old_length + distramprow + dist_horiz;   // distance ramp before + distance ramp + distance block
-                    distblocksramprow += old_length + distramprow;                          // distance ramp before + distance ramp
+                    v0 = new Vector3(x, totalHeightUpToCurrentCourse, z);
+                    var dist_horiz = Vector3.Distance(v0, v1);                              // distance horizontal                    
+                    if (rampMethod == RampMethodType.Straight)
+                    {
+                        distblocksrow += distramprow + dist_horiz;   // distance ramp before + distance ramp + distance block
+                        distblocksramprow += distramprow;                          // distance ramp before + distance ramp
+                    }
+                    else
+                    if (rampMethod == RampMethodType.Spiral)
+                    {
+                        distblocksrow += old_length_spiral + distramprow + dist_horiz;    // distance ramp before + distance ramp + distance block
+                        distblocksramprow += old_length_spiral +  distramprow;                          // distance ramp before + distance ramp
+                    }
+                    else
+                    {
+                        distblocksrow += old_length + distramprow + dist_horiz;   // distance ramp before + distance ramp + distance block
+                        distblocksramprow += old_length + distramprow;                          // distance ramp before + distance ramp
+                    }
                     forceblocksrow_horiz += dist_horiz * frictionCoef * massBlock * g;    // force horizontal row
                     forceblocksrow_vert += forceramprow;                                                // force vertical row
                     forceblocksrow_horiz_total += dist_horiz * frictionCoef * massBlock * g; // force row total
@@ -1302,7 +1577,7 @@ public class GeneratePyramid : MonoBehaviour
                     forceblocksrow_total_total += forceramprow + dist_horiz * frictionCoef * massBlock * g;
 
                     if (DrawUntilRow && row == DrawRow)
-                        heightGranite = height + bh2 + i * blockheight;
+                        heightGranite = height + bh2 + totalHeightUpToCurrentCourse;
                     // save the object in the array for later use
                     createdObjectsArray[numberOfBlocksZ] = obj;
 
@@ -1312,18 +1587,21 @@ public class GeneratePyramid : MonoBehaviour
                 if ((!DrawOnlyRow || row == DrawRow) && (z != bs2 - sepi) && (!halfPyramid || x < 0))
                 {
                     // adapt block size
-                    scaleChange = new Vector3(blockwide- blockSeparation, blockheight, blockwide - blockSeparation);
+                    scaleChange = new Vector3(blockwide- blockSeparation, currentCourseHeight, blockwide - blockSeparation);
                     scaleChange.z = bs2 - sepi - (z - bw2);
                     z = z - (blockwide - scaleChange.z) / 2;
                     /*if (i == 0)
                         obj = Instantiate(RockDivPrefab, new Vector3(x, height + bh2 + i * blockheight, z), Quaternion.identity);
                     else*/
-                    obj = Instantiate(RockPrefab[UnityEngine.Random.Range(0, RockPrefab.Length)], objParent.transform.position + new Vector3(x, height + bh2 + i * blockheight, z), Quaternion.identity);
+                    obj = Instantiate(RockPrefab[UnityEngine.Random.Range(0, RockPrefab.Length)], objParent.transform.position + new Vector3(x, height + bh2 + totalHeightUpToCurrentCourse, z), Quaternion.identity);
                     obj.transform.name = "Block_" + row + "_" + numberOfBlocksX + "_" + numberOfBlocksZ;
                     /*if (objParent)
                         obj.transform.parent = objParent.transform;*/
                     obj.transform.parent = row_gameObject.transform;
-                    obj.transform.localScale = scaleChange;                    
+                    obj.transform.localScale = scaleChange;
+                    // internal ramp not to draw blocks in the last terrace
+                    if (rampMethod == RampMethodType.Internal && DrawUntilRow && row == DrawRow)
+                        obj.SetActive(false);
 
                     float totalMass = 0;
                     if (isRigidBody)
@@ -1348,6 +1626,9 @@ public class GeneratePyramid : MonoBehaviour
                         /*if (objParent)
                             objnew.transform.parent = objParent.transform;*/
                         objnew.transform.parent = row_gameObject.transform;
+                        // internal ramp not to draw blocks in the last terrace
+                        if (rampMethod == RampMethodType.Internal && DrawUntilRow && row == DrawRow)
+                            objnew.SetActive(false);
 
                         if (isRigidBody)
                         {
@@ -1405,7 +1686,7 @@ public class GeneratePyramid : MonoBehaviour
                         if (row > 0)
                         {
                             RaycastHit hit;
-                            if (Physics.Raycast(obj.transform.position, Vector3.down, out hit, blockheight, blockLayer))
+                            if (Physics.Raycast(obj.transform.position, Vector3.down, out hit, currentCourseHeight, blockLayer))
                             {
                                 Rigidbody otherRb = hit.collider.GetComponent<Rigidbody>();
                                 if (otherRb != null)
@@ -1422,10 +1703,10 @@ public class GeneratePyramid : MonoBehaviour
                     lastobj = obj;
 
                     numberOfBlocksDrawn++;
-                    if (DrawCover)
+                    if (DrawCasing)
                     {
                         GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                        cube.transform.position = objParent.transform.position + new Vector3(x, height + bh2 + i * blockheight, z + scaleChange.z / 2 + bht2);
+                        cube.transform.position = objParent.transform.position + new Vector3(x, height + bh2 + totalHeightUpToCurrentCourse, z + scaleChange.z / 2 + bht2);
                         cube.transform.localScale = new Vector3(0.1f, bhtl, blockwide);
                         cube.transform.rotation = Quaternion.Euler(0, 90, 360 - (90 - PyramidInclination));
                         cube.isStatic = true;
@@ -1437,6 +1718,9 @@ public class GeneratePyramid : MonoBehaviour
                         /*if (objParent)
                             cube.transform.parent = objParent.transform;*/
                         cube.transform.parent = row_gameObject.transform;
+                        // internal ramp not to draw blocks in the last terrace
+                        if (rampMethod == RampMethodType.Internal && DrawUntilRow && row == DrawRow)
+                            cube.SetActive(false);
                     }
                     //numberOfBlocks++;                    
                     //bxi++;
@@ -1444,10 +1728,24 @@ public class GeneratePyramid : MonoBehaviour
                     num_block_real++;
                     blocksfraction = blocksfraction + scaleChange.z / blockwide;
                     var blockscale = (scaleChange.z + scaleChange.x) / (2 * blockwide);
-                    v0 = new Vector3(x, i * blockheight, z);
+                    v0 = new Vector3(x, totalHeightUpToCurrentCourse, z);
                     var dist_horiz = Vector3.Distance(v0, v1);                              // distance horizontal
-                    distblocksrow += old_length + distramprow + dist_horiz;
-                    distblocksramprow += old_length + distramprow;
+                    if (rampMethod == RampMethodType.Straight)
+                    {
+                        distblocksrow += distramprow + dist_horiz;
+                        distblocksramprow += distramprow;
+                    }
+                    else
+                    if (rampMethod == RampMethodType.Spiral)
+                    {
+                        distblocksrow += old_length_spiral + distramprow + dist_horiz;
+                        distblocksramprow += old_length_spiral + distramprow;
+                    }
+                    else
+                    {
+                        distblocksrow += old_length + distramprow + dist_horiz;
+                        distblocksramprow += old_length + distramprow;
+                    }                    
                     forceblocksrow_horiz += dist_horiz * frictionCoef * massBlock * g * blockscale;
                     forceblocksrow_vert += forceramprow;
                     forceblocksrow_horiz_total += dist_horiz * frictionCoef * massBlock * g * blockscale;
@@ -1465,7 +1763,7 @@ public class GeneratePyramid : MonoBehaviour
             if ((!DrawOnlyRow || row == DrawRow) && (x != bs2 - sepi) && (!halfPyramid || x < 0))
             {
                 // adapt block size
-                scaleChange = new Vector3(blockwide - blockSeparation, blockheight, blockwide - blockSeparation);
+                scaleChange = new Vector3(blockwide - blockSeparation, currentCourseHeight, blockwide - blockSeparation);
                 scaleChange.x = bs2 - sepi - (x - bw2);
                 x = x - (blockwide - scaleChange.x) / 2;
                 z = -bs2 + sepi + bw2;
@@ -1479,7 +1777,7 @@ public class GeneratePyramid : MonoBehaviour
                         /*if (i == 0)
                             obj = Instantiate(RockDivPrefab, new Vector3(x, height + bh2 + i * blockheight, z), Quaternion.identity);
                         else*/
-                        obj = Instantiate(RockPrefab[UnityEngine.Random.Range(0, RockPrefab.Length)], objParent.transform.position + new Vector3(x, height + bh2 + i * blockheight, z), Quaternion.identity);
+                        obj = Instantiate(RockPrefab[UnityEngine.Random.Range(0, RockPrefab.Length)], objParent.transform.position + new Vector3(x, height + bh2 + totalHeightUpToCurrentCourse, z), Quaternion.identity);
                         obj.transform.name = "Block_" + row + "_" + numberOfBlocksX + "_" + numberOfBlocksZ;
                         /*if (objParent)
                             obj.transform.parent = objParent.transform;*/
@@ -1495,6 +1793,9 @@ public class GeneratePyramid : MonoBehaviour
                                 totalMass = rb.mass;
                             }
                         }
+                        // internal ramp not to draw blocks in the last terrace
+                        if (rampMethod == RampMethodType.Internal && DrawUntilRow && row == DrawRow)
+                            obj.SetActive(false);
 
                         GameObject objant = createdObjectsArray[numberOfBlocksZ];
                         if (objant)
@@ -1509,6 +1810,9 @@ public class GeneratePyramid : MonoBehaviour
                             /*if (objParent)
                                 objnew.transform.parent = objParent.transform;*/
                             objnew.transform.parent = row_gameObject.transform;
+                            // internal ramp not to draw blocks in the last terrace
+                            if (rampMethod == RampMethodType.Internal && DrawUntilRow && row == DrawRow)
+                                objnew.SetActive(false);
 
                             if (isRigidBody)
                             {
@@ -1565,7 +1869,7 @@ public class GeneratePyramid : MonoBehaviour
                             if (row > 0)
                             {
                                 RaycastHit hit;
-                                if (Physics.Raycast(obj.transform.position, Vector3.down, out hit, blockheight, blockLayer))
+                                if (Physics.Raycast(obj.transform.position, Vector3.down, out hit, currentCourseHeight, blockLayer))
                                 {
                                     Rigidbody otherRb = hit.collider.GetComponent<Rigidbody>();
                                     if (otherRb != null)
@@ -1582,10 +1886,10 @@ public class GeneratePyramid : MonoBehaviour
                         lastobj = obj;
 
                         numberOfBlocksDrawn++;
-                        if (DrawCover)
+                        if (DrawCasing)
                         {
                             GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                            cube.transform.position = objParent.transform.position + new Vector3(x + scaleChange.x / 2 + bht2, height + bh2 + i * blockheight, z);
+                            cube.transform.position = objParent.transform.position + new Vector3(x + scaleChange.x / 2 + bht2, height + bh2 + totalHeightUpToCurrentCourse, z);
                             cube.transform.localScale = new Vector3(0.1f, bhtl, blockwide);
                             cube.transform.rotation = Quaternion.Euler(0, 0, (90 - PyramidInclination));
                             cube.isStatic = true;
@@ -1597,6 +1901,9 @@ public class GeneratePyramid : MonoBehaviour
                             /*if (objParent)
                                 cube.transform.parent = objParent.transform;*/
                             cube.transform.parent = row_gameObject.transform;
+                            // internal ramp not to draw blocks in the last terrace
+                            if (rampMethod == RampMethodType.Internal && DrawUntilRow && row == DrawRow)
+                                cube.SetActive(false);
                         }
                     }
                     z += blockwide;
@@ -1606,10 +1913,25 @@ public class GeneratePyramid : MonoBehaviour
                     num_block_real++;
                     blocksfraction = blocksfraction + scaleChange.x / blockwide;
                     var blockscale = (scaleChange.z + scaleChange.x) / (2 * blockwide);
-                    v0 = new Vector3(x, i * blockheight, z);
+                    v0 = new Vector3(x, totalHeightUpToCurrentCourse, z);
                     var dist_horiz = Vector3.Distance(v0, v1);                              // distance horizontal
-                    distblocksrow += old_length + distramprow + dist_horiz;
-                    distblocksramprow += old_length + distramprow;
+                    if (rampMethod == RampMethodType.Straight)
+                    {
+                        distblocksrow += distramprow + dist_horiz;
+                        distblocksramprow += distramprow;
+                    }
+                    else
+                    if (rampMethod == RampMethodType.Spiral)
+                    {
+                        distblocksrow += old_length_spiral + distramprow + dist_horiz;
+                        distblocksramprow += old_length_spiral + distramprow;
+                    }
+                    else
+                    {
+
+                        distblocksrow += old_length + distramprow + dist_horiz;
+                        distblocksramprow += old_length + distramprow;
+                    }
                     forceblocksrow_horiz += dist_horiz * frictionCoef * massBlock * g * blockscale;
                     forceblocksrow_vert += forceramprow;
                     forceblocksrow_horiz_total += dist_horiz * frictionCoef * massBlock * g * blockscale;
@@ -1626,10 +1948,7 @@ public class GeneratePyramid : MonoBehaviour
                     // adapt block size
                     scaleChange.z = bs2 - sepi - (z - bw2);
                     z = z - (blockwide - scaleChange.z) / 2;
-                    /*if (i == 0)
-                        obj = Instantiate(RockDivPrefab, new Vector3(x, height + bh2 + i * blockheight, z), Quaternion.identity);
-                    else*/
-                    obj = Instantiate(RockPrefab[UnityEngine.Random.Range(0, RockPrefab.Length)], objParent.transform.position + new Vector3(x, height + bh2 + i * blockheight, z), Quaternion.identity);
+                    obj = Instantiate(RockPrefab[UnityEngine.Random.Range(0, RockPrefab.Length)], objParent.transform.position + new Vector3(x, height + bh2 + totalHeightUpToCurrentCourse, z), Quaternion.identity);
                     /*if (objParent)
                         obj.transform.parent = objParent.transform;*/
                     obj.transform.parent = row_gameObject.transform;
@@ -1644,6 +1963,9 @@ public class GeneratePyramid : MonoBehaviour
                             totalMass = rb.mass;
                         }
                     }
+                    // internal ramp not to draw blocks in the last terrace
+                    if (rampMethod == RampMethodType.Internal && DrawUntilRow && row == DrawRow)
+                        obj.SetActive(false);
 
                     if (lastobj)
                     {
@@ -1657,6 +1979,9 @@ public class GeneratePyramid : MonoBehaviour
                         /*if (objParent)
                             objnew.transform.parent = objParent.transform;*/
                         objnew.transform.parent = row_gameObject.transform;
+                        // internal ramp not to draw blocks in the last terrace
+                        if (rampMethod == RampMethodType.Internal && DrawUntilRow && row == DrawRow)
+                            objnew.SetActive(false);
 
                         if (isRigidBody)
                         {
@@ -1722,7 +2047,7 @@ public class GeneratePyramid : MonoBehaviour
                         if (row > 0)
                         {
                             RaycastHit hit;
-                            if (Physics.Raycast(obj.transform.position, Vector3.down, out hit, blockheight, blockLayer))
+                            if (Physics.Raycast(obj.transform.position, Vector3.down, out hit, currentCourseHeight, blockLayer))
                             {
                                 Rigidbody otherRb = hit.collider.GetComponent<Rigidbody>();
                                 if (otherRb != null)
@@ -1737,10 +2062,10 @@ public class GeneratePyramid : MonoBehaviour
                         }
                     }
                     numberOfBlocksDrawn++;
-                    if (DrawCover)
+                    if (DrawCasing)
                     {
                         GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                        cube.transform.position = objParent.transform.position + new Vector3(x + scaleChange.x / 2 + bht2, height + bh2 + i * blockheight, z);
+                        cube.transform.position = objParent.transform.position + new Vector3(x + scaleChange.x / 2 + bht2, height + bh2 + totalHeightUpToCurrentCourse, z);
                         cube.transform.localScale = new Vector3(0.1f, bhtl, blockwide);
                         cube.transform.rotation = Quaternion.Euler(0, 0, (90 - PyramidInclination));
                         cube.isStatic = true;
@@ -1752,6 +2077,9 @@ public class GeneratePyramid : MonoBehaviour
                         /*if (objParent)
                             cube.transform.parent = objParent.transform;*/
                         cube.transform.parent = row_gameObject.transform;
+                        // internal ramp not to draw blocks in the last terrace
+                        if (rampMethod == RampMethodType.Internal && DrawUntilRow && row == DrawRow)
+                            cube.SetActive(false);
                     }
 
                     //numberOfBlocks++;                    
@@ -1760,10 +2088,24 @@ public class GeneratePyramid : MonoBehaviour
                     num_block_real++;
                     blocksfraction = blocksfraction + (scaleChange.z + scaleChange.x) / (2 * blockwide);
                     var blockscale = (scaleChange.z + scaleChange.x) / (2 * blockwide);
-                    v0 = new Vector3(x, i * blockheight, z);
+                    v0 = new Vector3(x, totalHeightUpToCurrentCourse, z);
                     var dist_horiz = Vector3.Distance(v0, v1);
-                    distblocksrow += old_length + distramprow + dist_horiz;
-                    distblocksramprow += old_length + distramprow;
+                    if (rampMethod == RampMethodType.Straight)
+                    {
+                        distblocksrow += distramprow + dist_horiz;
+                        distblocksramprow += distramprow;
+                    }
+                    else
+                    if (rampMethod == RampMethodType.Spiral)
+                    {
+                        distblocksrow += old_length_spiral + distramprow + dist_horiz;
+                        distblocksramprow += old_length_spiral + distramprow;
+                    }
+                    else
+                    {
+                        distblocksrow += old_length + distramprow + dist_horiz;
+                        distblocksramprow += old_length + distramprow;
+                    }
                     forceblocksrow_horiz += dist_horiz * frictionCoef * massBlock * g * blockscale;
                     forceblocksrow_vert += forceramprow;
                     forceblocksrow_horiz_total += dist_horiz * frictionCoef * massBlock * g * blockscale;
@@ -1812,10 +2154,25 @@ public class GeneratePyramid : MonoBehaviour
                         num_ramps_headways = 1;
 
                     float current_headway = MinHeadway + (old_length + distramprow) / ramp_total_length * (MaxHeadway - MinHeadway);
+                    if (rampMethod == RampMethodType.Straight)
+                    {
+                        current_headway = MinHeadway + (distramprow) / ramp_total_length * (MaxHeadway - MinHeadway);                       
+                    }
+                    else
+                    if (rampMethod == RampMethodType.Spiral || rampMethod == RampMethodType.Internal)
+                    {
+                        current_headway = MinHeadway + (old_length_spiral + distramprow) / ramp_total_length * (MaxHeadway - MinHeadway);
+                    }
                     float bxi_ramp = Mathf.Round(bxi / num_ramps_headways);
                     // Row;blocks;up ramps;blocks per ramp;fixed headway(min);adaptative headway(min);total time(min);adaptative total time(min);;total time(working years);adaptativive total time(working years)                        
                     csvheadwaywriter.WriteLine(i + ";" + bxi + ";" + num_ramps_headways+ ";"+ bxi_ramp + ";" + AverageHeadway.ToString("F2") + ";" + current_headway.ToString("F2") + ";" + (bxi_ramp * AverageHeadway).ToString("F2") + ";" + (bxi_ramp * current_headway).ToString("F2") + ";" + (bxi_ramp * AverageHeadway / WorkingYearMinutes).ToString("F5") + ";" + (bxi_ramp * current_headway / WorkingYearMinutes).ToString("F5"));
                 }
+
+                float old_lenght_ant = old_length;
+                if (rampMethod == RampMethodType.Straight)
+                    old_length = 0;
+                if (rampMethod == RampMethodType.Spiral || rampMethod == RampMethodType.Internal)
+                    old_length = old_length_spiral;
 
                 if (blockant > 0)
                 {
@@ -1836,36 +2193,36 @@ public class GeneratePyramid : MonoBehaviour
                     if (showInfoRow)
                         csvrowwriter.WriteLine(i + ";" + bxi + ";" + RampInclination.ToString("F2") + ";" + distramprow.ToString("F2") + ";" + (old_length + distramprow).ToString("F2") + ";" + (distblocksrow / 1000).ToString("F3") + ";" + (distblocksramprow / 1000).ToString("F3") + ";" + ((distblocksrow - distblocksramprow) / 1000).ToString("F3") + ";" + (forceblocksrow_total_total / 1000000).ToString("F3") + ";" + (forceblocksrow_vert_total / 1000000).ToString("F3") + ";" + (forceblocksrow_horiz_total / 1000000).ToString("F3") + ";" + (forceblocksrow_vert / 1000000).ToString("F3") + ";" + (forceblocksrow_horiz / 1000000).ToString("F3") + ";" + (forceblocksrow_total / 1000000).ToString("F3"));
                 }
-
+                old_length = old_lenght_ant;
             }
 
             // corners
-            if (DrawCover)
+            if (DrawCasing)
             {
                 // corner 1                        
                 GameObject corner1 = Instantiate(CornerPrefab, new Vector3(0, 0, 0), Quaternion.identity);
-                corner1.transform.position = objParent.transform.position + new Vector3(-bs2 + sepi - bht2, height + bh2 + i * blockheight, -bs2 + sepi - bht2);
+                corner1.transform.position = objParent.transform.position + new Vector3(-bs2 + sepi - bht2, height + bh2 + totalHeightUpToCurrentCourse, -bs2 + sepi - bht2);
                 corner1.transform.rotation = Quaternion.Euler(0, 90, 0);
                 /*if (objParent)
                     corner1.transform.parent = objParent.transform;*/
                 corner1.transform.parent = row_gameObject.transform;
                 // corner 2                        
                 GameObject corner2 = Instantiate(CornerPrefab, new Vector3(0, 0, 0), Quaternion.identity);
-                corner2.transform.position = objParent.transform.position + new Vector3(bs2 - sepi + bht2, height + bh2 + i * blockheight, -bs2 + sepi - bht2);
+                corner2.transform.position = objParent.transform.position + new Vector3(bs2 - sepi + bht2, height + bh2 + totalHeightUpToCurrentCourse, -bs2 + sepi - bht2);
                 corner2.transform.rotation = Quaternion.Euler(0, 0, 0);
                 /*if (objParent)
                     corner2.transform.parent = objParent.transform;*/
                 corner2.transform.parent = row_gameObject.transform;
                 // corner 3                       
                 GameObject corner3 = Instantiate(CornerPrefab, new Vector3(0, 0, 0), Quaternion.identity);
-                corner3.transform.position = objParent.transform.position + new Vector3(bs2 - sepi + bht2, height + bh2 + i * blockheight, bs2 - sepi + bht2);
+                corner3.transform.position = objParent.transform.position + new Vector3(bs2 - sepi + bht2, height + bh2 + totalHeightUpToCurrentCourse, bs2 - sepi + bht2);
                 corner3.transform.rotation = Quaternion.Euler(0, 270, 0);
                 /*if (objParent)
                     corner3.transform.parent = objParent.transform;*/
                 corner3.transform.parent = row_gameObject.transform;
                 // corner 4                        
                 GameObject corner4 = Instantiate(CornerPrefab, new Vector3(0, 0, 0), Quaternion.identity);
-                corner4.transform.position = objParent.transform.position + new Vector3(-bs2 + sepi - bht2, height + bh2 + i * blockheight, bs2 - sepi + bht2);
+                corner4.transform.position = objParent.transform.position + new Vector3(-bs2 + sepi - bht2, height + bh2 + totalHeightUpToCurrentCourse, bs2 - sepi + bht2);
                 corner4.transform.rotation = Quaternion.Euler(0, 180, 0);
                 /*if (objParent)
                     corner4.transform.parent = objParent.transform;*/
@@ -1881,7 +2238,8 @@ public class GeneratePyramid : MonoBehaviour
             distblocks += distblocksrow;
             distblocksramp += distblocksramprow;
             forceblocks += forceblocksrow;
-            forceblocksramp += forceblocksramprow;         
+            forceblocksramp += forceblocksramprow;
+            distramprow_last = distramprow;
             row++;
             if (DrawUntilRow && row > DrawRow)
                 break;
@@ -1908,7 +2266,7 @@ public class GeneratePyramid : MonoBehaviour
             minBaseSize = minBaseSize * 2;        
         
         // do not draw ramps if the base size is too small
-        if (showRamps && base_size > minBaseSize)
+        if (showRamps && rampMethod!=RampMethodType.Straight && base_size > minBaseSize)
         {
             if (progressBar && !Sequenced)
             {
@@ -1917,6 +2275,14 @@ public class GeneratePyramid : MonoBehaviour
             }
 
             // draw ramps
+            if (rampMethod == RampMethodType.Spiral)
+                DrawRamps(level, base_size + (blockwide+1) * spiralRampSeparation, height, h_spiral, sep_spiral, length + blockwide * spiralRampSeparation,
+                        row, last_sepi, last_length, last_h, last_v0, last_v1);
+            else
+            if (rampMethod == RampMethodType.Internal)
+                DrawRamps(level, base_size - (blockwide + 1) * spiralRampSeparation, height, h_spiral, sep_spiral, length - blockwide * spiralRampSeparation,
+                        row, last_sepi, last_length, last_h, last_v0, last_v1);
+            else
             if ((Method4Ramp || Method2Ramp) && minBaseSize2Ramps < base_size)
             {
                 if (MethodInsideRamp)
@@ -1927,7 +2293,7 @@ public class GeneratePyramid : MonoBehaviour
                                 row, last_sepi, last_length, last_h, last_v0, last_v1);
             }
             else
-            {
+            {                
                 if (MethodInsideRamp)
                     DrawRamps(level, base_size - 2 * blockwide, height, h, sep, length - blockwide,
                             row, last_sepi, last_length, last_h, last_v0, last_v1);
@@ -1935,10 +2301,10 @@ public class GeneratePyramid : MonoBehaviour
                     DrawRamps(level, base_size, height, h, sep, length,
                             row, last_sepi, last_length, last_h, last_v0, last_v1);
             }
-        }
+        }        
 
         // show granite block King's Chamber
-        if (DrawGranite && DrawUntilRow && (row + 1 > DrawRow) && !exportPyramidObj && !isRigidBody)
+        if (rampMethod == RampMethodType.Integrated && DrawGranite && DrawUntilRow && (row + 1 > DrawRow) && !exportPyramidObj && !isRigidBody)
         {
             GameObject granite_gameObject = new GameObject();
             granite_gameObject.name = "Terrace_" + level+"_"+ row;
@@ -2080,20 +2446,25 @@ public class GeneratePyramid : MonoBehaviour
                     objPiramidon.transform.parent = granite_gameObject.transform;
                     objPiramidon.transform.rotation = Quaternion.Euler(275, 0, 0);
                 }
-            }
+            }            
         }
 
         force_old_length += forceblocksrow_total_total;
         force_old_horiz += forceblocksrow_horiz_total;
-        force_old_vert += forceblocksrow_vert_total;        
+        force_old_vert += forceblocksrow_vert_total;
 
         //return length;
-        path_length += path_length + length;
+        if (rampMethod == RampMethodType.Spiral || rampMethod == RampMethodType.Internal)
+            path_length += path_length + length_spiral;
+        else
+            path_length += path_length + length;
+
         if (maxBlocks > 0 && numberOfBlocks > maxBlocks)
             yield break;
         else
             yield return StartCoroutine(compute_size_level(level + 1, new_base_size, path_wide, separation, height + h,
-                                            old_length + length, biter, distblocks, forceblocks, force_old_length, force_old_vert, force_old_horiz, row));
+                                            old_length + length, biter, distblocks, forceblocks, force_old_length, force_old_vert, force_old_horiz, row, 
+                                            old_length_spiral + length_spiral));
     }
 
     private void draw_one_size_level(int level, float base_size, float path_wide, float separation, float height, int index)
@@ -2299,7 +2670,7 @@ public class GeneratePyramid : MonoBehaviour
                             int row, float last_sepi, float last_length, float last_h, Vector3 last_v0, Vector3 last_v1)
     {
         float bh2 = blockheight / 2;
-        if (DrawUntilRow && row > DrawRow)
+        if (DrawUntilRow && row > DrawRow && rampMethod == RampMethodType.Integrated)
         {
             if (level % 4 == 1)
             {
@@ -2333,86 +2704,94 @@ public class GeneratePyramid : MonoBehaviour
         // ramp        
         float a1 = Mathf.Atan(sep / (base_size - sep));
         float a2 = Mathf.Atan(h / (base_size - sep));
-        GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        cube.name = "Ramp_" + level + "_" + row;
-        if (level % 4 == 0)
+
+        if (rampMethod == RampMethodType.Integrated)
         {
-            if (DrawUntilRow && row > DrawRow)
-                cube.transform.position = objParent.transform.position + (last_v0 + last_v1) / 2 + new Vector3(-(holeWide - 2) * blockwide / 2, height + blockheight * holeHeight / 2, 0);
-            else
-                cube.transform.position = objParent.transform.position + new Vector3((base_size - sep) / 2 - (holeWide - 2) * blockwide / 2, h / 2 + height + blockheight * holeHeight / 2, sep / 2);
-            cube.transform.rotation = Quaternion.Euler(0, 90 + radians_to_degrees(a1), radians_to_degrees(a2));
-        }
-        else
-        if (level % 4 == 1)
-        {
-            if (DrawUntilRow && row > DrawRow)
-                cube.transform.position = objParent.transform.position + (last_v0 + last_v1) / 2 + new Vector3(0, height + blockheight * holeHeight / 2, (holeWide - 2) * blockwide / 2);
-            else
-                cube.transform.position = objParent.transform.position + new Vector3(sep / 2, h / 2 + height + blockheight * holeHeight / 2, -(base_size - sep) / 2 + (holeWide - 2) * blockwide / 2);
-            cube.transform.rotation = Quaternion.Euler(0, radians_to_degrees(a1), -radians_to_degrees(a2));
-        }
-        else
-        if (level % 4 == 2)
-        {
-            if (DrawUntilRow && row > DrawRow)
-                cube.transform.position = objParent.transform.position + (last_v0 + last_v1) / 2 + new Vector3((holeWide - 2) * blockwide / 2, height + blockheight * holeHeight / 2, 0);
-            else
-                cube.transform.position = objParent.transform.position + new Vector3(-(base_size - sep) / 2 + (holeWide - 2) * blockwide / 2, h / 2 + height + blockheight * holeHeight / 2, -sep / 2);
-            cube.transform.rotation = Quaternion.Euler(0, 90 + radians_to_degrees(a1), -radians_to_degrees(a2));
-        }
-        else
-        if (level % 4 == 3)
-        {
-            if (DrawUntilRow && row > DrawRow)
-                cube.transform.position = objParent.transform.position + (last_v0 + last_v1) / 2 + new Vector3(0, height + blockheight * holeHeight / 2, -(holeWide - 2) * blockwide / 2);
-            else
-                cube.transform.position = objParent.transform.position + new Vector3(-sep / 2, h / 2 + height + blockheight * holeHeight / 2, (base_size - sep) / 2 - (holeWide - 2) * blockwide / 2);
-            cube.transform.rotation = Quaternion.Euler(0, radians_to_degrees(a1), radians_to_degrees(a2));
-        }
-        if (MethodInsideRamp)
-        {
+            GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            cube.name = "Ramp_" + level + "_" + row;
             if (level % 4 == 0)
-                cube.transform.position += Vector3.left * blockwide;
+            {
+                if (DrawUntilRow && row > DrawRow)
+                    cube.transform.position = objParent.transform.position + (last_v0 + last_v1) / 2 + new Vector3(-(holeWide - 2) * blockwide / 2, height + blockheight * holeHeight / 2, 0);
+                else
+                    cube.transform.position = objParent.transform.position + new Vector3((base_size - sep) / 2 - (holeWide - 2) * blockwide / 2, h / 2 + height + blockheight * holeHeight / 2, sep / 2);
+                cube.transform.rotation = Quaternion.Euler(0, 90 + radians_to_degrees(a1), radians_to_degrees(a2));
+            }
             else
             if (level % 4 == 1)
-                cube.transform.position += new Vector3(0, 0, blockwide);
+            {
+                if (DrawUntilRow && row > DrawRow)
+                    cube.transform.position = objParent.transform.position + (last_v0 + last_v1) / 2 + new Vector3(0, height + blockheight * holeHeight / 2, (holeWide - 2) * blockwide / 2);
+                else
+                    cube.transform.position = objParent.transform.position + new Vector3(sep / 2, h / 2 + height + blockheight * holeHeight / 2, -(base_size - sep) / 2 + (holeWide - 2) * blockwide / 2);
+                cube.transform.rotation = Quaternion.Euler(0, radians_to_degrees(a1), -radians_to_degrees(a2));
+            }
             else
             if (level % 4 == 2)
-                cube.transform.position -= Vector3.left * blockwide;
+            {
+                if (DrawUntilRow && row > DrawRow)
+                    cube.transform.position = objParent.transform.position + (last_v0 + last_v1) / 2 + new Vector3((holeWide - 2) * blockwide / 2, height + blockheight * holeHeight / 2, 0);
+                else
+                    cube.transform.position = objParent.transform.position + new Vector3(-(base_size - sep) / 2 + (holeWide - 2) * blockwide / 2, h / 2 + height + blockheight * holeHeight / 2, -sep / 2);
+                cube.transform.rotation = Quaternion.Euler(0, 90 + radians_to_degrees(a1), -radians_to_degrees(a2));
+            }
             else
             if (level % 4 == 3)
-                cube.transform.position -= new Vector3(0, 0, blockwide);
+            {
+                if (DrawUntilRow && row > DrawRow)
+                    cube.transform.position = objParent.transform.position + (last_v0 + last_v1) / 2 + new Vector3(0, height + blockheight * holeHeight / 2, -(holeWide - 2) * blockwide / 2);
+                else
+                    cube.transform.position = objParent.transform.position + new Vector3(-sep / 2, h / 2 + height + blockheight * holeHeight / 2, (base_size - sep) / 2 - (holeWide - 2) * blockwide / 2);
+                cube.transform.rotation = Quaternion.Euler(0, radians_to_degrees(a1), radians_to_degrees(a2));
+            }
+            if (MethodInsideRamp)
+            {
+                if (level % 4 == 0)
+                    cube.transform.position += Vector3.left * blockwide;
+                else
+                if (level % 4 == 1)
+                    cube.transform.position += new Vector3(0, 0, blockwide);
+                else
+                if (level % 4 == 2)
+                    cube.transform.position -= Vector3.left * blockwide;
+                else
+                if (level % 4 == 3)
+                    cube.transform.position -= new Vector3(0, 0, blockwide);
 
-            if (DrawUntilRow && row > DrawRow)
-                cube.transform.localScale = new Vector3(last_length * 2 - blockwide, blockheight * (holeHeight + 2), blockwide * (holeWide - 1));
+                if (DrawUntilRow && row > DrawRow)
+                    cube.transform.localScale = new Vector3(last_length * 2 - blockwide, blockheight * (holeHeight + 2), blockwide * (holeWide - 1));
+                else
+                    cube.transform.localScale = new Vector3(length - blockwide, blockheight * (holeHeight + 2), blockwide * (holeWide - 1));
+            }
             else
-                cube.transform.localScale = new Vector3(length - blockwide, blockheight * (holeHeight + 2), blockwide * (holeWide - 1));
-        }
-        else
-        {
-            if (DrawUntilRow && row > DrawRow)
-                cube.transform.localScale = new Vector3(last_length * 2, blockheight * holeHeight, blockwide * holeWide);
-            else
-                cube.transform.localScale = new Vector3(length, blockheight * holeHeight, blockwide * holeWide);
-        }
+            {
+                if (DrawUntilRow && row > DrawRow)
+                    cube.transform.localScale = new Vector3(last_length * 2, blockheight * holeHeight, blockwide * holeWide);
+                else
+                    cube.transform.localScale = new Vector3(length, blockheight * holeHeight, blockwide * holeWide);
+            }
 
-        //cube.transform.parent = objParent.transform;
-        cube.transform.parent = ramp_gameObject.transform;
-        cube.isStatic = true;
-        cube.AddComponent<DeleteObject>();
-        cube.GetComponent<DeleteObject>().generatePyramid = this;
-        cube.GetComponent<DeleteObject>().CommonGameObject = objParent;
-        cube.GetComponent<MeshRenderer>().enabled = false;
-        //cube.GetComponent<ShowHideObject>().hide = true;
-        cube.GetComponent<BoxCollider>().isTrigger = true;
+            // ommitted blocks for integrated ramp
+            cube.transform.parent = ramp_gameObject.transform;
+            cube.isStatic = true;        
+            cube.AddComponent<DeleteObject>();
+            cube.GetComponent<DeleteObject>().generatePyramid = this;
+            cube.GetComponent<DeleteObject>().CommonGameObject = objParent;
+            cube.GetComponent<DeleteObject>().deleteObject = !Decomisioning;
+            cube.GetComponent<MeshRenderer>().enabled = false;
+            //cube.GetComponent<ShowHideObject>().hide = true;
+            cube.GetComponent<BoxCollider>().isTrigger = true;
+        }
 
         // ramp corner wide
+        float base_size_ant = base_size;
         // not remove blocks in the first level
-        if (level > 0)
+        if (level > 0 && (rampMethod == RampMethodType.Integrated || rampMethod == RampMethodType.Internal))
         {
+            if (rampMethod == RampMethodType.Internal)
+                 base_size += (blockwide + 1) * spiralRampSeparation;            
             GameObject cube_c = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            float holeDiag = MathF.Sqrt(((holeWide+1) * blockwide) * ((holeWide + 1) * blockwide));
+            float holeDiag = MathF.Sqrt(((holeWide + 1) * blockwide) * ((holeWide + 1) * blockwide));            
             cube_c.name = "Ramp-corner_" + level + "_" + row;
             if (level % 4 == 0)
                 cube_c.transform.position = objParent.transform.position + new Vector3((base_size / 2) - holeDiag / 2, height + holeHeight * blockheight * 3 / 2, (base_size / 2) - holeDiag / 2);
@@ -2432,9 +2811,11 @@ public class GeneratePyramid : MonoBehaviour
             cube_c.AddComponent<DeleteObject>();
             cube_c.GetComponent<DeleteObject>().generatePyramid = this;
             cube_c.GetComponent<DeleteObject>().CommonGameObject = objParent;
+            cube_c.GetComponent<DeleteObject>().deleteObject = !Decomisioning;
             cube_c.GetComponent<MeshRenderer>().enabled = false;
             cube_c.GetComponent<BoxCollider>().isTrigger = true;
         }
+        base_size = base_size_ant;
 
         // ramp floor
         if (DrawFloor)
@@ -2443,60 +2824,76 @@ public class GeneratePyramid : MonoBehaviour
             cubefloor.name = "Ramp_floor_" + level + "_" + row;
             if (level % 4 == 0)
             {
-                if (DrawUntilRow && row > DrawRow)
+                if (DrawUntilRow && row > DrawRow && rampMethod == RampMethodType.Integrated)
                     cubefloor.transform.position = objParent.transform.position + (last_v0 + last_v1) / 2 + new Vector3(-(holeWide-2) * blockwide / 2, height - bh2, 0);
                 else
                     cubefloor.transform.position = objParent.transform.position + new Vector3((base_size - sep) / 2 - (holeWide - 2) * blockwide/2, h / 2 + height - bh2, sep / 2);
+                cubefloor.transform.position -= new Vector3(0.7f, 0, 0);
                 if (setback)
                     cubefloor.transform.position += new Vector3(setbackWide / 2, 0, 0);
+                if (MethodInsideRamp)
+                    cubefloor.transform.position -= new Vector3(blockwide, 0, 0);
                 cubefloor.transform.rotation = Quaternion.Euler(0, 90 + radians_to_degrees(a1), radians_to_degrees(a2));
             }
             else
             if (level % 4 == 1)
             {
-                if (DrawUntilRow && row > DrawRow)
+                if (DrawUntilRow && row > DrawRow && rampMethod == RampMethodType.Integrated)
                     cubefloor.transform.position = objParent.transform.position + (last_v0 + last_v1) / 2 + new Vector3(0, height - bh2, (holeWide - 2) * blockwide / 2);
                 else
                     cubefloor.transform.position = objParent.transform.position + new Vector3(sep / 2, h / 2 + height - bh2, -(base_size - sep) / 2 + (holeWide - 2) * blockwide / 2);
+                cubefloor.transform.position -= new Vector3(0, 0, -0.7f);
                 if (setback)
                     cubefloor.transform.position += new Vector3(0, 0, -setbackWide / 2);
+                if (MethodInsideRamp)
+                    cubefloor.transform.position -= new Vector3(0, 0, -blockwide);
                 cubefloor.transform.rotation = Quaternion.Euler(0, radians_to_degrees(a1), -radians_to_degrees(a2));
             }
             else
             if (level % 4 == 2)
             {
-                if (DrawUntilRow && row > DrawRow)
+                if (DrawUntilRow && row > DrawRow && rampMethod == RampMethodType.Integrated)
                     cubefloor.transform.position = objParent.transform.position + (last_v0 + last_v1) / 2 + new Vector3((holeWide - 2) * blockwide / 2, height - bh2, 0);
                 else
                     cubefloor.transform.position = objParent.transform.position + new Vector3(-(base_size - sep) / 2 + (holeWide - 2) * blockwide / 2, h / 2 + height - bh2, -sep / 2);
+                cubefloor.transform.position -= new Vector3(-0.7f, 0, 0);
                 if (setback)
                     cubefloor.transform.position += new Vector3(-setbackWide / 2, 0, 0);
+                if (MethodInsideRamp)
+                    cubefloor.transform.position -= new Vector3(-blockwide, 0, 0);
                 cubefloor.transform.rotation = Quaternion.Euler(0, 90 + radians_to_degrees(a1), -radians_to_degrees(a2));
             }
             else
             if (level % 4 == 3)
             {
-                if (DrawUntilRow && row > DrawRow)
+                if (DrawUntilRow && row > DrawRow && rampMethod == RampMethodType.Integrated)
                     cubefloor.transform.position = objParent.transform.position + (last_v0 + last_v1) / 2 + new Vector3(0, height - bh2, -(holeWide - 2) * blockwide / 2);
                 else
                     cubefloor.transform.position = objParent.transform.position + new Vector3(-sep / 2, h / 2 + height - bh2, (base_size - sep) / 2 - (holeWide - 2) * blockwide / 2);
+                cubefloor.transform.position -= new Vector3(0, 0, 0.7f);
                 if (setback)
                     cubefloor.transform.position += new Vector3(0, 0, setbackWide / 2);
+                if (MethodInsideRamp)
+                    cubefloor.transform.position -= new Vector3(0, 0, blockwide);
                 cubefloor.transform.rotation = Quaternion.Euler(0, radians_to_degrees(a1), radians_to_degrees(a2));
             }
-            if (DrawUntilRow && row > DrawRow)
+            if (DrawUntilRow && row > DrawRow && rampMethod == RampMethodType.Integrated)
             {
                 if (setback)
-                    cubefloor.transform.localScale = new Vector3(last_length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide + setbackWide);
+                    cubefloor.transform.localScale = new Vector3(last_length + 2 * blockwide - 2, bh2 + 0.4f, holeWide * blockwide + setbackWide);
                 else
-                    cubefloor.transform.localScale = new Vector3(last_length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide);
+                    cubefloor.transform.localScale = new Vector3(last_length + 2 * blockwide - 2, bh2 + 0.4f, holeWide * blockwide);
             }
             else
             {
                 if (setback)
-                    cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide + setbackWide);
+                    cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 2, bh2 + 0.4f, holeWide * blockwide + setbackWide);
                 else
-                    cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide);
+                    cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 2, bh2 + 0.4f, holeWide * blockwide);
+                if (rampMethod == RampMethodType.Spiral)
+                    cubefloor.transform.localScale = new Vector3(length + (blockwide * spiralRampSeparation), bh2 + 0.4f, holeWide * blockwide);
+                if (rampMethod == RampMethodType.Internal)
+                    cubefloor.transform.localScale = new Vector3(length - (blockwide * spiralRampSeparation), bh2 + 0.4f, holeWide * blockwide);
             }
             //cubefloor.transform.parent = objParent.transform;
             cubefloor.transform.parent = ramp_gameObject.transform;
@@ -2504,9 +2901,12 @@ public class GeneratePyramid : MonoBehaviour
             if (m_Material_floor)
                 cubefloor.GetComponent<MeshRenderer>().material = m_Material_floor;
             cubefloor.isStatic = true;
-        }
 
-        if (DrawWall)
+            if (rampMethod == RampMethodType.Spiral)
+                DrawSteppedEmbankment(cubefloor,false);            
+        }        
+
+        if (DrawWall && rampMethod == RampMethodType.Integrated)
         {
             // ramp wall
             GameObject cubewall = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -2568,8 +2968,11 @@ public class GeneratePyramid : MonoBehaviour
         }
 
         // corner floor
-        if (DrawFloor)
+        base_size_ant = base_size;
+        if (DrawFloor && (rampMethod == RampMethodType.Integrated || rampMethod == RampMethodType.Internal))
         {
+            if (rampMethod == RampMethodType.Internal)
+                base_size += (blockwide + 1) * spiralRampSeparation;
             GameObject cubecorner = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cubecorner.name = "Ramp_corner_" + level + "_" + row;
             float holeDiag = MathF.Sqrt((holeWide * blockwide) * (holeWide * blockwide));
@@ -2613,9 +3016,10 @@ public class GeneratePyramid : MonoBehaviour
             cubecorner.GetComponent<MeshRenderer>().material = m_Material_corner;
             cubecorner.isStatic = true;
         }
+        base_size = base_size_ant;
 
         // corner wall
-        if (DrawWall)
+        if (DrawWall && rampMethod == RampMethodType.Integrated)
         {
             GameObject cubecorner_wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cubecorner_wall.name = "Ramp_cornerwall_" + level + "_" + row;
@@ -2651,7 +3055,7 @@ public class GeneratePyramid : MonoBehaviour
         }
 
         // wooden cylinder
-        if (DrawWoodenCyl && !exportPyramidObj)
+        if (DrawWoodenCyl && !exportPyramidObj && rampMethod == RampMethodType.Integrated)
         {
             float angleInRadians = PyramidInclination * (MathF.PI / 180.0f);
             float baseWidth = (holeWide + 1.0f) * blockwide;
@@ -2702,7 +3106,7 @@ public class GeneratePyramid : MonoBehaviour
             workers_gameObject = objParent;
 
         // stone sled
-        if (DrawEgyptians && stone_sled && height<Height*0.9f && !exportPyramidObj)
+        if (DrawEgyptians && stone_sled && height<Height*0.9f && !exportPyramidObj && rampMethod == RampMethodType.Integrated)
         {
             GameObject stone_sled1 = Instantiate(stone_sled, objParent.transform.position + new Vector3(0, 0, 0), Quaternion.identity);
             stone_sled1.name = "stone_sled_" + level + "_" + row;
@@ -2735,10 +3139,8 @@ public class GeneratePyramid : MonoBehaviour
         }
 
         // egyptians
-        if (DrawEgyptians && Egyptian_body && height < Height * 0.9f && !exportPyramidObj)
+        if (DrawEgyptians && Egyptian_body && height < Height * 0.9f && !exportPyramidObj && rampMethod == RampMethodType.Integrated)
         {
-
-
             for (int i = 0; i < 12; i++)
             {
                 // left hand
@@ -2747,7 +3149,7 @@ public class GeneratePyramid : MonoBehaviour
                 if (level % 4 == 0)
                 {
                     Egyptian.transform.position = objParent.transform.position + new Vector3((base_size / 2 - (0.75f + 0.1f*i) - holeWide * blockwide / 2), height + 2.25f + 0.16f*i, (base_size / 2 - (4.5f + i) * blockwide));
-                    Egyptian.transform.localRotation = Quaternion.Euler(RampInclination, RampInclination, 0.0f);
+                    Egyptian.transform.localRotation = Quaternion.Euler(RampInclination, RampInclination, 0.0f);                    
                 }
                 else
                 if (level % 4 == 1)
@@ -2777,24 +3179,28 @@ public class GeneratePyramid : MonoBehaviour
                 {
                     Egyptian2.transform.position = objParent.transform.position + new Vector3((base_size / 2 + (1.5f - 0.1f * i) - holeWide * blockwide / 2), height + 2.25f + 0.16f * i, (base_size / 2 - (4.5f + i) * blockwide));
                     Egyptian2.transform.localRotation = Quaternion.Euler(RampInclination, RampInclination, 0.0f);
+                    Egyptian2.transform.position -= new Vector3(0.25f, 0, 0);
                 }
                 else
                 if (level % 4 == 1)
                 {
                     Egyptian2.transform.position = objParent.transform.position + new Vector3((base_size / 2 - (4.5f + i) * blockwide), height + 2.25f + 0.16f * i, -(base_size / 2 + (1.5f - 0.1f * i) - holeWide * blockwide / 2));
                     Egyptian2.transform.localRotation = Quaternion.Euler(RampInclination, 90.0f+ RampInclination, 0.0f);
+                    Egyptian2.transform.position -= new Vector3(0, 0, -0.25f);
                 }
                 else
                 if (level % 4 == 2)
                 {
                     Egyptian2.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 + (1.5f - 0.1f * i) - holeWide * blockwide / 2), height + 2.25f + 0.16f * i, -(base_size / 2 - (4.5f + i) * blockwide));
                     Egyptian2.transform.localRotation = Quaternion.Euler(RampInclination, 180.0f+ RampInclination, 0.0f);
+                    Egyptian2.transform.position -= new Vector3(0, 0, 0.25f);
                 }
                 else
                 if (level % 4 == 3)
                 {
                     Egyptian2.transform.position = new Vector3(-(base_size / 2 - (4.5f + i) * blockwide), height + 2.25f + 0.16f * i, (base_size / 2 + (1.5f - 0.1f * i) - holeWide * blockwide / 2));
                     Egyptian2.transform.localRotation = Quaternion.Euler(RampInclination, -90f + RampInclination, 0.0f);
+                    Egyptian2.transform.position -= new Vector3(-0.25f, 0, 0);
                 }
                 //Egyptian2.transform.parent = objParent.transform;
                 Egyptian2.transform.parent = workers_gameObject.transform;
@@ -2853,6 +3259,7 @@ public class GeneratePyramid : MonoBehaviour
             cube.AddComponent<DeleteObject>();
             cube.GetComponent<DeleteObject>().generatePyramid = this;
             cube.GetComponent<DeleteObject>().CommonGameObject = objParent;
+            cube.GetComponent<DeleteObject>().deleteObject = !Decomisioning;
             cube.GetComponent<MeshRenderer>().enabled = false;
             //cube.GetComponent<ShowHideObject>().hide = true;
             cube.GetComponent<BoxCollider>().isTrigger = true;
@@ -2892,6 +3299,7 @@ public class GeneratePyramid : MonoBehaviour
             cube.AddComponent<DeleteObject>();
             cube.GetComponent<DeleteObject>().generatePyramid = this;
             cube.GetComponent<DeleteObject>().CommonGameObject = objParent;
+            cube.GetComponent<DeleteObject>().deleteObject = !Decomisioning;
             cube.GetComponent<MeshRenderer>().enabled = false;
             //cube.GetComponent<ShowHideObject>().hide = true;
             cube.GetComponent<BoxCollider>().isTrigger = true;
@@ -2932,6 +3340,7 @@ public class GeneratePyramid : MonoBehaviour
             cube.AddComponent<DeleteObject>();
             cube.GetComponent<DeleteObject>().generatePyramid = this;
             cube.GetComponent<DeleteObject>().CommonGameObject = objParent;
+            cube.GetComponent<DeleteObject>().deleteObject = !Decomisioning;
             cube.GetComponent<MeshRenderer>().enabled = false;
             //cube.GetComponent<ShowHideObject>().hide = true;
             cube.GetComponent<BoxCollider>().isTrigger = true;
@@ -2971,6 +3380,7 @@ public class GeneratePyramid : MonoBehaviour
             cube.AddComponent<DeleteObject>();
             cube.GetComponent<DeleteObject>().generatePyramid = this;
             cube.GetComponent<DeleteObject>().CommonGameObject = objParent;
+            cube.GetComponent<DeleteObject>().deleteObject = !Decomisioning;
             cube.GetComponent<MeshRenderer>().enabled = false;
             //cube.GetComponent<ShowHideObject>().hide = true;
             cube.GetComponent<BoxCollider>().isTrigger = true;
@@ -2995,6 +3405,7 @@ public class GeneratePyramid : MonoBehaviour
                 cube_c.AddComponent<DeleteObject>();
                 cube_c.GetComponent<DeleteObject>().generatePyramid = this;
                 cube_c.GetComponent<DeleteObject>().CommonGameObject = objParent;
+                cube_c.GetComponent<DeleteObject>().deleteObject = !Decomisioning;
                 cube_c.GetComponent<MeshRenderer>().enabled = false;
                 cube_c.GetComponent<BoxCollider>().isTrigger = true;
             }
@@ -3011,6 +3422,7 @@ public class GeneratePyramid : MonoBehaviour
                 cube_c.AddComponent<DeleteObject>();
                 cube_c.GetComponent<DeleteObject>().generatePyramid = this;
                 cube_c.GetComponent<DeleteObject>().CommonGameObject = objParent;
+                cube_c.GetComponent<DeleteObject>().deleteObject = !Decomisioning;
                 cube_c.GetComponent<MeshRenderer>().enabled = false;
                 cube_c.GetComponent<BoxCollider>().isTrigger = true;
             }
@@ -3027,6 +3439,7 @@ public class GeneratePyramid : MonoBehaviour
                 cube_c.AddComponent<DeleteObject>();
                 cube_c.GetComponent<DeleteObject>().generatePyramid = this;
                 cube_c.GetComponent<DeleteObject>().CommonGameObject = objParent;
+                cube_c.GetComponent<DeleteObject>().deleteObject = !Decomisioning;
                 cube_c.GetComponent<MeshRenderer>().enabled = false;
                 cube_c.GetComponent<BoxCollider>().isTrigger = true;
             }
@@ -3043,6 +3456,7 @@ public class GeneratePyramid : MonoBehaviour
                 cube_c.AddComponent<DeleteObject>();
                 cube_c.GetComponent<DeleteObject>().generatePyramid = this;
                 cube_c.GetComponent<DeleteObject>().CommonGameObject = objParent;
+                cube_c.GetComponent<DeleteObject>().deleteObject = !Decomisioning;
                 cube_c.GetComponent<MeshRenderer>().enabled = false;
                 cube_c.GetComponent<BoxCollider>().isTrigger = true;
             }
@@ -3058,20 +3472,23 @@ public class GeneratePyramid : MonoBehaviour
                 cubefloor.transform.position = objParent.transform.position + (last_v0 + last_v1) / 2 + new Vector3(-(holeWide - 2) * blockwide / 2, height - bh2, 0);
             else
                 cubefloor.transform.position = objParent.transform.position + new Vector3((base_size - sep) / 2 - (holeWide - 2) * blockwide / 2, h / 2 + height - bh2, sep / 2);
+            cubefloor.transform.position -= new Vector3(0.7f, 0, 0);
             if (setback)
                 cubefloor.transform.position += new Vector3(setbackWide / 2, 0, 0);
+            if (MethodInsideRamp)
+                cubefloor.transform.position -= new Vector3(blockwide, 0, 0);
             //cubefloor.transform.position = new Vector3((base_size - sep) / 2 - 1, h / 2 + height - bh2, sep / 2);
             if (DrawUntilRow && row > DrawRow)
                 if (setback)
-                    cubefloor.transform.localScale = new Vector3(last_length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide + setbackWide);
+                    cubefloor.transform.localScale = new Vector3(last_length + 2 * blockwide - 2, bh2 + 0.4f, holeWide * blockwide + setbackWide);
                 else
-                    cubefloor.transform.localScale = new Vector3(last_length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide);
+                    cubefloor.transform.localScale = new Vector3(last_length + 2 * blockwide - 2, bh2 + 0.4f, holeWide * blockwide);
             else
             {
                 if (setback)
-                    cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide + setbackWide);
+                    cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 2, bh2 + 0.4f, holeWide * blockwide + setbackWide);
                 else
-                    cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide);
+                    cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 2, bh2 + 0.4f, holeWide * blockwide);
             }
             cubefloor.transform.rotation = Quaternion.Euler(0, 90 + radians_to_degrees(a1), radians_to_degrees(a2));
             //cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 1, bh2 + 0.4f, 3 * blockwide);
@@ -3092,23 +3509,26 @@ public class GeneratePyramid : MonoBehaviour
                 cubefloor.transform.position = objParent.transform.position + (Quaternion.Euler(0, 90f, 0) * last_v0 + Quaternion.Euler(0, 90f, 0) * last_v1) / 2 + new Vector3(0, height - bh2, (holeWide - 2) * blockwide / 2);
             else
                 cubefloor.transform.position = objParent.transform.position + new Vector3(sep / 2, h / 2 + height - bh2, -(base_size - sep) / 2 + (holeWide - 2) * blockwide / 2);
+            cubefloor.transform.position -= new Vector3(0, 0, -0.7f);
             if (setback)
                 cubefloor.transform.position += new Vector3(0, 0, -setbackWide / 2);
+            if (MethodInsideRamp)
+                cubefloor.transform.position -= new Vector3(0, 0, -blockwide);
             //cubefloor.transform.position = new Vector3(sep / 2, h / 2 + height - bh2, -(base_size - sep) / 2 + 1);
             cubefloor.transform.rotation = Quaternion.Euler(0, radians_to_degrees(a1), -radians_to_degrees(a2));
             if (DrawUntilRow && row > DrawRow)
             {
                 if (setback)
-                    cubefloor.transform.localScale = new Vector3(last_length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide + setbackWide);
+                    cubefloor.transform.localScale = new Vector3(last_length + 2 * blockwide - 2, bh2 + 0.4f, holeWide * blockwide + setbackWide);
                 else
-                    cubefloor.transform.localScale = new Vector3(last_length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide);
+                    cubefloor.transform.localScale = new Vector3(last_length + 2 * blockwide - 2, bh2 + 0.4f, holeWide * blockwide);
             }
             else
             {
                 if (setback)
-                    cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide + setbackWide);
+                    cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 2, bh2 + 0.4f, holeWide * blockwide + setbackWide);
                 else
-                    cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide);
+                    cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 2, bh2 + 0.4f, holeWide * blockwide);
             }
             //cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 1, bh2 + 0.4f, 3 * blockwide);
             //cubefloor.transform.parent = objParent.transform;
@@ -3127,24 +3547,27 @@ public class GeneratePyramid : MonoBehaviour
             if (DrawUntilRow && row > DrawRow)
                 cubefloor.transform.position = objParent.transform.position + (Quaternion.Euler(0, 180f, 0) * last_v0 + Quaternion.Euler(0, 180f, 0) * last_v1) / 2 + new Vector3((holeWide - 2) * blockwide / 2, height - bh2, 0);
             else
-                cubefloor.transform.position = objParent.transform.position + new Vector3(-(base_size - sep) / 2 + (holeWide - 2) * blockwide / 2, h / 2 + height - bh2 + 0.2f, -sep / 2);
+                cubefloor.transform.position = objParent.transform.position + new Vector3(-(base_size - sep) / 2 + (holeWide - 2) * blockwide / 2, h / 2 + height - bh2, -sep / 2);
+            cubefloor.transform.position -= new Vector3(-0.7f, 0, 0);
             if (setback)
                 cubefloor.transform.position += new Vector3(-setbackWide / 2, 0, 0);
+            if (MethodInsideRamp)
+                cubefloor.transform.position -= new Vector3(-blockwide, 0, 0);
             //cubefloor.transform.position = new Vector3(-(base_size - sep) / 2 + 1, h / 2 + height - bh2, -sep / 2);
             cubefloor.transform.rotation = Quaternion.Euler(0, 90 + radians_to_degrees(a1), -radians_to_degrees(a2));
             if (DrawUntilRow && row > DrawRow)
             {
                 if (setback)
-                    cubefloor.transform.localScale = new Vector3(last_length + 2 * blockwide - 1, bh2 + 0.5f, holeWide * blockwide + setbackWide);
+                    cubefloor.transform.localScale = new Vector3(last_length + 2 * blockwide - 2, bh2 + 0.5f, holeWide * blockwide + setbackWide);
                 else
-                    cubefloor.transform.localScale = new Vector3(last_length + 2 * blockwide - 1, bh2 + 0.5f, holeWide * blockwide);
+                    cubefloor.transform.localScale = new Vector3(last_length + 2 * blockwide - 2, bh2 + 0.5f, holeWide * blockwide);
             }
             else
             {
                 if (setback)
-                    cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 1, bh2 + 0.5f, holeWide * blockwide + setbackWide);
+                    cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 2, bh2 + 0.5f, holeWide * blockwide + setbackWide);
                 else
-                    cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide);
+                    cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 2, bh2 + 0.4f, holeWide * blockwide);
             }
             //cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 1, bh2 + 0.4f, 3 * blockwide);
             //cubefloor.transform.parent = objParent.transform;
@@ -3164,23 +3587,26 @@ public class GeneratePyramid : MonoBehaviour
                 cubefloor.transform.position = objParent.transform.position + (Quaternion.Euler(0, 270f, 0) * last_v0 + Quaternion.Euler(0, 270f, 0) * last_v1) / 2 + new Vector3(0, height - bh2, -(holeWide - 2) * blockwide / 2);
             else
                 cubefloor.transform.position = objParent.transform.position + new Vector3(-sep / 2, h / 2 + height - bh2, (base_size - sep) / 2 - (holeWide - 2) * blockwide / 2);
+            cubefloor.transform.position -= new Vector3(0, 0, 0.7f);
             if (setback)
                 cubefloor.transform.position += new Vector3(0, 0, setbackWide / 2);
+            if (MethodInsideRamp)
+                cubefloor.transform.position -= new Vector3(0, 0, blockwide);
             //cubefloor.transform.position = new Vector3(-sep / 2, h / 2 + height - bh2, (base_size - sep) / 2 - 1);
             cubefloor.transform.rotation = Quaternion.Euler(0, radians_to_degrees(a1), radians_to_degrees(a2));
             if (DrawUntilRow && row > DrawRow)
             {
                 if (setback)
-                    cubefloor.transform.localScale = new Vector3(last_length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide + setbackWide);
+                    cubefloor.transform.localScale = new Vector3(last_length + 2 * blockwide - 2, bh2 + 0.4f, holeWide * blockwide + setbackWide);
                 else
-                    cubefloor.transform.localScale = new Vector3(last_length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide);
+                    cubefloor.transform.localScale = new Vector3(last_length + 2 * blockwide - 2, bh2 + 0.4f, holeWide * blockwide);
             }
             else
             {
                 if (setback)
-                    cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide + setbackWide);
+                    cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 2, bh2 + 0.4f, holeWide * blockwide + setbackWide);
                 else
-                    cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 1, bh2 + 0.4f, holeWide * blockwide);
+                    cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 2, bh2 + 0.4f, holeWide * blockwide);
             }
             //cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 1, bh2 + 0.4f, 3 * blockwide);
             //cubefloor.transform.parent = objParent.transform;
@@ -3583,7 +4009,7 @@ public class GeneratePyramid : MonoBehaviour
                     GameObject Egyptian = Instantiate(Egyptian_body, new Vector3(0, 0, 0), Quaternion.identity);
                     Egyptian.name = "Egyptian_left_" + level + "_" + row + "_" + i + "_1";
                     Egyptian.transform.position = objParent.transform.position + new Vector3((base_size / 2 - (0.75f + 0.1f * i) - holeWide * blockwide / 2), height + 2.25f + 0.16f * i, (base_size / 2 - (4.5f + i) * blockwide));
-                    Egyptian.transform.localRotation = Quaternion.Euler(RampInclination, RampInclination, 0.0f);
+                    Egyptian.transform.localRotation = Quaternion.Euler(RampInclination, RampInclination, 0.0f);                    
                     //Egyptian.transform.parent = objParent.transform;
                     Egyptian.transform.parent = workers_gameObject.transform;
                     Egyptian.isStatic = true;                    
@@ -3629,6 +4055,7 @@ public class GeneratePyramid : MonoBehaviour
                     Egyptian2.name = "Egyptian_right_" + level + "_" + row + "_" + i + "_1";
                     Egyptian2.transform.position = objParent.transform.position + new Vector3((base_size / 2 + (1.5f - 0.1f * i) - holeWide * blockwide / 2), height + 2.25f + 0.16f * i, (base_size / 2 - (4.5f + i) * blockwide));
                     Egyptian2.transform.localRotation = Quaternion.Euler(RampInclination, RampInclination, 0.0f);
+                    Egyptian2.transform.position -= new Vector3(0.25f, 0, 0);
                     //Egyptian2.transform.parent = objParent.transform;
                     Egyptian2.transform.parent = workers_gameObject.transform;
                     Egyptian2.isStatic = true;      
@@ -3640,6 +4067,7 @@ public class GeneratePyramid : MonoBehaviour
                     Egyptian2.name = "Egyptian_right_" + level + "_" + row + "_" + i + "_2";
                     Egyptian2.transform.position = objParent.transform.position + new Vector3((base_size / 2 - (4.5f + i) * blockwide), height + 2.25f + 0.16f * i, -(base_size / 2 + (1.5f - 0.1f * i) - holeWide * blockwide / 2));
                     Egyptian2.transform.localRotation = Quaternion.Euler(RampInclination, 90.0f+ RampInclination, 0.0f);
+                    Egyptian2.transform.position -= new Vector3(0, 0, -0.25f);
                     //Egyptian2.transform.parent = objParent.transform;
                     Egyptian2.transform.parent = workers_gameObject.transform;
                     Egyptian2.isStatic = true;
@@ -3651,6 +4079,7 @@ public class GeneratePyramid : MonoBehaviour
                     Egyptian2.name = "Egyptian_right_" + level + "_" + row + "_" + i + "_3";
                     Egyptian2.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 + (1.5f - 0.1f * i) - holeWide * blockwide / 2), height + 2.25f + 0.16f * i, -(base_size / 2 - (4.5f + i) * blockwide));
                     Egyptian2.transform.localRotation = Quaternion.Euler(RampInclination, 180.0f+ RampInclination, 0.0f);
+                    Egyptian2.transform.position -= new Vector3(-0.25f, 0, 0);
                     //Egyptian2.transform.parent = objParent.transform;
                     Egyptian2.transform.parent = workers_gameObject.transform;
                     Egyptian2.isStatic = true;
@@ -3662,6 +4091,7 @@ public class GeneratePyramid : MonoBehaviour
                     Egyptian2.name = "Egyptian_right_" + level + "_" + row + "_" + i + "_4";
                     Egyptian2.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - (4.5f + i) * blockwide), height + 2.25f + 0.16f * i, (base_size / 2 + (1.5f - 0.1f * i) - holeWide * blockwide / 2));
                     Egyptian2.transform.localRotation = Quaternion.Euler(RampInclination, -90.0f+ RampInclination, 0.0f);
+                    Egyptian2.transform.position -= new Vector3(0, 0, 0.25f);
                     //Egyptian2.transform.parent = objParent.transform;
                     Egyptian2.transform.parent = workers_gameObject.transform;
                     Egyptian2.isStatic = true;
@@ -3949,6 +4379,8 @@ public class GeneratePyramid : MonoBehaviour
                 GameObject.Destroy(child);
             }
         }
+        // Also clear the list of detected blocks when creating a new pyramid
+        DetectedDeletedBlocks.Clear();
     }
 
     /// <summary>
@@ -3969,6 +4401,8 @@ public class GeneratePyramid : MonoBehaviour
         holeWide = 3;
         blockSeparation = 0.01f; // separation between blocks
         massBlock = 2267.96f;
+        EmbankmentVolume = 0f;
+        PyramidVolume = 0f;
         // Reset new variables to their defaults
         holeHeight = 3;
         holeWide = 3;
@@ -3979,7 +4413,7 @@ public class GeneratePyramid : MonoBehaviour
         Method16Ramp = false;
         DrawUntilRow = false;
         DrawOnlyRow = false;
-        DrawCover = false;
+        DrawCasing = false;
         DrawRow = 0;
         DrawBlocks = 1;
         DeletedBlocks = 0;
@@ -4063,5 +4497,434 @@ public class GeneratePyramid : MonoBehaviour
         {
             renderer.enabled = isVisible;
         }        
+    }
+
+    /// <summary>
+    /// Asynchronously destroys the detected blocks in steps.
+    /// </summary>
+    private IEnumerator DecommissionCoroutine()
+    {
+        Debug.Log($"Starting decommissioning animation for {DetectedDeletedBlocks.Count} blocks...");
+        //if (progressBar) progressBar.Show("Decommissioning...");
+
+        int totalBlocksToDecommission = DetectedDeletedBlocks.Count;
+        int batchSize = Mathf.Max(1, Mathf.CeilToInt(totalBlocksToDecommission * DecommissioningStep)); // 5% per step
+        int blocksProcessed = 0;
+
+        for (int i = 0; i < totalBlocksToDecommission; i++)
+        {
+            GameObject block = DetectedDeletedBlocks[i];
+            if (block != null) // Check if the block hasn't been destroyed already
+            {
+                block.tag = "Untagged"; // Remove tag to avoid re-detection
+                block.SetActive(true);
+            }
+
+            blocksProcessed++;
+
+            // After processing a batch, update progress and wait.
+            if (blocksProcessed % batchSize == 0 || i == totalBlocksToDecommission - 1)
+            {
+                float progress = (float)(i + 1) / totalBlocksToDecommission;
+                //if (progressBar) progressBar.SetProgress(progress, $"Decommissioning... ({i + 1}/{totalBlocksToDecommission})");
+
+                yield return new WaitForSeconds(DecommissioningTimeLapse);
+            }
+        }
+
+        //if (progressBar) progressBar.Hide();
+        Debug.Log("Decommissioning animation finished.");
+        DetectedDeletedBlocks.Clear(); // Clean up the list after animation
+    }
+
+    /// <summary>
+    /// Adds a GameObject to the list of blocks detected for deletion.
+    /// This is called by the DeleteObject script before the object is destroyed.
+    /// </summary>
+    /// <param name="blockToAdd">The GameObject that was detected.</param>
+    public void AddDetectedBlock(GameObject blockToAdd)
+    {
+        if (blockToAdd == null) return;
+
+        // Use BinarySearch with our custom comparer to find the correct insertion index.
+        int index = DetectedDeletedBlocks.BinarySearch(blockToAdd, yComparer);
+
+        // If BinarySearch returns a negative number, it's the bitwise complement
+        // of the index of the next element that is larger than the object.
+        if (index < 0)
+        {
+            index = ~index;
+        }
+
+        DetectedDeletedBlocks.Insert(index, blockToAdd);
+    }
+
+    /// <summary>
+    /// Calcula y dibuja una rampa recta desde la última hilada dibujada hasta el suelo, orientada correctamente.
+    /// </summary>
+    private void DrawStraightRamp()
+    {
+        if (RampInclination <= 0)
+        {
+            Debug.LogError("La Inclinación de la Rampa debe ser mayor que 0.");
+            return;
+        }
+
+        CalculateMetricsAtRow(DrawRow, out float startHeight, out float totalSetback);
+
+        float rampInclinationRad = RampInclination * Mathf.Deg2Rad;
+        float rampLength = startHeight / Mathf.Sin(rampInclinationRad);
+        float horizontalProjection = startHeight / Mathf.Tan(rampInclinationRad);
+
+        Vector3 startPosition = Vector3.zero;
+        Vector3 endPosition = Vector3.zero;
+        Quaternion rampRotation = Quaternion.identity;
+        float faceOffset = (BaseSize / 2) - totalSetback;
+
+        switch (StraightRampFace)
+        {
+            case CameraPositionFace.NorthFace:
+                startPosition = new Vector3(0, startHeight, faceOffset);
+                endPosition = new Vector3(0, 0, startPosition.z + horizontalProjection);
+                rampRotation = Quaternion.Euler(RampInclination, 0, 0);
+                break;
+            case CameraPositionFace.SouthFace:
+                startPosition = new Vector3(0, startHeight, -faceOffset);
+                endPosition = new Vector3(0, 0, startPosition.z - horizontalProjection);
+                rampRotation = Quaternion.Euler(-RampInclination, 0, 0);
+                break;
+            case CameraPositionFace.EastFace:
+                startPosition = new Vector3(faceOffset, startHeight, 0);
+                endPosition = new Vector3(startPosition.x + horizontalProjection, 0, 0);
+                rampRotation = Quaternion.Euler(0, 90, 0) * Quaternion.Euler(RampInclination, 0, 0);
+                break;
+            case CameraPositionFace.WestFace:
+                startPosition = new Vector3(-faceOffset, startHeight, 0);
+                endPosition = new Vector3(startPosition.x - horizontalProjection, 0, 0);
+                rampRotation = Quaternion.Euler(0, -90, 0) * Quaternion.Euler(RampInclination, 0, 0);
+                break;                
+        }
+
+        GameObject rampObj = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        rampObj.name = "StraightRamp";
+        if (objParent != null)
+        {
+            rampObj.transform.SetParent(objParent.transform);
+        }
+        rampObj.isStatic = true;
+
+        rampObj.transform.position = (startPosition + endPosition) / 2;
+        rampObj.transform.localScale = new Vector3(holeWide * blockwide, 0.25f, rampLength);
+        rampObj.transform.rotation = rampRotation;
+        if (m_Material_floor)
+            rampObj.GetComponent<MeshRenderer>().material = m_Material_floor;
+
+        DrawSteppedEmbankment(rampObj,true);
+    }
+
+
+    /// <summary>
+    /// Creates a stepped embankment under the ramp surface, layer by layer.
+    /// </summary>
+    private void DrawSteppedEmbankment(GameObject rampSurface, bool rampX)
+    {
+        if (SideSlopeAngle <= 0 || SideSlopeAngle >= 90) return;
+
+        // Get initial metrics from the top ramp surface
+        CalculateMetricsAtRow(DrawRow, out float startHeight, out _);        
+        float currentYPosition = startHeight;
+        float currentWidth = rampSurface.transform.localScale.x;
+        if (!rampX)
+            currentWidth = rampSurface.transform.localScale.z;
+
+        if (rampMethod == RampMethodType.Straight)
+        {
+            CalculateEmbankmentVolume();
+            Debug.Log($"Volumen del Terraplén Calculado: {EmbankmentVolume:N2} m³");
+            Debug.Log($"% Volumen del Terraplén Calculado sobre el total de la pirámide : {EmbankmentVolume * 100 / PyramidVolume:N2} %");
+        }
+        
+        // Create a parent for the embankment layers to keep the hierarchy clean.
+        // It shares the same orientation as the ramp surface.
+        GameObject embankmentParent = new GameObject("StraightRamp_Embankment");
+        if (objParent != null) embankmentParent.transform.SetParent(objParent.transform);
+        embankmentParent.transform.position = rampSurface.transform.position;
+        embankmentParent.transform.rotation = rampSurface.transform.rotation;
+
+        // Loop from the course just below the ramp's start down to the ground (row 0)
+        for (int row = DrawRow - 1; row >= 0; row--)
+        {
+            float courseHeight = GetBlockHeightForRow(row);
+            if (courseHeight <= 0) continue;
+
+            // Calculate how much wider this new layer should be on each side
+            float stepExpansion = courseHeight / Mathf.Tan(SideSlopeAngle * Mathf.Deg2Rad);
+            float newWidth = currentWidth + (2 * stepExpansion);
+
+            // Create the new layer as a simple cube
+            GameObject layer = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            layer.name = $"Embankment_Layer_{row}";
+            layer.isStatic = true;
+            layer.transform.SetParent(embankmentParent.transform, false); // Set parent without changing world position yet
+            if (m_Material_adobe)
+                layer.GetComponent<MeshRenderer>().material = m_Material_adobe;
+            else
+                if (m_Material)
+                    layer.GetComponent<MeshRenderer>().material = m_Material;
+
+            // Set its scale in its local space
+            if (rampX)
+                layer.transform.localScale = new Vector3(newWidth, courseHeight, rampSurface.transform.localScale.z);
+            else
+                layer.transform.localScale = new Vector3(rampSurface.transform.localScale.x, courseHeight, newWidth);
+
+            // Position it relative to the embankment parent.
+            // The center of this new layer must be aligned under the main ramp's center.
+            float middleOfCurrentLayerY = currentYPosition - (courseHeight / 2);
+            float downwardOffset = startHeight - middleOfCurrentLayerY;
+            layer.transform.localPosition = new Vector3(0, -downwardOffset, 0);
+
+            // Update variables for the next iteration
+            currentWidth = newWidth;
+            currentYPosition -= courseHeight;            
+        }
+    }
+
+    /// <summary>
+    /// Calculates the total height and horizontal setback at a specific row number.
+    /// </summary>
+    private void CalculateMetricsAtRow(int row, out float totalHeight, out float totalSetback)
+    {
+        totalHeight = 0f;
+        totalSetback = 0f;
+        float pyramidInclinationRad = PyramidInclination * Mathf.Deg2Rad;
+        if (Mathf.Tan(pyramidInclinationRad) == 0) return;
+
+        for (int i = 0; i <= row; i++)
+        {
+            float courseHeight = GetBlockHeightForRow(i);
+            totalHeight += courseHeight;
+            totalSetback += courseHeight / Mathf.Tan(pyramidInclinationRad);
+        }
+    }
+
+    /// <summary>
+    /// Calculate the entry point on the pyramid terrace for the straight ramp at a given height.
+    /// </summary>
+    /// <param name="currentHeight">La altura actual de la hilada que se está construyendo.</param>
+    /// <returns>La coordenada 3D del punto de entrada en la terraza.</returns>
+    public Vector3 GetStraightRampTerraceEntryPoint(float currentHeight)
+    {
+        // 1. Calculate the horizontal setback at the current height.
+        float pyramidInclinationRad = PyramidInclination * Mathf.Deg2Rad;
+        if (Mathf.Tan(pyramidInclinationRad) == 0) return new Vector3(0, currentHeight, 0);
+        float setback = currentHeight / Mathf.Tan(pyramidInclinationRad);
+
+        // 2. Calculate the position of the edge of the terrace.
+        float faceOffset = (BaseSize / 2) - setback;
+        Vector3 entryPoint = Vector3.zero;
+
+        // 3. Determine the coordinate of the entry point based on the selected face.
+        switch (StraightRampFace)
+        {
+            case CameraPositionFace.NorthFace:
+                entryPoint = new Vector3(0, currentHeight, faceOffset);
+                break;
+            case CameraPositionFace.SouthFace:
+                entryPoint = new Vector3(0, currentHeight, -faceOffset);
+                break;
+            case CameraPositionFace.EastFace:
+                entryPoint = new Vector3(faceOffset, currentHeight, 0);
+                break;
+            case CameraPositionFace.WestFace:
+                entryPoint = new Vector3(-faceOffset, currentHeight, 0);
+                break;
+        }
+
+        return entryPoint;
+    }
+
+    /// <summary>
+    /// Calculate the total volume of the entire pyramid.
+    /// </summary>
+    private void CalculateTotalVolume()
+    {
+        if (BaseSize <= 0 || Height <= 0)
+        {
+            PyramidVolume = 0;
+            return;
+        }
+
+        // Formula for the volume of a square-based pyramid: (1/3) * side² * height
+        PyramidVolume = (BaseSize * BaseSize * Height) / 3f;
+        Debug.Log($"Total Pyramid Volume of the Calculated Pyramid: {PyramidVolume:N2} m³");
+    }
+
+    /// <summary>
+    /// Calculate the volume of the pyramid up to a specific course (a truncated pyramid).
+    /// </summary>
+    private void CalculateVolumeUntilRow(int targetRow)
+    {
+        if (targetRow <= 0)
+        {
+            PyramidVolume = 0;
+            return;
+        }
+
+        // 1. Calculate the height of the truncated pyramid (the frustum).
+        CalculateMetricsAtRow(targetRow, out float frustumHeight, out _);
+
+        // Asegurarse de que la altura no exceda la altura total.
+        frustumHeight = Mathf.Min(frustumHeight, Height);
+
+        if (Height <= 0)
+        {
+            PyramidVolume = 0;
+            return;
+        }
+
+        // 2. Calculate the size of the upper base of the frustum using similarity of triangles.
+        float heightOfCutOffPyramid = Height - frustumHeight;
+        float topBaseSize = (heightOfCutOffPyramid * BaseSize) / Height;
+
+        // 3. Calculate the volume of the complete pyramid..
+        float volumeFullPyramid = (BaseSize * BaseSize * Height) / 3f;
+
+        // 4. Calculate the volume of the small pyramid that is "cut" from the top.
+        float volumeCutOffPyramid = (topBaseSize * topBaseSize * heightOfCutOffPyramid) / 3f;
+
+        // 5. The volume of the frustum is the difference.
+        PyramidVolume = volumeFullPyramid - volumeCutOffPyramid;
+
+        Debug.Log($"Pyramid volume calculated up to the row {targetRow} (Height: {frustumHeight:F2}m): {PyramidVolume:N2} m³");
+    }
+
+    /// <summary>
+    /// Calculate the volume of the straight ramp embankment using the integral formula.
+    /// </summary>
+    /// <summary>
+    /// Calculates the gross and clipped volume of the straight ramp embankment using the integral formula.
+    /// </summary>
+    private void CalculateEmbankmentVolume()
+    {
+        float ClippedEmbankmentVolume = 0;
+        float IntrudingVolumePercentage = 0;
+        if (RampInclination <= 0 || SideSlopeAngle <= 0 || SideSlopeAngle >= 90)
+        {
+            EmbankmentVolume = 0;            
+            return;
+        }
+
+        // 1. Get necessary parameters
+        CalculateMetricsAtRow(DrawRow, out float h, out _); // h = Ramp start height
+        float w = holeWide * blockwide;                     // w = Ramp useful width
+        float theta = RampInclination * Mathf.Deg2Rad;      // θ = Ramp angle in radians
+        float alpha = SideSlopeAngle * Mathf.Deg2Rad;       // α = Side slope angle in radians
+
+        if (h <= 0 || Mathf.Sin(theta) == 0)
+        {
+            EmbankmentVolume = 0;
+            ClippedEmbankmentVolume = 0;
+            IntrudingVolumePercentage = 0;
+            return;
+        }
+
+        // 2. Calculate intermediate values from the integral formula
+        float L = h / Mathf.Sin(theta);             // L = Ramp length
+        float sin_theta = Mathf.Sin(theta);
+        float cot_alpha = 1f / Mathf.Tan(alpha);
+
+        // 3. Apply the integral formula to get the gross volume (V_free)
+        // V_free = (w*sin(θ)/2)*L² + (cot(α)*sin²(θ)/3)*L³
+        float term1 = (w * sin_theta / 2f) * (L * L);
+        float term2 = (cot_alpha * (sin_theta * sin_theta) / 3f) * (L * L * L);
+        EmbankmentVolume = term1 + term2;
+
+        // 4. Calculate the percentage of the volume that intrudes into the pyramid (p_inside)
+        float denominator = 2f + (3f * w) / (h * cot_alpha);
+        if (denominator == 0)
+        {
+            IntrudingVolumePercentage = 0;
+            ClippedEmbankmentVolume = EmbankmentVolume;
+            return;
+        }
+        IntrudingVolumePercentage = 1f / denominator;
+
+        // 5. Calculate the final clipped volume (V_clip)
+        ClippedEmbankmentVolume = (1f - IntrudingVolumePercentage) * EmbankmentVolume;        
+
+        Debug.Log($"Gross Embankment Volume (V_free): {EmbankmentVolume:N2} m³, Intrusion: {IntrudingVolumePercentage:P2}, Net Clipped Volume (V_clip): {ClippedEmbankmentVolume:N2} m³");
+
+        EmbankmentVolume = EmbankmentVolume - ClippedEmbankmentVolume;
+
+        //Debug.Log($"Embankment Volume (V_free-V_clip): {EmbankmentVolume:N2} m³");
+    }
+
+
+    /// <summary>
+    /// Helper function to get the top 4 corners of the ramp surface in world coordinates.
+    /// </summary>
+    private Vector3[] GetWorldCorners(GameObject obj)
+    {
+        Vector3[] corners = new Vector3[4];
+        Transform t = obj.transform;
+        float width = t.localScale.x / 2f;
+        float depth = t.localScale.z / 2f;
+        float height = t.localScale.y / 2f;
+
+        corners[0] = t.TransformPoint(new Vector3(-width, height, depth)); // Top-Far-Left
+        corners[1] = t.TransformPoint(new Vector3(width, height, depth));  // Top-Far-Right
+        corners[2] = t.TransformPoint(new Vector3(width, height, -depth)); // Top-Near-Right
+        corners[3] = t.TransformPoint(new Vector3(-width, height, -depth));// Top-Near-Left
+
+        return corners;
+    }
+
+
+    /// <summary>
+    /// Gets the block height for a specific row.
+    /// Uses the Khufu list if enabled and the row is within bounds, otherwise returns the default height.
+    /// </summary>
+    /// <param name="rowNumber">The absolute row number, starting from 0 at the base.</param>
+    /// <returns>The height of the block for that row.</returns>
+    private float GetBlockHeightForRow(int rowNumber)
+    {
+        if (useKhufuCourseHeights && rowNumber >= 0 && rowNumber < khufuCourseHeights.Count)
+        {
+            return khufuCourseHeights[rowNumber];
+        }
+        // Fallback to the default block height if the option is disabled or the row is out of bounds.
+        return this.blockheight;
+    }
+
+    /// <summary>
+    /// Sets the transparency for all GameObjects with the "Block" tag under the main parent.
+    /// </summary>
+    /// <param name="alpha">The transparency level, from 0 (invisible) to 1 (opaque).</param>
+    public void SetPyramidTransparency(float alpha)
+    {
+        float pyramidTransparency = Mathf.Clamp01(alpha); // Ensure value is between 0 and 1
+
+        if (objParent == null) return;
+        if (m_Material == null)
+        {
+            Debug.LogError("Transparent Block Material is not assigned in the Inspector.");
+            return;
+        }
+
+        // Get all renderers in the children of the parent object
+        Renderer[] renderers = objParent.GetComponentsInChildren<Renderer>();
+
+        foreach (Renderer renderer in renderers)
+        {
+            // Only affect objects tagged as "Block"
+            if (renderer.gameObject.CompareTag("Block"))
+            {
+                renderer.material = m_Material;
+                Color color = renderer.material.color;
+                color.a = pyramidTransparency;
+                renderer.material.color = color;                
+            }
+        }
     }
 }

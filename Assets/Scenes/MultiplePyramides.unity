@@ -149,6 +149,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8f3bc670555baa4b820cbe4a3fb17e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rampMethod: 3
   selectedPyramid: 3
   BaseSize: 108.5
   Height: 65.5
@@ -161,6 +162,11 @@ MonoBehaviour:
   holeHeight: 5
   holeWide: 3
   blockSeparation: 0
+  setback: 0
+  SideSlopeAngle: 30
+  spiralRampSeparation: 2
+  internalRampStraightRampHigh: 40
+  pyramidTransparency: 0.25
   numberOfBlocks: 0
   numberOfBlocksDrawn: 0
   maxBlocks: 0
@@ -173,11 +179,14 @@ MonoBehaviour:
   totalForceRamp: 0
   totalLength: 0
   totalLengthRamp: 0
+  PyramidVolume: 0
+  EmbankmentVolume: 0
   m_Material: {fileID: 2100000, guid: 8c57f0c93bcdf45419ad1c37ef578135, type: 2}
   m_Material_corner: {fileID: 2100000, guid: ccc151909cb3b6144a2156cc5792c0b9, type: 2}
   m_Material_wood: {fileID: 2100000, guid: 1ec7a28ff55f44a4a87a704aee7ecc7c, type: 2}
   m_Material_Blank: {fileID: 2100000, guid: de885c4d9c3da57479a5a2fee3cac56c, type: 2}
   m_Material_floor: {fileID: 0}
+  m_Material_adobe: {fileID: 0}
   cam: {fileID: 0}
   Palm: {fileID: 0}
   Dromader: {fileID: 0}
@@ -205,15 +214,16 @@ MonoBehaviour:
   showEiffel: 0
   showMan: 0
   showManFinalRamp: 0
+  Method2Ramp: 0
   Method4Ramp: 1
   MethodInsideRamp: 0
   Method8Ramp: 0
   Method16Ramp: 0
   DrawUntilRow: 0
   DrawOnlyRow: 0
-  DrawCover: 1
+  DrawCasing: 0
   DrawRow: 50
-  DrawBlocks: 1
+  DrawBlocks: 2
   DeletedBlocks: 0
   DrawWall: 0
   DrawFloor: 0
@@ -223,6 +233,15 @@ MonoBehaviour:
   DrawAll: 0
   showRamps: 0
   halfPyramid: 0
+  DrawPyramidInterior: 0
+  DrawPyramidInteriorTransparent: 1
+  PyramidInterior: {fileID: 0}
+  Decomisioning: 0
+  AnimateDecommissioning: 0
+  DecommissioningTimeLapse: 0.1
+  DecommissioningStep: 0.05
+  DetectedDeletedBlocks: []
+  StraightRampFace: 1
   csvitername: pyramid_iter.csv
   csvrowname: pyramid_row.csv
   csvheadway: pyramid_headway.csv
@@ -256,11 +275,15 @@ MonoBehaviour:
   PyramidHeadwayType: 0
   Sequenced: 0
   ShowGUI: 0
-  notchC1: {fileID: 0}
-  notchC2: {fileID: 0}
+  notchN1: {fileID: 0}
+  notchN2: {fileID: 0}
   notchN3: {fileID: 0}
+  CavityC1: {fileID: 0}
+  CavityC2: {fileID: 0}
   ShowKhufuNotchs: 0
   cameraPositionFace: 1
+  progressBar: {fileID: 0}
+  useKhufuCourseHeights: 0
 --- !u!4 &86731661
 Transform:
   m_ObjectHideFlags: 0
@@ -321,6 +344,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8f3bc670555baa4b820cbe4a3fb17e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rampMethod: 3
   selectedPyramid: 1
   BaseSize: 230.36
   Height: 146.5
@@ -333,6 +357,11 @@ MonoBehaviour:
   holeHeight: 5
   holeWide: 3
   blockSeparation: 0
+  setback: 0
+  SideSlopeAngle: 30
+  spiralRampSeparation: 2
+  internalRampStraightRampHigh: 40
+  pyramidTransparency: 0.25
   numberOfBlocks: 0
   numberOfBlocksDrawn: 0
   maxBlocks: 0
@@ -345,11 +374,14 @@ MonoBehaviour:
   totalForceRamp: 0
   totalLength: 0
   totalLengthRamp: 0
+  PyramidVolume: 0
+  EmbankmentVolume: 0
   m_Material: {fileID: 2100000, guid: 8c57f0c93bcdf45419ad1c37ef578135, type: 2}
   m_Material_corner: {fileID: 2100000, guid: ccc151909cb3b6144a2156cc5792c0b9, type: 2}
   m_Material_wood: {fileID: 2100000, guid: 1ec7a28ff55f44a4a87a704aee7ecc7c, type: 2}
   m_Material_Blank: {fileID: 2100000, guid: 7c962ba6101e8614a81609559aafa9b2, type: 2}
   m_Material_floor: {fileID: 0}
+  m_Material_adobe: {fileID: 0}
   cam: {fileID: 0}
   Palm: {fileID: 0}
   Dromader: {fileID: 0}
@@ -377,15 +409,16 @@ MonoBehaviour:
   showEiffel: 0
   showMan: 0
   showManFinalRamp: 0
+  Method2Ramp: 0
   Method4Ramp: 1
   MethodInsideRamp: 0
   Method8Ramp: 0
   Method16Ramp: 0
   DrawUntilRow: 0
   DrawOnlyRow: 0
-  DrawCover: 1
+  DrawCasing: 0
   DrawRow: 50
-  DrawBlocks: 1
+  DrawBlocks: 2
   DeletedBlocks: 0
   DrawWall: 0
   DrawFloor: 0
@@ -395,6 +428,15 @@ MonoBehaviour:
   DrawAll: 0
   showRamps: 0
   halfPyramid: 0
+  DrawPyramidInterior: 0
+  DrawPyramidInteriorTransparent: 1
+  PyramidInterior: {fileID: 0}
+  Decomisioning: 0
+  AnimateDecommissioning: 0
+  DecommissioningTimeLapse: 0.1
+  DecommissioningStep: 0.05
+  DetectedDeletedBlocks: []
+  StraightRampFace: 1
   csvitername: pyramid_iter.csv
   csvrowname: pyramid_row.csv
   csvheadway: pyramid_headway.csv
@@ -428,11 +470,15 @@ MonoBehaviour:
   PyramidHeadwayType: 0
   Sequenced: 0
   ShowGUI: 0
-  notchC1: {fileID: 0}
-  notchC2: {fileID: 0}
+  notchN1: {fileID: 0}
+  notchN2: {fileID: 0}
   notchN3: {fileID: 0}
+  CavityC1: {fileID: 0}
+  CavityC2: {fileID: 0}
   ShowKhufuNotchs: 0
   cameraPositionFace: 1
+  progressBar: {fileID: 0}
+  useKhufuCourseHeights: 0
 --- !u!114 &350862445
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -475,6 +521,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8f3bc670555baa4b820cbe4a3fb17e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rampMethod: 3
   selectedPyramid: 6
   BaseSize: 220
   Height: 104.4
@@ -487,6 +534,11 @@ MonoBehaviour:
   holeHeight: 5
   holeWide: 3
   blockSeparation: 0
+  setback: 0
+  SideSlopeAngle: 30
+  spiralRampSeparation: 2
+  internalRampStraightRampHigh: 40
+  pyramidTransparency: 0.25
   numberOfBlocks: 0
   numberOfBlocksDrawn: 0
   maxBlocks: 0
@@ -499,11 +551,14 @@ MonoBehaviour:
   totalForceRamp: 0
   totalLength: 0
   totalLengthRamp: 0
+  PyramidVolume: 0
+  EmbankmentVolume: 0
   m_Material: {fileID: 2100000, guid: 8c57f0c93bcdf45419ad1c37ef578135, type: 2}
   m_Material_corner: {fileID: 2100000, guid: ccc151909cb3b6144a2156cc5792c0b9, type: 2}
   m_Material_wood: {fileID: 2100000, guid: 1ec7a28ff55f44a4a87a704aee7ecc7c, type: 2}
   m_Material_Blank: {fileID: 2100000, guid: 9d893ec00e6bed542b18471e260273e2, type: 2}
   m_Material_floor: {fileID: 0}
+  m_Material_adobe: {fileID: 0}
   cam: {fileID: 0}
   Palm: {fileID: 0}
   Dromader: {fileID: 0}
@@ -531,15 +586,16 @@ MonoBehaviour:
   showEiffel: 0
   showMan: 0
   showManFinalRamp: 0
+  Method2Ramp: 0
   Method4Ramp: 1
   MethodInsideRamp: 0
   Method8Ramp: 0
   Method16Ramp: 0
   DrawUntilRow: 0
   DrawOnlyRow: 0
-  DrawCover: 1
+  DrawCasing: 0
   DrawRow: 50
-  DrawBlocks: 1
+  DrawBlocks: 2
   DeletedBlocks: 0
   DrawWall: 0
   DrawFloor: 0
@@ -549,6 +605,15 @@ MonoBehaviour:
   DrawAll: 0
   showRamps: 0
   halfPyramid: 0
+  DrawPyramidInterior: 0
+  DrawPyramidInteriorTransparent: 1
+  PyramidInterior: {fileID: 0}
+  Decomisioning: 0
+  AnimateDecommissioning: 0
+  DecommissioningTimeLapse: 0.1
+  DecommissioningStep: 0.05
+  DetectedDeletedBlocks: []
+  StraightRampFace: 1
   csvitername: pyramid_iter.csv
   csvrowname: pyramid_row.csv
   csvheadway: pyramid_headway.csv
@@ -582,11 +647,15 @@ MonoBehaviour:
   PyramidHeadwayType: 0
   Sequenced: 0
   ShowGUI: 0
-  notchC1: {fileID: 0}
-  notchC2: {fileID: 0}
+  notchN1: {fileID: 0}
+  notchN2: {fileID: 0}
   notchN3: {fileID: 0}
+  CavityC1: {fileID: 0}
+  CavityC2: {fileID: 0}
   ShowKhufuNotchs: 0
   cameraPositionFace: 1
+  progressBar: {fileID: 0}
+  useKhufuCourseHeights: 0
 --- !u!4 &407677652
 Transform:
   m_ObjectHideFlags: 0
@@ -631,6 +700,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8f3bc670555baa4b820cbe4a3fb17e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rampMethod: 3
   selectedPyramid: 2
   BaseSize: 215.25
   Height: 143.5
@@ -643,6 +713,11 @@ MonoBehaviour:
   holeHeight: 5
   holeWide: 3
   blockSeparation: 0
+  setback: 0
+  SideSlopeAngle: 30
+  spiralRampSeparation: 2
+  internalRampStraightRampHigh: 40
+  pyramidTransparency: 0.25
   numberOfBlocks: 0
   numberOfBlocksDrawn: 0
   maxBlocks: 0
@@ -655,11 +730,14 @@ MonoBehaviour:
   totalForceRamp: 0
   totalLength: 0
   totalLengthRamp: 0
+  PyramidVolume: 0
+  EmbankmentVolume: 0
   m_Material: {fileID: 2100000, guid: 8c57f0c93bcdf45419ad1c37ef578135, type: 2}
   m_Material_corner: {fileID: 2100000, guid: ccc151909cb3b6144a2156cc5792c0b9, type: 2}
   m_Material_wood: {fileID: 2100000, guid: 1ec7a28ff55f44a4a87a704aee7ecc7c, type: 2}
   m_Material_Blank: {fileID: 2100000, guid: 7c962ba6101e8614a81609559aafa9b2, type: 2}
   m_Material_floor: {fileID: 0}
+  m_Material_adobe: {fileID: 0}
   cam: {fileID: 0}
   Palm: {fileID: 0}
   Dromader: {fileID: 0}
@@ -687,15 +765,16 @@ MonoBehaviour:
   showEiffel: 0
   showMan: 0
   showManFinalRamp: 0
+  Method2Ramp: 0
   Method4Ramp: 1
   MethodInsideRamp: 0
   Method8Ramp: 0
   Method16Ramp: 0
   DrawUntilRow: 0
   DrawOnlyRow: 0
-  DrawCover: 1
+  DrawCasing: 0
   DrawRow: 50
-  DrawBlocks: 1
+  DrawBlocks: 2
   DeletedBlocks: 0
   DrawWall: 0
   DrawFloor: 0
@@ -705,6 +784,15 @@ MonoBehaviour:
   DrawAll: 0
   showRamps: 0
   halfPyramid: 0
+  DrawPyramidInterior: 0
+  DrawPyramidInteriorTransparent: 1
+  PyramidInterior: {fileID: 0}
+  Decomisioning: 0
+  AnimateDecommissioning: 0
+  DecommissioningTimeLapse: 0.1
+  DecommissioningStep: 0.05
+  DetectedDeletedBlocks: []
+  StraightRampFace: 1
   csvitername: pyramid_iter.csv
   csvrowname: pyramid_row.csv
   csvheadway: pyramid_headway.csv
@@ -738,11 +826,15 @@ MonoBehaviour:
   PyramidHeadwayType: 0
   Sequenced: 0
   ShowGUI: 0
-  notchC1: {fileID: 0}
-  notchC2: {fileID: 0}
+  notchN1: {fileID: 0}
+  notchN2: {fileID: 0}
   notchN3: {fileID: 0}
+  CavityC1: {fileID: 0}
+  CavityC2: {fileID: 0}
   ShowKhufuNotchs: 0
   cameraPositionFace: 1
+  progressBar: {fileID: 0}
+  useKhufuCourseHeights: 0
 --- !u!4 &492941990
 Transform:
   m_ObjectHideFlags: 0
@@ -787,6 +879,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8f3bc670555baa4b820cbe4a3fb17e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rampMethod: 3
   selectedPyramid: 5
   BaseSize: 124.5
   Height: 58
@@ -799,6 +892,11 @@ MonoBehaviour:
   holeHeight: 5
   holeWide: 3
   blockSeparation: 0
+  setback: 0
+  SideSlopeAngle: 30
+  spiralRampSeparation: 2
+  internalRampStraightRampHigh: 40
+  pyramidTransparency: 0.25
   numberOfBlocks: 0
   numberOfBlocksDrawn: 0
   maxBlocks: 0
@@ -811,11 +909,14 @@ MonoBehaviour:
   totalForceRamp: 0
   totalLength: 0
   totalLengthRamp: 0
+  PyramidVolume: 0
+  EmbankmentVolume: 0
   m_Material: {fileID: 2100000, guid: 8c57f0c93bcdf45419ad1c37ef578135, type: 2}
   m_Material_corner: {fileID: 2100000, guid: ccc151909cb3b6144a2156cc5792c0b9, type: 2}
   m_Material_wood: {fileID: 2100000, guid: 1ec7a28ff55f44a4a87a704aee7ecc7c, type: 2}
   m_Material_Blank: {fileID: 2100000, guid: 7c962ba6101e8614a81609559aafa9b2, type: 2}
   m_Material_floor: {fileID: 0}
+  m_Material_adobe: {fileID: 0}
   cam: {fileID: 0}
   Palm: {fileID: 0}
   Dromader: {fileID: 0}
@@ -843,15 +944,16 @@ MonoBehaviour:
   showEiffel: 0
   showMan: 0
   showManFinalRamp: 0
+  Method2Ramp: 0
   Method4Ramp: 1
   MethodInsideRamp: 0
   Method8Ramp: 0
   Method16Ramp: 0
   DrawUntilRow: 0
   DrawOnlyRow: 0
-  DrawCover: 1
+  DrawCasing: 0
   DrawRow: 50
-  DrawBlocks: 1
+  DrawBlocks: 2
   DeletedBlocks: 0
   DrawWall: 0
   DrawFloor: 0
@@ -861,6 +963,15 @@ MonoBehaviour:
   DrawAll: 0
   showRamps: 0
   halfPyramid: 0
+  DrawPyramidInterior: 0
+  DrawPyramidInteriorTransparent: 1
+  PyramidInterior: {fileID: 0}
+  Decomisioning: 0
+  AnimateDecommissioning: 0
+  DecommissioningTimeLapse: 0.1
+  DecommissioningStep: 0.05
+  DetectedDeletedBlocks: []
+  StraightRampFace: 1
   csvitername: pyramid_iter.csv
   csvrowname: pyramid_row.csv
   csvheadway: pyramid_headway.csv
@@ -894,11 +1005,15 @@ MonoBehaviour:
   PyramidHeadwayType: 0
   Sequenced: 0
   ShowGUI: 0
-  notchC1: {fileID: 0}
-  notchC2: {fileID: 0}
+  notchN1: {fileID: 0}
+  notchN2: {fileID: 0}
   notchN3: {fileID: 0}
+  CavityC1: {fileID: 0}
+  CavityC2: {fileID: 0}
   ShowKhufuNotchs: 0
   cameraPositionFace: 1
+  progressBar: {fileID: 0}
+  useKhufuCourseHeights: 0
 --- !u!4 &532695885
 Transform:
   m_ObjectHideFlags: 0
@@ -1417,6 +1532,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8f3bc670555baa4b820cbe4a3fb17e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rampMethod: 3
   selectedPyramid: 4
   BaseSize: 188
   Height: 47
@@ -1429,6 +1545,11 @@ MonoBehaviour:
   holeHeight: 5
   holeWide: 3
   blockSeparation: 0
+  setback: 0
+  SideSlopeAngle: 30
+  spiralRampSeparation: 2
+  internalRampStraightRampHigh: 40
+  pyramidTransparency: 0.25
   numberOfBlocks: 0
   numberOfBlocksDrawn: 0
   maxBlocks: 0
@@ -1441,11 +1562,14 @@ MonoBehaviour:
   totalForceRamp: 0
   totalLength: 0
   totalLengthRamp: 0
+  PyramidVolume: 0
+  EmbankmentVolume: 0
   m_Material: {fileID: 2100000, guid: 8c57f0c93bcdf45419ad1c37ef578135, type: 2}
   m_Material_corner: {fileID: 2100000, guid: ccc151909cb3b6144a2156cc5792c0b9, type: 2}
   m_Material_wood: {fileID: 2100000, guid: 1ec7a28ff55f44a4a87a704aee7ecc7c, type: 2}
   m_Material_Blank: {fileID: 2100000, guid: 7c962ba6101e8614a81609559aafa9b2, type: 2}
   m_Material_floor: {fileID: 0}
+  m_Material_adobe: {fileID: 0}
   cam: {fileID: 0}
   Palm: {fileID: 0}
   Dromader: {fileID: 0}
@@ -1473,15 +1597,16 @@ MonoBehaviour:
   showEiffel: 0
   showMan: 0
   showManFinalRamp: 0
+  Method2Ramp: 0
   Method4Ramp: 1
   MethodInsideRamp: 0
   Method8Ramp: 0
   Method16Ramp: 0
-  DrawUntilRow: 0
+  DrawUntilRow: 1
   DrawOnlyRow: 0
-  DrawCover: 1
-  DrawRow: 50
-  DrawBlocks: 1
+  DrawCasing: 0
+  DrawRow: 71
+  DrawBlocks: 2
   DeletedBlocks: 0
   DrawWall: 0
   DrawFloor: 0
@@ -1491,6 +1616,15 @@ MonoBehaviour:
   DrawAll: 0
   showRamps: 0
   halfPyramid: 0
+  DrawPyramidInterior: 0
+  DrawPyramidInteriorTransparent: 1
+  PyramidInterior: {fileID: 0}
+  Decomisioning: 0
+  AnimateDecommissioning: 0
+  DecommissioningTimeLapse: 0.1
+  DecommissioningStep: 0.05
+  DetectedDeletedBlocks: []
+  StraightRampFace: 1
   csvitername: pyramid_iter.csv
   csvrowname: pyramid_row.csv
   csvheadway: pyramid_headway.csv
@@ -1524,11 +1658,15 @@ MonoBehaviour:
   PyramidHeadwayType: 0
   Sequenced: 0
   ShowGUI: 0
-  notchC1: {fileID: 0}
-  notchC2: {fileID: 0}
+  notchN1: {fileID: 0}
+  notchN2: {fileID: 0}
   notchN3: {fileID: 0}
+  CavityC1: {fileID: 0}
+  CavityC2: {fileID: 0}
   ShowKhufuNotchs: 0
   cameraPositionFace: 1
+  progressBar: {fileID: 0}
+  useKhufuCourseHeights: 0
 --- !u!4 &2055568746
 Transform:
   m_ObjectHideFlags: 0

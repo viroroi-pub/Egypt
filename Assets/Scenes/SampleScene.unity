@@ -135,7 +135,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &21606778
 Transform:
   m_ObjectHideFlags: 0
@@ -395,11 +395,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8f3bc670555baa4b820cbe4a3fb17e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rampMethod: 3
   selectedPyramid: 1
   BaseSize: 230.36
   Height: 146.5
   PyramidInclination: 51.85
-  RampInclination: 7.7
+  RampInclination: 7.5
   blockheight: 0.71
   blockwide: 1.27
   PathWide: 0
@@ -408,6 +409,10 @@ MonoBehaviour:
   holeWide: 3
   blockSeparation: 0
   setback: 0
+  SideSlopeAngle: 60
+  spiralRampSeparation: 5
+  internalRampStraightRampHigh: 40
+  pyramidTransparency: 0.25
   numberOfBlocks: 0
   numberOfBlocksDrawn: 0
   maxBlocks: 0
@@ -420,11 +425,14 @@ MonoBehaviour:
   totalForceRamp: 0
   totalLength: 0
   totalLengthRamp: 0
+  PyramidVolume: 0
+  EmbankmentVolume: 0
   m_Material: {fileID: 2100000, guid: 8c57f0c93bcdf45419ad1c37ef578135, type: 2}
   m_Material_corner: {fileID: 2100000, guid: ccc151909cb3b6144a2156cc5792c0b9, type: 2}
   m_Material_wood: {fileID: 2100000, guid: 1ec7a28ff55f44a4a87a704aee7ecc7c, type: 2}
   m_Material_Blank: {fileID: 2100000, guid: 7c962ba6101e8614a81609559aafa9b2, type: 2}
-  m_Material_floor: {fileID: 0}
+  m_Material_floor: {fileID: 2100000, guid: 7771e583028198f46b5c23521a75e8f9, type: 2}
+  m_Material_adobe: {fileID: 2100000, guid: 8c57f0c93bcdf45419ad1c37ef578135, type: 2}
   cam: {fileID: 1517730800}
   Palm: {fileID: 0}
   Dromader: {fileID: 0}
@@ -459,7 +467,7 @@ MonoBehaviour:
   Method16Ramp: 1
   DrawUntilRow: 0
   DrawOnlyRow: 0
-  DrawCover: 1
+  DrawCasing: 1
   DrawRow: 40
   DrawBlocks: 5
   DeletedBlocks: 0
@@ -474,6 +482,12 @@ MonoBehaviour:
   DrawPyramidInterior: 0
   DrawPyramidInteriorTransparent: 1
   PyramidInterior: {fileID: 0}
+  Decomisioning: 0
+  AnimateDecommissioning: 0
+  DecommissioningTimeLapse: 0.1
+  DecommissioningStep: 0.05
+  DetectedDeletedBlocks: []
+  StraightRampFace: 1
   csvitername: pyramid_iter.csv
   csvrowname: pyramid_row.csv
   csvheadway: pyramid_headway.csv
@@ -512,9 +526,10 @@ MonoBehaviour:
   notchN3: {fileID: 1172789008}
   CavityC1: {fileID: 416110599}
   CavityC2: {fileID: 470315469}
-  ShowKhufuNotchs: 1
+  ShowKhufuNotchs: 0
   cameraPositionFace: 4
   progressBar: {fileID: 1793016753}
+  useKhufuCourseHeights: 0
 --- !u!114 &350862445
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -543,7 +558,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &416110600
 Transform:
   m_ObjectHideFlags: 0
@@ -575,7 +590,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &470315470
 Transform:
   m_ObjectHideFlags: 0
@@ -2226,7 +2241,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1172789009
 Transform:
   m_ObjectHideFlags: 0
@@ -2361,6 +2376,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8f3bc670555baa4b820cbe4a3fb17e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rampMethod: 3
   selectedPyramid: 0
   BaseSize: 230
   Height: 147
@@ -2374,6 +2390,10 @@ MonoBehaviour:
   holeWide: 3
   blockSeparation: 0
   setback: 0
+  SideSlopeAngle: 30
+  spiralRampSeparation: 2
+  internalRampStraightRampHigh: 40
+  pyramidTransparency: 0.25
   numberOfBlocks: 0
   numberOfBlocksDrawn: 0
   maxBlocks: 0
@@ -2386,11 +2406,14 @@ MonoBehaviour:
   totalForceRamp: 0
   totalLength: 0
   totalLengthRamp: 0
+  PyramidVolume: 0
+  EmbankmentVolume: 0
   m_Material: {fileID: 2100000, guid: 8c57f0c93bcdf45419ad1c37ef578135, type: 2}
   m_Material_corner: {fileID: 2100000, guid: ccc151909cb3b6144a2156cc5792c0b9, type: 2}
   m_Material_wood: {fileID: 2100000, guid: 1ec7a28ff55f44a4a87a704aee7ecc7c, type: 2}
   m_Material_Blank: {fileID: 2100000, guid: 7c962ba6101e8614a81609559aafa9b2, type: 2}
   m_Material_floor: {fileID: 0}
+  m_Material_adobe: {fileID: 0}
   cam: {fileID: 1517730800}
   Palm: {fileID: 100008, guid: a8f8ac76f7fc35947894f039208a080e, type: 3}
   Dromader: {fileID: 100080, guid: 1b7a535649e398d4a80b9834a184d500, type: 3}
@@ -2425,7 +2448,7 @@ MonoBehaviour:
   Method16Ramp: 0
   DrawUntilRow: 1
   DrawOnlyRow: 0
-  DrawCover: 1
+  DrawCasing: 0
   DrawRow: 1
   DrawBlocks: 5
   DeletedBlocks: 0
@@ -2440,6 +2463,12 @@ MonoBehaviour:
   DrawPyramidInterior: 0
   DrawPyramidInteriorTransparent: 1
   PyramidInterior: {fileID: 0}
+  Decomisioning: 0
+  AnimateDecommissioning: 0
+  DecommissioningTimeLapse: 0.1
+  DecommissioningStep: 0.05
+  DetectedDeletedBlocks: []
+  StraightRampFace: 1
   csvitername: pyramid_iter.csv
   csvrowname: pyramid_row.csv
   csvheadway: pyramid_headway.csv
@@ -2481,6 +2510,7 @@ MonoBehaviour:
   ShowKhufuNotchs: 0
   cameraPositionFace: 1
   progressBar: {fileID: 0}
+  useKhufuCourseHeights: 0
 --- !u!114 &1315386617
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2527,7 +2557,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1459464937
 Transform:
   m_ObjectHideFlags: 0

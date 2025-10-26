@@ -13,7 +13,7 @@
 
 If you use this dataset or code, please cite:  
 
-> Rosell Roig, V.L. (2025). *Computational evaluation and finite-element analysis of an edge-integrated, multi-ramp model for constructing the Great Pyramid of Giza* [Data set]. Zenodo. https://doi.org/10.5281/zenodo.16732345
+> Rosell Roig, V.L. (2025). *A computational framework for evaluating an edge-integrated, multi-ramp construction model of the Great Pyramid of Giza* [Data set]. Zenodo. https://doi.org/10.5281/zenodo.16732345
 
 ---
 
@@ -248,4 +248,4 @@ pip install -r requirements.txt
 
 ## 📝 License
 
-MIT License. If you use this code in academic work, please cite the paper *“A Computationally Validated Integrated Edge‑Ramp Theory for the Construction of the Great Pyramid of Giza.”*
+MIT License. If you use this code in academic work, please cite the paper *“A computational framework for evaluating an edge-integrated, multi-ramp construction model of the Great Pyramid of Giza.”*

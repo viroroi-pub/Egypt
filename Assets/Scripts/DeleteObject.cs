@@ -8,6 +8,7 @@ public class DeleteObject : MonoBehaviour
     public GameObject CommonGameObject;
     public bool decreaseBlocks = true;
     public bool deleteObject = true;
+    public bool mainRamp = false;
 
     void OnTriggerEnter(Collider other)
     {
@@ -15,6 +16,19 @@ public class DeleteObject : MonoBehaviour
         {
             if (CommonGameObject == null)
             {
+                if (mainRamp)
+                {
+                    if (generatePyramid.lastRampMidPoint.y < other.transform.position.y)
+                    {
+                        generatePyramid.lastRampMidPoint = other.transform.position;
+                    }
+                    else
+                    if (generatePyramid.lastRampMidPoint.y == other.transform.position.y && generatePyramid.lastRampMidPoint.magnitude < other.transform.position.magnitude)
+                    {
+                        generatePyramid.lastRampMidPoint = other.transform.position;
+                    }
+                }
+
                 if (deleteObject)
                     Destroy(other.gameObject);
                 else
@@ -31,6 +45,19 @@ public class DeleteObject : MonoBehaviour
             {
                 if (FindAncestor(other.transform, CommonGameObject.transform))
                 {
+                    if (mainRamp)
+                    {
+                        if (generatePyramid.lastRampMidPoint.y < other.transform.position.y)
+                        {
+                            generatePyramid.lastRampMidPoint = other.transform.position;
+                        }
+                        else
+                        if (generatePyramid.lastRampMidPoint.y == other.transform.position.y && generatePyramid.lastRampMidPoint.magnitude < other.transform.position.magnitude)
+                        {
+                            generatePyramid.lastRampMidPoint = other.transform.position;
+                        }
+                    }
+
                     if (deleteObject)
                         Destroy(other.gameObject);
                     else

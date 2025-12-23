@@ -4,13 +4,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
-using UMA;
 using UnityEngine;
 using UnityEngine.ProBuilder.Shapes;
 using UnityEngine.Rendering;
 using UnityEngine.UIElements;
 using static UnityEngine.Rendering.DebugUI.Table;
 using static UnityEngine.UI.GridLayoutGroup;
+using System.Linq;
 
 /// <summary>
 /// Defines the type of ramp construction method to be used.
@@ -63,6 +63,17 @@ public enum CameraPositionFace
     NorthFace,
     EastFace,
     SouthFace,
+    WestFace,
+    Zenit,
+    InfrontRamp
+}
+
+// Defines the camera position face
+public enum RampPositionFace
+{
+    NorthFace,
+    EastFace,
+    SouthFace,
     WestFace
 }
 
@@ -81,6 +92,44 @@ public class GameObjectYComparer : IComparer<GameObject>
         // Use CompareTo for robust comparison and sort in descending order (highest first).
         return b.transform.position.y.CompareTo(a.transform.position.y);
     }
+}
+
+/// <summary>
+/// Data structure for storing turning points (iterations)
+/// del modelo IER.
+/// </summary>
+public struct TurningPoint
+{
+    public int Iteration; // iteration (1, 2, 3...)
+    public float Height;  // height in meters
+    public int Course;    // Course (row) number
+    public int Blocks; // Course blocks number
+
+    public TurningPoint(int iteration, float height, int course, int blocks)
+    {
+        Iteration = iteration;
+        Height = height;
+        Course = course;
+        Blocks = blocks;
+    }
+
+    public override string ToString()
+    {
+        return $"Turn {Iteration}: Height {Height:F2} m (Course {Course}, blocks {Blocks})";
+    }
+}
+
+/// <summary>
+/// Structure to return the results of the previous ramp calculation.
+// </summary>
+public struct RampTargetMetrics
+{
+    public Vector3 Position; // The central position of the ramp in the 3D world
+    public float Height; // The exact height of the ramp's ground at that point
+    public int FaceIndex; // 0=North, 1=West, 2=South, 3=East
+    public string FaceName; // Human-readable name of the face
+    public bool IsValid; // If the calculation was successful (the row exists)
+    public int Level;    // level of iteration IER
 }
 
 public class GeneratePyramid : MonoBehaviour
@@ -123,7 +172,7 @@ public class GeneratePyramid : MonoBehaviour
     /// <summary>
     /// The height of the ramp's passage in block units.
     /// </summary>
-    public int holeHeight = 3;
+    public int holeHeight = 6;
     /// <summary>
     /// The width of the ramp's passage in block units.
     /// </summary>
@@ -131,7 +180,7 @@ public class GeneratePyramid : MonoBehaviour
     /// <summary>
     /// The separation between individual blocks for visual clarity.
     /// </summary>
-    public float blockSeparation = 0.01f; // separation between blocks
+    public float blockSeparation = 0.0f; // separation between blocks
     /// <summary>
     /// Used setback for the width of the path or ramp.
     /// </summary>
@@ -210,6 +259,10 @@ public class GeneratePyramid : MonoBehaviour
     /// Embankment Volume
     /// </summary>
     public float EmbankmentVolume = 0f;
+    /// <summary>
+    /// Single ramp IER face start
+    /// </summary>
+    public RampPositionFace SingleRampFaceStart = RampPositionFace.NorthFace;
 
     // --- Materials and GameObjects ---
     /// <summary>
@@ -335,6 +388,10 @@ public class GeneratePyramid : MonoBehaviour
     /// </summary>
     public bool DrawOnlyRow = false;
     /// <summary>
+    /// If true, draws the pyramid only up to a specific iteration (turn).
+    /// </summary>
+    public bool DrawUntilTurn = false;
+    /// <summary>
     /// Toggles drawing the outer casing stones.
     /// </summary>
     public bool DrawCasing = false;
@@ -342,6 +399,10 @@ public class GeneratePyramid : MonoBehaviour
     /// The specific row to draw for DrawUntilRow or DrawOnlyRow.
     /// </summary>
     public int DrawRow = 0;
+    /// <summary>
+    /// The specific iter (turn) to draw for DrawUntilTurn or DrawOnlyTurn.
+    /// </summary>
+    public int DrawTurn = 0;
     /// <summary>
     /// The number of outer block layers to draw.
     /// </summary>
@@ -417,7 +478,7 @@ public class GeneratePyramid : MonoBehaviour
     /// <summary>
     /// Straight Ramp Face starting position
     /// </summary>
-    public CameraPositionFace StraightRampFace = CameraPositionFace.NorthFace;
+    public RampPositionFace StraightRampFace = RampPositionFace.NorthFace;
 
     // --- Logging and Export Options ---
     /// <summary>
@@ -490,13 +551,13 @@ public class GeneratePyramid : MonoBehaviour
 
     // --- Advanced Method Parameters ---
     /// <summary>
-    /// Number of granite blocks of type 1.
+    /// Number of granite blocks of type 1 < 50 tons.
     /// </summary>
-    public int numOfGraniteRock1 = 0;
+    public int numOfGraniteRock1 = 9;
     /// <summary>
-    /// Number of granite blocks of type 2.
+    /// Number of granite blocks of type 2 > 50 tons.
     /// </summary>
-    public int numOfGraniteRock2 = 0;
+    public int numOfGraniteRock2 = 42;
     /// <summary>
     /// Minimum height (in meters) to start placing granite blocks.
     /// </summary>
@@ -508,19 +569,19 @@ public class GeneratePyramid : MonoBehaviour
     /// <summary>
     /// Minimum base size to use a 2-ramp system.
     /// </summary>
-    public int minBaseSize2Ramps = 32;
+    public int minBaseSize2Ramps = 20;
     /// <summary>
     /// Minimum base size to use a 4-ramp system.
     /// </summary>
-    public int minBaseSize4Ramps = 64;
+    public int minBaseSize4Ramps = 40;
     /// <summary>
     /// Minimum base size to use an 8-ramp system.
     /// </summary>
-    public int minBaseSize8Ramps = 128;
+    public int minBaseSize8Ramps = 80;
     /// <summary>
     /// Minimum base size to use a 16-ramp system.
     /// </summary>
-    public int minBaseSize16Ramps = 200;
+    public int minBaseSize16Ramps = 160;
     /// <summary>
     /// average headway
     /// </summary>
@@ -574,22 +635,97 @@ public class GeneratePyramid : MonoBehaviour
     /// </summary>
     public Boolean ShowKhufuNotchs = false;
     /// <summary>
-    /// Show GUI 
+    /// display game object on finish
+    /// </summary>
+    public GameObject DisplayGameObjectOnFinish;
+    /// <summary>
+    /// Camera position face
     /// </summary>
     public CameraPositionFace cameraPositionFace = CameraPositionFace.NorthFace;
     /// <summary>
-    /// Progress Bar UI
+    /// Orbit camera on finish 
+    /// </summary>
+    public bool OrbitCameraOnFinish = false;
+    /// <summary>
+    /// Speed of orbit camera on finish
+    /// </summary>
+    public float OrbitSpeed = 10.0f;
+    /// <summary>
+    /// Camera orbit distance factor
+    /// </summary>
+    public float camOrbitDistanceFactor = 1.5f;
+    /// <summary>
+    /// Camera orbit heigh offset factor
+    /// </summary>
+    public float camOrbitHeightOffsetFactor = 0.6f;
+    /// <summary>
+    /// Progress bar UI
     /// </summary>
     public ProgressBarUI progressBar;
+    /// <summary>
+    /// Point in the middle of the ramp in the lastest iteration
+    /// </summary>
+    public Vector3 lastRampMidPoint = Vector3.zero;
     /// <summary>
     /// use blocks course thickness
     /// </summary>
     public bool useKhufuCourseHeights = false;
+    /// <summary>
+    /// Granite Megaliths project
+    /// </summary>
+    // --- NEW GRANITE PROJECT VARIABLES ---
+    [Header("Granite Megalith Project")]
+    [Tooltip("Toggle to enable logging for the megalith calculations.")]
+    public bool showInfoGranite = false;
+    [Tooltip("Number of 10-ton granite megalith blocks.")]
+    public int numberOfGranite10tons = 6;
+    [Tooltip("Number of 40-ton limestone megalith blocks.")]
+    public int numberOfLimestone40tons = 24;
+    [Tooltip("Number of 50-ton granite megalith blocks.")]
+    public int numberOfGranite50tons = 0;
+    [Tooltip("Number of 60-ton granite megalith blocks.")]
+    public int numberOfGranite60tons = 0;
+    [Tooltip("Number of 70-ton granite megalith blocks.")]
+    public int numberOfGranite70tons = 45;
+    [Tooltip("Number of 80-ton granite megalith blocks.")]
+    public int numberOfGranite80tons = 0;
+    [Tooltip("The course (row) number where the King's Chamber blocks start.")]
+    public int startCourseKingsChamber = 60;
+    [Tooltip("The course (row) number where the King's Chamber blocks end.")]
+    public int endCourseKingsChamber = 85;
+    [Tooltip("The course (row) number where the King's Chamber Gablete blocks end.")]
+    public int endCourseGableteKingsChamber = 96;
+    [Tooltip("Average force per puller in Newtons.")]
+    public float forcePerPullerNewtons = 250.0f;
+    [Tooltip("Angle of the mezzanine ramps in degrees.")]
+    public float mezzanineRampAngleDegrees = 3.0f;
+    [Tooltip("Friction coeficient of the mezzanine ramps and ground.")]
+    public float mezzanineFrictionCoef = 0.2f;
+    [Tooltip("Horizontal transfer distance on the terrace in meters.")]
+    public float horizontalTransferDistanceMeters = 10.0f;
+    [Tooltip("Setup time per course in hours.")]
+    public float setupTimePerCourseHours = 2.0f;
+    [Tooltip("Number of setup groups working in parallel.")]
+    public int setupTimePerCourseGroups = 6;
+    [Tooltip("The average speed of the pullers ramp in m/s.")]
+    public float pullingSpeedRampMetersPerSecond = 0.15f;
+    [Tooltip("The average speed of the pullers terrace in m/s.")]
+    public float pullingSpeedTerraceMetersPerSecond = 0.20f;
+    [Tooltip("Use a capstan for force multiplication.")]
+    public bool useCapstan = true;
+    [Tooltip("Friction coefficient for capstan calculations (μ).")]
+    public float frictionCoefCapstan = 0.3f;
+    [Tooltip("Wrap angle of the rope on the capstan in radians (e.g., PI for 180 degrees).")]
+    public float capstanWrapAngleRadians = Mathf.PI;
+    [Tooltip("Filename for the granite calculation CSV log.")]
+    public string csvGraniteName = "pyramid_granite.csv";
+    public float totalGraniteMoveTimeWorkingYears = 0f;
+    // --- END NEW ---    
 
     // Static, read-only list of the heights of the Cheops courses.
     private static readonly List<float> khufuCourseHeights = new List<float>
     {
-        1.5f, 1.24f, 1.2f, 1.02f, 0.99f, 0.9f, 1.0f, 0.97f, 0.93f, 0.915f, 0.865f, 0.76f, 0.76f, 0.75f, 0.75f, 0.735f, 0.75f, 0.83f, 0.95f, 0.62f, 0.58f, 0.87f, 0.89f, 0.83f, 0.8f, 0.74f, 0.78f, 0.69f, 0.65f, 0.64f, 0.73f, 0.72f, 0.54f, 0.66f, 1.27f, 1.0f, 0.97f, 0.95f, 0.84f, 0.84f, 0.83f, 0.72f, 0.83f, 1.06f, 0.97f, 0.73f, 0.9f, 0.905f, 0.86f, 0.7f, 0.725f, 0.61f, 0.68f, 0.63f, 0.69f, 0.55f, 0.62f, 0.685f, 0.75f, 0.7f, 0.675f, 0.635f, 0.655f, 0.675f, 0.66f, 0.605f, 0.86f, 0.835f, 0.78f, 0.64f, 0.71f, 0.675f, 0.66f, 0.8f, 0.76f, 0.62f, 0.64f, 0.6f, 0.595f, 0.625f, 0.6f, 0.6f, 0.6f, 0.67f, 0.575f, 0.67f, 0.66f, 0.58f, 0.61f, 0.97f, 0.905f, 0.835f, 0.775f, 0.68f, 0.63f, 0.605f, 0.61f, 1.0f, 0.995f, 0.905f, 0.85f, 0.74f, 0.76f, 0.68f, 0.675f, 0.64f, 0.635f, 0.755f, 0.68f, 0.59f, 0.605f, 0.595f, 0.6f, 0.58f, 0.575f, 0.675f, 0.58f, 0.905f, 0.83f, 0.75f, 0.745f, 0.67f, 0.66f, 0.63f, 0.58f, 0.605f, 0.595f, 0.59f, 0.7f, 0.65f, 0.605f, 0.565f, 0.555f, 0.545f, 0.61f, 0.58f, 0.68f, 0.65f, 0.57f, 0.56f, 0.56f, 0.565f, 0.74f, 0.685f, 0.6f, 0.59f, 0.56f, 0.56f, 0.7f, 0.635f, 0.595f, 0.59f, 0.55f, 0.55f, 0.54f, 0.545f, 0.545f, 0.545f, 0.545f, 0.545f, 0.6f, 0.59f, 0.645f, 0.56f, 0.54f, 0.54f, 0.545f, 0.525f, 0.535f, 0.54f, 0.53f, 0.52f, 0.495f, 0.53f, 0.53f, 0.525f, 0.53f, 0.53f, 0.675f, 0.635f, 0.6f, 0.58f, 0.56f, 0.545f, 0.53f, 0.52f, 0.525f, 0.52f, 0.525f, 0.54f, 0.515f, 0.52f, 0.52f, 0.52f, 0.585f, 0.605f, 0.565f, 0.55f, 0.575f, 0.565f, 1.12f
+        1.5f, 1.24f, 1.2f, 1.02f, 0.99f, 0.9f, 1.0f, 0.97f, 0.93f, 0.915f, 0.865f, 0.76f, 0.76f, 0.75f, 0.75f, 0.735f, 0.75f, 0.83f, 0.95f, 0.62f, 0.58f, 0.87f, 0.89f, 0.83f, 0.8f, 0.74f, 0.78f, 0.69f, 0.65f, 0.64f, 0.73f, 0.72f, 0.54f, 0.66f, 1.27f, 1.0f, 0.97f, 0.95f, 0.84f, 0.84f, 0.83f, 0.72f, 0.83f, 1.06f, 0.97f, 0.73f, 0.9f, 0.905f, 0.86f, 0.7f, 0.725f, 0.61f, 0.68f, 0.63f, 0.69f, 0.55f, 0.62f, 0.685f, 0.75f, 0.7f, 0.675f, 0.635f, 0.655f, 0.675f, 0.66f, 0.605f, 0.86f, 0.835f, 0.78f, 0.64f, 0.71f, 0.675f, 0.66f, 0.8f, 0.76f, 0.62f, 0.64f, 0.6f, 0.595f, 0.625f, 0.6f, 0.6f, 0.6f, 0.67f, 0.575f, 0.67f, 0.66f, 0.58f, 0.61f, 0.97f, 0.905f, 0.835f, 0.775f, 0.68f, 0.63f, 0.605f, 0.61f, 1.0f, 0.995f, 0.905f, 0.85f, 0.74f, 0.76f, 0.68f, 0.675f, 0.64f, 0.635f, 0.755f, 0.68f, 0.59f, 0.605f, 0.595f, 0.6f, 0.58f, 0.575f, 0.675f, 0.58f, 0.905f, 0.83f, 0.75f, 0.745f, 0.67f, 0.66f, 0.63f, 0.58f, 0.605f, 0.595f, 0.59f, 0.7f, 0.65f, 0.605f, 0.565f, 0.555f, 0.545f, 0.61f, 0.58f, 0.68f, 0.65f, 0.57f, 0.56f, 0.56f, 0.565f, 0.74f, 0.685f, 0.6f, 0.59f, 0.56f, 0.56f, 0.7f, 0.635f, 0.595f, 0.59f, 0.55f, 0.55f, 0.54f, 0.545f, 0.545f, 0.545f, 0.545f, 0.545f, 0.6f, 0.59f, 0.645f, 0.56f, 0.54f, 0.54f, 0.545f, 0.525f, 0.535f, 0.54f, 0.53f, 0.52f, 0.495f, 0.53f, 0.53f, 0.525f, 0.53f, 0.53f, 0.675f, 0.635f, 0.6f, 0.58f, 0.56f, 0.545f, 0.53f, 0.52f, 0.525f, 0.52f, 0.525f, 0.54f, 0.515f, 0.52f, 0.52f, 0.52f, 0.585f, 0.605f, 0.565f, 0.55f, 0.575f, 0.565f, 0.572f, 0.544f, 0.565f,0.565f
     };
 
     private float pyramid_inclination_tg = 0;
@@ -608,6 +744,7 @@ public class GeneratePyramid : MonoBehaviour
     private StreamWriter csviterwriter;
     private StreamWriter csvrowwriter;
     private StreamWriter csvheadwaywriter;
+    private StreamWriter csvgranitewriter;
 
     private int indexblock = 0;
     private int lastLevel = 0;
@@ -625,6 +762,15 @@ public class GeneratePyramid : MonoBehaviour
 
     // Static instance of the comparer to avoid creating a new one for each insertion.
     private static readonly GameObjectYComparer yComparer = new GameObjectYComparer();
+
+    /// <summary>
+    /// List of the turning points (iterations) of the IER ramp.
+    /// </summary>
+    private List<TurningPoint> _ierTurningNodes;
+    /// <summary>
+    /// Safety limit to prevent infinite loops if the slope is 0 or at the apex
+    /// </summary>
+    private const int MAX_TURNING_ITERATIONS = 500;    
 
     // This runs in the editor whenever a value is changed in the Inspector.
     private void OnValidate()
@@ -723,7 +869,7 @@ public class GeneratePyramid : MonoBehaviour
                 textPath = Path.Combine(dir, csvrowname);
                 Debug.Log("File : " + textPath);
                 csvrowwriter = new StreamWriter(textPath, false);
-                csvrowwriter.WriteLine("Row;blocks;ramp inclination;Ramp length (m);Ramp length total (m);distance blocks (Km);distance blocks Ramp (Km);distance blocks Horiz (Km);Sum force blocks (GJ);Sum Vert. force blocks (GJ);Sum Horiz. force blocks (GJ);Vert. force blocks row (GJ);Horiz. force blocks row (GJ);Total force blocks row (GJ);% Decrement blocks;% increase Distance;% increase Force");
+                csvrowwriter.WriteLine("Row;blocks;ramp inclination;Ramp length (m);Ramp length total (m);ramp internal inclination iter;ramp height inclination iter;Ramp length (m) iter;distance blocks (Km);distance blocks Ramp (Km);distance blocks Horiz (Km);Sum force blocks (MJ);Sum Vert. force blocks (MJ);Sum Horiz. force blocks (MJ);Vert. force blocks row (MJ);Horiz. force blocks row (MJ);Total force blocks row (MJ);% Decrement blocks;% increase Distance;% increase Force");
 
                 textPath = Path.Combine(dir, csvheadway);
                 Debug.Log("File : " + textPath);
@@ -734,6 +880,17 @@ public class GeneratePyramid : MonoBehaviour
             {
                 csvrowwriter = null;
                 csvheadwaywriter = null;
+            }
+            if (showInfoGranite)
+            {
+                textPath = Path.Combine(dir, csvGraniteName);
+                Debug.Log("File : " + textPath);
+                csvgranitewriter = new StreamWriter(textPath, false);
+                csvgranitewriter.WriteLine("row;Percentage;Curse heigh(m);ramp slope(degrees);ramp distance(m);horiz distance(m);total blocks;total displacement time (h);setup time (h);total time (h);total (working years);pullers x blocks;total Work (MJ)");
+            }
+            else
+            {
+                csvgranitewriter = null;
             }
         }
         catch (Exception e)
@@ -760,6 +917,11 @@ public class GeneratePyramid : MonoBehaviour
                 csvrowwriter.Close();
                 csvheadwaywriter.Flush();
                 csvheadwaywriter.Close();
+            }
+            if (showInfoGranite)
+            {
+                csvgranitewriter.Flush();
+                csvgranitewriter.Close();
             }
         }
         catch (Exception e)
@@ -813,6 +975,82 @@ public class GeneratePyramid : MonoBehaviour
 
         // hide Pyramide during generation
         if (objParent) objParent.SetActive(false);
+
+        // --- 0. DYNAMICALLY CALCULATE TURNING POINTS ---
+        if (rampMethod == RampMethodType.Integrated && (Method2Ramp || Method4Ramp))
+        {
+            Debug.Log("-------------------------------------------------");
+            Debug.Log(" Calculating IER turning points based on ramp inclination...");
+
+            // This REPLACES the previous static list
+            _ierTurningNodes = CalculateIERTurningPoints();
+
+            Debug.Log($" IER turning points dynamically calculated for {RampInclination}°:");
+            foreach (var turn in _ierTurningNodes)
+            {
+                Debug.Log($"==> {turn.ToString()}");
+            }
+            Debug.Log("-------------------------------------------------");
+
+            // --- 1. Calculate the location of the block terrace ---
+            int blocksInTerrace = (int) (minBaseSize2Ramps * minBaseSize2Ramps / (blockwide * blockwide));
+            float terraceHeight = FindHeightForTerraceBlockCount(blocksInTerrace);
+            int terraceCourse = GetCourseAtHeight(terraceHeight);
+
+            Debug.Log($" A terrace with ~{blocksInTerrace} blocks is located at:");
+            Debug.Log($"==> Height: {terraceHeight:F2} m");
+            Debug.Log($"==> Course: {terraceCourse}");
+            Debug.Log("-------------------------------------------------");
+
+            // --- 2. Find the nearest IER turn to that location ---
+            TurningPoint nearest = FindNearestIERTurn(terraceHeight);
+
+            if (nearest.Iteration > 0) // Check if a turn was found
+            {
+                Debug.Log($" The nearest IER turn (iteration) to {terraceHeight:F2} m is:");
+                Debug.Log($"==> {nearest.ToString()}");
+            }
+            else
+            {
+                Debug.LogWarning($" No IER turning points were found for height {terraceHeight:F2} m.");
+            }
+            Debug.Log("-------------------------------------------------");
+
+            minBaseSize2Ramps = (int)(Mathf.Sqrt(GetBlockCountForCourse(nearest.Course)) * blockwide);
+            Debug.Log($" Adjusted minimum base size for 2-ramps method to: {minBaseSize2Ramps}");
+            Debug.Log("-------------------------------------------------");
+
+            // 4-ramps method
+            if (Method4Ramp)
+            {
+                blocksInTerrace = (int)(minBaseSize4Ramps * minBaseSize4Ramps / (blockwide * blockwide));
+                terraceHeight = FindHeightForTerraceBlockCount(blocksInTerrace);
+                terraceCourse = GetCourseAtHeight(terraceHeight);
+
+                Debug.Log($" A terrace with ~{blocksInTerrace} blocks is located at:");
+                Debug.Log($"==> Height: {terraceHeight:F2} m");
+                Debug.Log($"==> Course: {terraceCourse}");
+                Debug.Log("-------------------------------------------------");
+
+                // --- 2. Find the nearest IER turn to that location ---
+                nearest = FindNearestIERTurn(terraceHeight);
+
+                if (nearest.Iteration > 0) // Check if a turn was found
+                {
+                    Debug.Log($" The nearest IER turn (iteration) to {terraceHeight:F2} m is:");
+                    Debug.Log($"==> {nearest.ToString()}");
+                }
+                else
+                {
+                    Debug.LogWarning($" No IER turning points were found for height {terraceHeight:F2} m.");
+                }
+                Debug.Log("-------------------------------------------------");
+
+                minBaseSize4Ramps = (int)(Mathf.Sqrt(GetBlockCountForCourse(nearest.Course)) * blockwide);
+                Debug.Log($" Adjusted minimum base size for 4-ramps method to: {minBaseSize4Ramps}");
+                Debug.Log("-------------------------------------------------");
+            }
+        }
 
         // start generation
         yield return StartCoroutine(compute_size());
@@ -871,6 +1109,15 @@ public class GeneratePyramid : MonoBehaviour
 
         if (progressBar) progressBar.Hide();
 
+        if (cameraPositionFace == CameraPositionFace.InfrontRamp && DrawUntilRow)
+        {
+            Debug.Log("Ramp Target Position : " + lastRampMidPoint.ToString());
+            Vector3 lastRampMidPointCam = GetTargetPositionFromCenter(lastRampMidPoint, BaseSize);
+            Debug.Log("Camera Ramp Target Position : " + lastRampMidPointCam.ToString());
+            cam.transform.localPosition = lastRampMidPointCam;
+            cam.transform.LookAt(lastRampMidPoint);
+        }
+
         // After generation, check if we should run the decommissioning animation.
         if (AnimateDecommissioning && DetectedDeletedBlocks.Count > 0)
         {
@@ -879,6 +1126,16 @@ public class GeneratePyramid : MonoBehaviour
 
         isGenerating = false;
         Debug.Log("Pyramid generation complete.");
+
+        if (DisplayGameObjectOnFinish)
+        {
+            DisplayGameObjectOnFinish.SetActive(true);
+        }
+
+        if (OrbitCameraOnFinish && cam != null)
+        {
+            yield return StartCoroutine(OrbitCameraAroundPyramid());
+        }        
     }
 
     // Start is called before the first frame update
@@ -911,7 +1168,9 @@ public class GeneratePyramid : MonoBehaviour
 
         // look
         if (cam)
-        { 
+        {
+            RampTargetMetrics RampTarget;
+            RampTarget.IsValid = false;
             if (cameraPositionFace == CameraPositionFace.NorthFace)               
                 cam.transform.localPosition = new Vector3(-BaseSize * 4 / 5, Height * 3 / 4, -BaseSize * 4 / 5);
             if (cameraPositionFace == CameraPositionFace.EastFace)
@@ -920,10 +1179,28 @@ public class GeneratePyramid : MonoBehaviour
                 cam.transform.localPosition = new Vector3(BaseSize * 4 / 5, Height * 3 / 4, BaseSize * 4 / 5);
             if (cameraPositionFace == CameraPositionFace.WestFace)
                 cam.transform.localPosition = new Vector3(-BaseSize * 4 / 5, Height * 3 / 4, BaseSize * 4 / 5);
+            if (cameraPositionFace == CameraPositionFace.InfrontRamp)
+            {
+                if (DrawUntilRow)
+                {
+                    RampTarget = CalculateRampTargetMetrics(DrawRow);
+                    Debug.Log("Ramp Target Position : " + RampTarget.Position.ToString() + ", Valid : " + RampTarget.IsValid);
+                    cam.transform.localPosition = new Vector3(RampTarget.Position.x * 2, RampTarget.Position.y * 2, RampTarget.Position.z * 2);
+                    if (RampTarget.IsValid)
+                        cam.transform.LookAt(RampTarget.Position);
+                    else
+                        cam.transform.LookAt(new Vector3(0, 0, 0));
+                }    
+                else
+                    cam.transform.localPosition = new Vector3(0, Height * 3 / 4, -(BaseSize / 2 + (Height) / ramp_inclination_tg + 20));
+            }
+            if (cameraPositionFace == CameraPositionFace.Zenit)
+                cam.transform.localPosition = new Vector3(0, Height * 1.5f, 0);
             //cam.transform.localPosition = new Vector3(BaseSize, Height, BaseSize);
             //cam.transform.localPosition = new Vector3(-BaseSize, Height, BaseSize);
             //cam.transform.localPosition = new Vector3(-BaseSize, Height, -BaseSize);
-            cam.transform.LookAt(new Vector3(0, Height / 12, 0));
+            if (cameraPositionFace != CameraPositionFace.InfrontRamp || !DrawUntilRow)
+                cam.transform.LookAt(new Vector3(0, Height / 12, 0));
         }
 
         // generate pyramid
@@ -1039,6 +1316,11 @@ public class GeneratePyramid : MonoBehaviour
             yield break;            
         }
 
+        if (DrawUntilTurn && level >= DrawTurn)
+        {
+            yield break;
+        }
+
         if (height > Height)
         {
             Debug.Log("Good solution! Total height: " + total_height);
@@ -1055,24 +1337,37 @@ public class GeneratePyramid : MonoBehaviour
         float sep = base_size * ramp_inclination_tg / (ramp_inclination_tg + pyramid_inclination_tg);
 
         float currentCourseHeight = blockheight;
+        float setbackKhufuCourseHeights = 0.0f;
         // uses thickness from Khufu courses
         if (selectedPyramid==PyramidType.Khufu && useKhufuCourseHeights)
         {
+            sep = 0;
             // Now, calculate the *actual* total height of this level by summing the real course heights.
             float h1 = 0;
+            float h_course = 0;
             int last_i = 0;
-            for (int i = 0; i < ch; i++)
+            for (int i = 0; i < 10000 ; i++)
             {
                 last_i = i;
-                h1 += GetBlockHeightForRow(row + i);
-                if (DrawUntilRow && row > DrawRow || h1>h) break;
-            }
-            if (h1 > h)
-            {
-                ch = last_i;
-                h1 -= GetBlockHeightForRow(row + last_i);                
-            }
+                h_course = GetBlockHeightForRow(row + i); // default height
+                h1 += h_course;
+                setbackWide = h_course / Mathf.Tan(degrees_to_radians(PyramidInclination));
+                setbackKhufuCourseHeights += setbackWide;
+                if (DrawUntilRow && row > DrawRow || h1>h)
+                {
+                    if (h1 > h)
+                    {
+                        ch = last_i+1;
+                        //h_course = GetBlockHeightForRow(row + last_i);
+                        //h1 -= h_course;
+                        //setbackWide = h_course / Mathf.Tan(degrees_to_radians(PyramidInclination));
+                        //setbackKhufuCourseHeights -= setbackWide;
+                    }
+                    break;
+                }
+            }            
             h = h1;
+            sep = setbackKhufuCourseHeights;
         }
 
         total_height += h;
@@ -1092,7 +1387,7 @@ public class GeneratePyramid : MonoBehaviour
         if (Sequenced)
             iter_gameObject = objParent;
 
-        if (h < 0.524f)
+        if (h < blockheight/2)
         {
             if (height + h > Height)
                 Debug.Log("Good solution! Total height: " + total_height);
@@ -1184,6 +1479,10 @@ public class GeneratePyramid : MonoBehaviour
         float rampInclinationRad = RampInclination * Mathf.Deg2Rad;
         int row_ori = row;
         float distramprow_last = 0;
+        // ramp        
+        float a1 = Mathf.Atan(sep / (base_size - sep));
+        float a2 = Mathf.Atan(h / (base_size - sep));
+        setbackKhufuCourseHeights = 0.0f;
         for (int i = 0; i < ch; i++)
         {
             if (progressBar && !Sequenced)
@@ -1230,6 +1529,8 @@ public class GeneratePyramid : MonoBehaviour
                 {
                     totalHeightUpToCurrentCourse += GetBlockHeightForRow(row_ori + hIndex);
                 }
+                setbackKhufuCourseHeights += setbackWide;
+                sepi = setbackKhufuCourseHeights;
             }
             else
                 totalHeightUpToCurrentCourse = i * currentCourseHeight;
@@ -1517,6 +1818,8 @@ public class GeneratePyramid : MonoBehaviour
                         }
                         if (DrawCasing && (!halfPyramid || x < 0) && ((x < -bs2 + sepi + blockwide) || (z < -bs2 + sepi + blockwide)))
                         {
+                            if (lastCubeDrawn)
+                                lastCubeDrawn.GetComponent<MeshRenderer>().material = m_Material_Blank;                            
                             GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
                             if (x < -bs2 + sepi + blockwide)
                             {
@@ -1629,6 +1932,8 @@ public class GeneratePyramid : MonoBehaviour
                         // internal ramp not to draw blocks in the last terrace
                         if (rampMethod == RampMethodType.Internal && DrawUntilRow && row == DrawRow)
                             objnew.SetActive(false);
+                        if (DrawCasing)
+                            objnew.GetComponent<MeshRenderer>().material = m_Material_Blank;
 
                         if (isRigidBody)
                         {
@@ -1705,6 +2010,8 @@ public class GeneratePyramid : MonoBehaviour
                     numberOfBlocksDrawn++;
                     if (DrawCasing)
                     {
+                        if (lastCubeDrawn)
+                            lastCubeDrawn.GetComponent<MeshRenderer>().material = m_Material_Blank;
                         GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
                         cube.transform.position = objParent.transform.position + new Vector3(x, height + bh2 + totalHeightUpToCurrentCourse, z + scaleChange.z / 2 + bht2);
                         cube.transform.localScale = new Vector3(0.1f, bhtl, blockwide);
@@ -1813,6 +2120,8 @@ public class GeneratePyramid : MonoBehaviour
                             // internal ramp not to draw blocks in the last terrace
                             if (rampMethod == RampMethodType.Internal && DrawUntilRow && row == DrawRow)
                                 objnew.SetActive(false);
+                            if (DrawCasing)
+                                objnew.GetComponent<MeshRenderer>().material = m_Material_Blank;
 
                             if (isRigidBody)
                             {
@@ -1888,6 +2197,8 @@ public class GeneratePyramid : MonoBehaviour
                         numberOfBlocksDrawn++;
                         if (DrawCasing)
                         {
+                            if (lastCubeDrawn)
+                                lastCubeDrawn.GetComponent<MeshRenderer>().material = m_Material_Blank;
                             GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
                             cube.transform.position = objParent.transform.position + new Vector3(x + scaleChange.x / 2 + bht2, height + bh2 + totalHeightUpToCurrentCourse, z);
                             cube.transform.localScale = new Vector3(0.1f, bhtl, blockwide);
@@ -1982,6 +2293,8 @@ public class GeneratePyramid : MonoBehaviour
                         // internal ramp not to draw blocks in the last terrace
                         if (rampMethod == RampMethodType.Internal && DrawUntilRow && row == DrawRow)
                             objnew.SetActive(false);
+                        if (DrawCasing)
+                            objnew.GetComponent<MeshRenderer>().material = m_Material_Blank;
 
                         if (isRigidBody)
                         {
@@ -2064,6 +2377,8 @@ public class GeneratePyramid : MonoBehaviour
                     numberOfBlocksDrawn++;
                     if (DrawCasing)
                     {
+                        if (lastCubeDrawn)
+                            lastCubeDrawn.GetComponent<MeshRenderer>().material = m_Material_Blank;
                         GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
                         cube.transform.position = objParent.transform.position + new Vector3(x + scaleChange.x / 2 + bht2, height + bh2 + totalHeightUpToCurrentCourse, z);
                         cube.transform.localScale = new Vector3(0.1f, bhtl, blockwide);
@@ -2176,29 +2491,43 @@ public class GeneratePyramid : MonoBehaviour
 
                 if (blockant > 0)
                 {
-                    Debug.Log("  Row : " + i + ", blocks : " + bxi + ", ramp inclination : " + radians_to_degrees(incliramprow).ToString("F2") + ", Length ramp : " + distramprow.ToString("F2") + ", distance blocks Km : " + (distblocksrow/1000).ToString("F3") + ", force blocks (GJ): " + (forceblocksrow/1000000).ToString("F3") + ", Decrement - blocks : " + (bxi * 100 / blockant).ToString("F2") + " %, Distance : " + (distblocksrow * 100 / distant).ToString("F2") + " %, Force : " + (forceblocksrow * 100 / forceant).ToString("F2") + " %");
+                    Debug.Log("  Row : " + i + ", blocks : " + bxi + ", ramp inclination : " + radians_to_degrees(incliramprow).ToString("F2") + ", Length ramp : " + distramprow.ToString("F2") + ", distance blocks Km : " + (distblocksrow/1000).ToString("F3") + ", force blocks (MJ): " + (forceblocksrow/1000000).ToString("F3") + ", Decrement - blocks : " + (bxi * 100 / blockant).ToString("F2") + " %, Distance : " + (distblocksrow * 100 / distant).ToString("F2") + " %, Force : " + (forceblocksrow * 100 / forceant).ToString("F2") + " %");
                     if (showInfoLevel)
-                        writer.WriteLine("  Row : " + i + ", blocks : " + bxi + ", ramp inclination : " + radians_to_degrees(incliramprow).ToString("F2") + ", Length ramp : " + distramprow.ToString("F2") + ", distance blocks Km: " + (distblocksrow/1000).ToString("F3") + ", force blocks (GJ): " + (forceblocksrow/10000000).ToString("F3") + ", Decrement - blocks : " + (bxi * 100 / blockant).ToString("F2") + " %, Distance : " + (distblocksrow * 100 / distant).ToString("F2") + " %, Force : " + (forceblocksrow * 100 / forceant).ToString("F2") + " %");
+                        writer.WriteLine("  Row : " + i + ", blocks : " + bxi + ", ramp inclination : " + radians_to_degrees(incliramprow).ToString("F2") + ", Length ramp : " + distramprow.ToString("F2") + ", distance blocks Km: " + (distblocksrow/1000).ToString("F3") + ", force blocks (MJ): " + (forceblocksrow/10000000).ToString("F3") + ", Decrement - blocks : " + (bxi * 100 / blockant).ToString("F2") + " %, Distance : " + (distblocksrow * 100 / distant).ToString("F2") + " %, Force : " + (forceblocksrow * 100 / forceant).ToString("F2") + " %");
                     if (showInfoRow)
                     {
-                        // Row;blocks;ramp inclination;Ramp length (m);Ramp length total (m);distance blocks (Km);distance blocks Ramp (Km);distance blocks Horiz (Km);Sum force blocks (GJ);Sum Vert. force blocks (GJ);Sum Horiz. force blocks (GJ);Vert. force blocks row (GJ);Horiz. force blocks row (GJ);Total force blocks row (GJ);% Decrement blocks;% increase Distance;% increase Force
-                        csvrowwriter.WriteLine(i + ";" + bxi + ";" + radians_to_degrees(incliramprow).ToString("F2") + ";" + distramprow.ToString("F2") + ";" + (old_length + distramprow).ToString("F2") + ";" + (distblocksrow / 1000).ToString("F3") + ";" + (distblocksramprow / 1000).ToString("F3") + ";" + ((distblocksrow - distblocksramprow) / 1000).ToString("F3") + ";" + (forceblocksrow_total_total / 1000000).ToString("F3") + ";" + (forceblocksrow_vert_total / 1000000).ToString("F3") + ";" + (forceblocksrow_horiz_total / 1000000).ToString("F3") + ";" + (forceblocksrow_vert / 1000000).ToString("F3") + ";" + (forceblocksrow_horiz / 1000000).ToString("F3") + ";" + (forceblocksrow_total / 1000000).ToString("F3") + ";" + bxi * 100 / blockant + ";" + (distblocksrow * 100 / distant).ToString("F2") + ";" + (forceblocksrow * 100 / forceant).ToString("F2"));                        
+                        // Row;blocks;ramp inclination;Ramp length (m);Ramp length total (m);distance blocks (Km);distance blocks Ramp (Km);distance blocks Horiz (Km);Sum force blocks (MJ);Sum Vert. force blocks (MJ);Sum Horiz. force blocks (MJ);Vert. force blocks row (MJ);Horiz. force blocks row (MJ);Total force blocks row (MJ);% Decrement blocks;% increase Distance;% increase Force
+                        csvrowwriter.WriteLine(i + ";" + bxi 
+                                + ";" + radians_to_degrees(incliramprow).ToString("F2") + ";" + distramprow.ToString("F2") + ";" + (old_length + distramprow).ToString("F2") 
+                                + ";" + radians_to_degrees(a1).ToString("F2") + ";" + radians_to_degrees(a2).ToString("F2") + ";" + (old_length + distramprow).ToString("F2")
+                                + ";" + (distblocksrow / 1000).ToString("F3") + ";" + (distblocksramprow / 1000).ToString("F3") + ";" + ((distblocksrow - distblocksramprow) / 1000).ToString("F3") 
+                                + ";" + (forceblocksrow_total_total / 1000000).ToString("F3") + ";" + (forceblocksrow_vert_total / 1000000).ToString("F3") + ";" + (forceblocksrow_horiz_total / 1000000).ToString("F3") 
+                                + ";" + (forceblocksrow_vert / 1000000).ToString("F3") + ";" + (forceblocksrow_horiz / 1000000).ToString("F3") + ";" + (forceblocksrow_total / 1000000).ToString("F3") + ";" + bxi * 100 / blockant 
+                                + ";" + (distblocksrow * 100 / distant).ToString("F2") + ";" + (forceblocksrow * 100 / forceant).ToString("F2"));                        
                     }
                 }
                 else
                 {
-                    Debug.Log("  Row : " + i + ", blocks : " + bxi + ", ramp inclination : " + radians_to_degrees(incliramprow).ToString("F2") + ", Length ramp : " + distramprow.ToString("F2") + ", distance blocks Km: " + (distblocksrow/1000).ToString("F3") + ", force blocks (GJ): " + (forceblocksrow/1000000).ToString("F2"));
+                    Debug.Log("  Row : " + i + ", blocks : " + bxi + ", ramp inclination : " + radians_to_degrees(incliramprow).ToString("F2") + ", Length ramp : " + distramprow.ToString("F2") + ", distance blocks Km: " + (distblocksrow/1000).ToString("F3") + ", force blocks (MJ): " + (forceblocksrow/1000000).ToString("F2"));
                     if (showInfoLevel) 
-                        writer.WriteLine("  Row : " + i + ", blocks : " + bxi + ", ramp inclination : " + radians_to_degrees(incliramprow) + ", Length ramp : " + distramprow + ", distance blocks Km: " + (distblocksrow / 1000).ToString("F3") + ", force blocks : (GJ): " + (forceblocksrow / 1000000).ToString("F2"));
+                        writer.WriteLine("  Row : " + i + ", blocks : " + bxi + ", ramp inclination : " + radians_to_degrees(incliramprow) + ", Length ramp : " + distramprow + ", distance blocks Km: " + (distblocksrow / 1000).ToString("F3") + ", force blocks : (MJ): " + (forceblocksrow / 1000000).ToString("F2"));
                     if (showInfoRow)
-                        csvrowwriter.WriteLine(i + ";" + bxi + ";" + RampInclination.ToString("F2") + ";" + distramprow.ToString("F2") + ";" + (old_length + distramprow).ToString("F2") + ";" + (distblocksrow / 1000).ToString("F3") + ";" + (distblocksramprow / 1000).ToString("F3") + ";" + ((distblocksrow - distblocksramprow) / 1000).ToString("F3") + ";" + (forceblocksrow_total_total / 1000000).ToString("F3") + ";" + (forceblocksrow_vert_total / 1000000).ToString("F3") + ";" + (forceblocksrow_horiz_total / 1000000).ToString("F3") + ";" + (forceblocksrow_vert / 1000000).ToString("F3") + ";" + (forceblocksrow_horiz / 1000000).ToString("F3") + ";" + (forceblocksrow_total / 1000000).ToString("F3"));
-                }
+                        csvrowwriter.WriteLine(i + ";" + bxi 
+                                + ";" + RampInclination.ToString("F2") + ";" + distramprow.ToString("F2") + ";" + (old_length + distramprow).ToString("F2")
+                                + ";" + radians_to_degrees(a1).ToString("F2") + ";" + radians_to_degrees(a2).ToString("F2") + ";" + (old_length + distramprow).ToString("F2")
+                                + ";" + (distblocksrow / 1000).ToString("F3") + ";" + (distblocksramprow / 1000).ToString("F3") + ";" + ((distblocksrow - distblocksramprow) / 1000).ToString("F3") 
+                                + ";" + (forceblocksrow_total_total / 1000000).ToString("F3") + ";" + (forceblocksrow_vert_total / 1000000).ToString("F3") + ";" + (forceblocksrow_horiz_total / 1000000).ToString("F3") 
+                                + ";" + (forceblocksrow_vert / 1000000).ToString("F3") + ";" + (forceblocksrow_horiz / 1000000).ToString("F3") + ";" + (forceblocksrow_total / 1000000).ToString("F3"));
+                }                 
+
                 old_length = old_lenght_ant;
             }
 
             // corners
             if (DrawCasing)
             {
+                if (lastCubeDrawn)
+                    lastCubeDrawn.GetComponent<MeshRenderer>().material = m_Material_Blank;
                 // corner 1                        
                 GameObject corner1 = Instantiate(CornerPrefab, new Vector3(0, 0, 0), Quaternion.identity);
                 corner1.transform.position = objParent.transform.position + new Vector3(-bs2 + sepi - bht2, height + bh2 + totalHeightUpToCurrentCourse, -bs2 + sepi - bht2);
@@ -2228,6 +2557,9 @@ public class GeneratePyramid : MonoBehaviour
                     corner4.transform.parent = objParent.transform;*/
                 corner4.transform.parent = row_gameObject.transform;
             }
+
+            // Granite project 
+            ProcessGraniteCalculations(row_ori + i, currentCourseHeight);
 
             // old value
             blockant = bxi;
@@ -2263,21 +2595,39 @@ public class GeneratePyramid : MonoBehaviour
 
         float minBaseSize = blockwide * holeWide * 2;
         if (Method4Ramp && minBaseSize<minBaseSize4Ramps)
-            minBaseSize = minBaseSize * 2;        
-        
+            minBaseSize = minBaseSize * 2;
+
         // do not draw ramps if the base size is too small
-        if (showRamps && rampMethod!=RampMethodType.Straight && base_size > minBaseSize)
+        if (showRamps && rampMethod != RampMethodType.Straight && base_size > minBaseSize)
         {
             if (progressBar && !Sequenced)
             {
-                progressBar.Show("Drawing ramps at iteration "+(level+1));
+                progressBar.Show("Drawing ramps at iteration " + (level + 1));
                 yield return null;
             }
 
+            int rampFace = 0;
+            if (SingleRampFaceStart == RampPositionFace.NorthFace)
+                rampFace = 2;
+            else
+            if (SingleRampFaceStart == RampPositionFace.EastFace)
+                rampFace = 3;
+            else
+            if (SingleRampFaceStart == RampPositionFace.SouthFace)
+                rampFace = 0;
+            else
+            if (SingleRampFaceStart == RampPositionFace.WestFace)
+                rampFace = 1;
             // draw ramps
             if (rampMethod == RampMethodType.Spiral)
-                DrawRamps(level, base_size + (blockwide+1) * spiralRampSeparation, height, h_spiral, sep_spiral, length + blockwide * spiralRampSeparation,
-                        row, last_sepi, last_length, last_h, last_v0, last_v1);
+            {
+                if ((Method4Ramp || Method2Ramp) && minBaseSize2Ramps < base_size)
+                    Draw4Ramps(level, base_size + (blockwide + 1) * spiralRampSeparation, height, h, sep, length + blockwide * spiralRampSeparation,
+                                row, last_sepi, last_length, last_h, last_v0, last_v1);
+                else
+                    DrawRamps(level, base_size + (blockwide + 1) * spiralRampSeparation, height, h_spiral, sep_spiral, length + blockwide * spiralRampSeparation,
+                                row, last_sepi, last_length, last_h, last_v0, last_v1);
+            }
             else
             if (rampMethod == RampMethodType.Internal)
                 DrawRamps(level, base_size - (blockwide + 1) * spiralRampSeparation, height, h_spiral, sep_spiral, length - blockwide * spiralRampSeparation,
@@ -2285,20 +2635,30 @@ public class GeneratePyramid : MonoBehaviour
             else
             if ((Method4Ramp || Method2Ramp) && minBaseSize2Ramps < base_size)
             {
-                if (MethodInsideRamp)
-                    Draw4Ramps(level, base_size - 2 * blockwide, height, h, sep, length - blockwide,
-                                row, last_sepi, last_length, last_h, last_v0, last_v1);
+                // 2-ramps for minimum size - ramps on opposite sides
+                if (Method4Ramp && minBaseSize4Ramps > base_size)
+                {
+                    DrawRamps(level + rampFace, base_size - 2 * blockwide, height, h, sep, length - blockwide,
+                            row, last_sepi, last_length, last_h, last_v0, last_v1);
+                    DrawRamps(level + (rampFace + 2) % 4, base_size - 2 * blockwide, height, h, sep, length - blockwide,
+                            row, last_sepi, last_length, last_h, last_v0, last_v1);
+                }
+                // 2-4-ramps
                 else
-                    Draw4Ramps(level, base_size, height, h, sep, length,
+                    if (MethodInsideRamp)
+                        Draw4Ramps(level, base_size - 2 * blockwide, height, h, sep, length - blockwide,
+                                    row, last_sepi, last_length, last_h, last_v0, last_v1);
+                    else
+                        Draw4Ramps(level, base_size, height, h, sep, length,
                                 row, last_sepi, last_length, last_h, last_v0, last_v1);
             }
             else
-            {                
+            {
                 if (MethodInsideRamp)
-                    DrawRamps(level, base_size - 2 * blockwide, height, h, sep, length - blockwide,
+                    DrawRamps(level + rampFace, base_size - 2 * blockwide, height, h, sep, length - blockwide,
                             row, last_sepi, last_length, last_h, last_v0, last_v1);
                 else
-                    DrawRamps(level, base_size, height, h, sep, length,
+                    DrawRamps(level + rampFace, base_size, height, h, sep, length,
                             row, last_sepi, last_length, last_h, last_v0, last_v1);
             }
         }        
@@ -2778,7 +3138,8 @@ public class GeneratePyramid : MonoBehaviour
             cube.GetComponent<DeleteObject>().generatePyramid = this;
             cube.GetComponent<DeleteObject>().CommonGameObject = objParent;
             cube.GetComponent<DeleteObject>().deleteObject = !Decomisioning;
-            cube.GetComponent<MeshRenderer>().enabled = false;
+            cube.GetComponent<DeleteObject>().mainRamp = true;
+            cube.GetComponent<MeshRenderer>().enabled = false;            
             //cube.GetComponent<ShowHideObject>().hide = true;
             cube.GetComponent<BoxCollider>().isTrigger = true;
         }
@@ -2811,7 +3172,7 @@ public class GeneratePyramid : MonoBehaviour
             cube_c.AddComponent<DeleteObject>();
             cube_c.GetComponent<DeleteObject>().generatePyramid = this;
             cube_c.GetComponent<DeleteObject>().CommonGameObject = objParent;
-            cube_c.GetComponent<DeleteObject>().deleteObject = !Decomisioning;
+            cube_c.GetComponent<DeleteObject>().deleteObject = !Decomisioning;            
             cube_c.GetComponent<MeshRenderer>().enabled = false;
             cube_c.GetComponent<BoxCollider>().isTrigger = true;
         }
@@ -2822,6 +3183,7 @@ public class GeneratePyramid : MonoBehaviour
         {
             GameObject cubefloor = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cubefloor.name = "Ramp_floor_" + level + "_" + row;
+            cubefloor.tag = "Ramp";
             if (level % 4 == 0)
             {
                 if (DrawUntilRow && row > DrawRow && rampMethod == RampMethodType.Integrated)
@@ -2911,6 +3273,7 @@ public class GeneratePyramid : MonoBehaviour
             // ramp wall
             GameObject cubewall = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cubewall.name = "Ramp_wall_" + level + "_" + row;
+            cubewall.tag = "Ramp";
 
             if (level % 4 == 0)
             {
@@ -2975,6 +3338,7 @@ public class GeneratePyramid : MonoBehaviour
                 base_size += (blockwide + 1) * spiralRampSeparation;
             GameObject cubecorner = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cubecorner.name = "Ramp_corner_" + level + "_" + row;
+            cubecorner.tag = "Ramp";
             float holeDiag = MathF.Sqrt((holeWide * blockwide) * (holeWide * blockwide));
             if (level % 4 == 0)
             {
@@ -3023,6 +3387,7 @@ public class GeneratePyramid : MonoBehaviour
         {
             GameObject cubecorner_wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cubecorner_wall.name = "Ramp_cornerwall_" + level + "_" + row;
+            cubecorner_wall.tag = "Ramp";
             float holeDiag = MathF.Sqrt(((holeWide+1) * blockwide) * ((holeWide + 1) * blockwide));
             if (level % 4 == 0)
             {
@@ -3112,30 +3477,31 @@ public class GeneratePyramid : MonoBehaviour
             stone_sled1.name = "stone_sled_" + level + "_" + row;
             if (level % 4 == 0)
             {
-                stone_sled1.transform.position = objParent.transform.position + new Vector3((base_size / 2 - holeWide * blockwide / 2 + 0.75f), height + 0.75f, (base_size / 2 - 2.5f * blockwide));
+                stone_sled1.transform.position = objParent.transform.position + new Vector3((base_size / 2 - holeWide * blockwide / 2), height + 1.5f, (base_size / 2 - 2.5f * blockwide));
                 stone_sled1.transform.localRotation = Quaternion.Euler(0.0f, 90.0f+ RampInclination, RampInclination);
             }
             else
             if (level % 4 == 1)
             {
-                stone_sled1.transform.position = objParent.transform.position + new Vector3((base_size / 2 - 2.5f * blockwide), height + 0.75f, -(base_size / 2 - holeWide * blockwide / 2 + 0.75f));
+                stone_sled1.transform.position = objParent.transform.position + new Vector3((base_size / 2 - 2.5f * blockwide), height + 1.5f, -(base_size / 2 - holeWide * blockwide / 2));
                 stone_sled1.transform.localRotation = Quaternion.Euler(0.0f, RampInclination, -RampInclination);
             }
             else
             if (level % 4 == 2)
             {
-                stone_sled1.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - holeWide * blockwide / 2 + 0.75f), height + 0.75f, -(base_size / 2 - 2.5f * blockwide));
+                stone_sled1.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - holeWide * blockwide / 2), height + 0.75f, -(base_size / 2 - 2.5f * blockwide));
                 stone_sled1.transform.localRotation = Quaternion.Euler(0.0f, 90.0f+ RampInclination, -RampInclination);
             }
             else
             if (level % 4 == 3)
             {
-                stone_sled1.transform.position = new Vector3(-(base_size / 2 - 2.5f * blockwide), height + 0.75f, (base_size / 2 - holeWide * blockwide / 2 + 0.75f));
+                stone_sled1.transform.position = new Vector3(-(base_size / 2 - 2.5f * blockwide), height + 1.5f, (base_size / 2 - holeWide * blockwide / 2));
                 stone_sled1.transform.localRotation = Quaternion.Euler(0.0f, RampInclination, RampInclination);
             }
             //stone_sled1.transform.parent = objParent.transform;
-            stone_sled1.transform.parent = workers_gameObject.transform;
-            stone_sled1.isStatic = true;
+           stone_sled1.transform.parent = workers_gameObject.transform;
+           stone_sled1.isStatic = true;
+           stone_sled1.transform.position = stone_sled1.transform.position + new Vector3(0, -0.8f, 0);
         }
 
         // egyptians
@@ -3148,63 +3514,65 @@ public class GeneratePyramid : MonoBehaviour
                 Egyptian.name = "Egyptian_left_" + level + "_" + row+"_"+i;
                 if (level % 4 == 0)
                 {
-                    Egyptian.transform.position = objParent.transform.position + new Vector3((base_size / 2 - (0.75f + 0.1f*i) - holeWide * blockwide / 2), height + 2.25f + 0.16f*i, (base_size / 2 - (4.5f + i) * blockwide));
-                    Egyptian.transform.localRotation = Quaternion.Euler(RampInclination, RampInclination, 0.0f);                    
+                    Egyptian.transform.position = objParent.transform.position + new Vector3((base_size / 2 - (1.25f + 0.1f*i) - holeWide * blockwide / 2), height + 3.5f + 0.16f*i, (base_size / 2 - (4.5f + i) * blockwide));
+                    Egyptian.transform.localRotation = Quaternion.Euler(RampInclination, RampInclination + 180f, 0.0f);                    
                 }
                 else
                 if (level % 4 == 1)
                 {
-                    Egyptian.transform.position = objParent.transform.position + new Vector3((base_size / 2 - (4.5f + i) * blockwide), height + 2.25f + 0.16f * i, -(base_size / 2 - (0.75f + 0.1f * i) - holeWide * blockwide / 2));
-                    Egyptian.transform.localRotation = Quaternion.Euler(RampInclination, 90.0f+ RampInclination, 0.0f);
+                    Egyptian.transform.position = objParent.transform.position + new Vector3((base_size / 2 - (4.5f + i) * blockwide), height + 3.5f + 0.16f * i, -(base_size / 2 - (1.25f + 0.1f * i) - holeWide * blockwide / 2));
+                    Egyptian.transform.localRotation = Quaternion.Euler(RampInclination, 90.0f+ RampInclination + 180f, 0.0f);
                 }
                 else
                 if (level % 4 == 2)
                 {
-                    Egyptian.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - (0.75f + 0.1f * i) - holeWide * blockwide / 2), height + 2.25f + 0.16f * i, -(base_size / 2 - (4.5f + i) * blockwide));
-                    Egyptian.transform.localRotation = Quaternion.Euler(RampInclination, 180.0f+ RampInclination, 0.0f);
+                    Egyptian.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - (1.25f + 0.1f * i) - holeWide * blockwide / 2), height + 3.5f + 0.16f * i, -(base_size / 2 - (4.5f + i) * blockwide));
+                    Egyptian.transform.localRotation = Quaternion.Euler(RampInclination, 180.0f+ RampInclination + 180f, 0.0f);
                 }
                 else
                 if (level % 4 == 3)
                 {
-                    Egyptian.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - (4.5f + i) * blockwide), height + 2.25f + 0.16f * i, (base_size / 2 - (0.75f + 0.1f * i) - holeWide * blockwide / 2));
-                    Egyptian.transform.localRotation = Quaternion.Euler(RampInclination, -90f + RampInclination, 0.0f);
+                    Egyptian.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - (4.5f + i) * blockwide), height + 3.5f + 0.16f * i, (base_size / 2 - (1.25f + 0.1f * i) - holeWide * blockwide / 2));
+                    Egyptian.transform.localRotation = Quaternion.Euler(RampInclination, -90f + RampInclination + 180f, 0.0f);
                 }
                 //Egyptian.transform.parent = objParent.transform;
                 Egyptian.transform.parent = workers_gameObject.transform;
                 Egyptian.isStatic = true;
+                Egyptian.transform.position = Egyptian.transform.position + new Vector3(0, -2.8f, 0);
                 // right hand
                 GameObject Egyptian2 = Instantiate(Egyptian_body, objParent.transform.position + new Vector3(0, 0, 0), Quaternion.identity);
                 Egyptian2.name = "Egyptian_right_" + level + "_" + row + "_" + i;
                 if (level % 4 == 0)
                 {
-                    Egyptian2.transform.position = objParent.transform.position + new Vector3((base_size / 2 + (1.5f - 0.1f * i) - holeWide * blockwide / 2), height + 2.25f + 0.16f * i, (base_size / 2 - (4.5f + i) * blockwide));
-                    Egyptian2.transform.localRotation = Quaternion.Euler(RampInclination, RampInclination, 0.0f);
+                    Egyptian2.transform.position = objParent.transform.position + new Vector3((base_size / 2 + (0.75f - 0.1f * i) - holeWide * blockwide / 2), height + 3.5f + 0.16f * i, (base_size / 2 - (4.5f + i) * blockwide));
+                    Egyptian2.transform.localRotation = Quaternion.Euler(RampInclination, RampInclination + 180f, 0.0f);
                     Egyptian2.transform.position -= new Vector3(0.25f, 0, 0);
                 }
                 else
                 if (level % 4 == 1)
                 {
-                    Egyptian2.transform.position = objParent.transform.position + new Vector3((base_size / 2 - (4.5f + i) * blockwide), height + 2.25f + 0.16f * i, -(base_size / 2 + (1.5f - 0.1f * i) - holeWide * blockwide / 2));
-                    Egyptian2.transform.localRotation = Quaternion.Euler(RampInclination, 90.0f+ RampInclination, 0.0f);
+                    Egyptian2.transform.position = objParent.transform.position + new Vector3((base_size / 2 - (4.5f + i) * blockwide), height + 3.5f + 0.16f * i, -(base_size / 2 + (0.75f - 0.1f * i) - holeWide * blockwide / 2));
+                    Egyptian2.transform.localRotation = Quaternion.Euler(RampInclination, 90.0f+ RampInclination + 180f, 0.0f);
                     Egyptian2.transform.position -= new Vector3(0, 0, -0.25f);
                 }
                 else
                 if (level % 4 == 2)
                 {
-                    Egyptian2.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 + (1.5f - 0.1f * i) - holeWide * blockwide / 2), height + 2.25f + 0.16f * i, -(base_size / 2 - (4.5f + i) * blockwide));
-                    Egyptian2.transform.localRotation = Quaternion.Euler(RampInclination, 180.0f+ RampInclination, 0.0f);
+                    Egyptian2.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 + (0.75f - 0.1f * i) - holeWide * blockwide / 2), height + 3.5f + 0.16f * i, -(base_size / 2 - (4.5f + i) * blockwide));
+                    Egyptian2.transform.localRotation = Quaternion.Euler(RampInclination, 180.0f+ RampInclination + 180f, 0.0f);
                     Egyptian2.transform.position -= new Vector3(0, 0, 0.25f);
                 }
                 else
                 if (level % 4 == 3)
                 {
-                    Egyptian2.transform.position = new Vector3(-(base_size / 2 - (4.5f + i) * blockwide), height + 2.25f + 0.16f * i, (base_size / 2 + (1.5f - 0.1f * i) - holeWide * blockwide / 2));
-                    Egyptian2.transform.localRotation = Quaternion.Euler(RampInclination, -90f + RampInclination, 0.0f);
+                    Egyptian2.transform.position = new Vector3(-(base_size / 2 - (4.5f + i) * blockwide), height + 3.5f + 0.16f * i, (base_size / 2 + (0.75f - 0.1f * i) - holeWide * blockwide / 2));
+                    Egyptian2.transform.localRotation = Quaternion.Euler(RampInclination, -90f + RampInclination + 180f, 0.0f);
                     Egyptian2.transform.position -= new Vector3(-0.25f, 0, 0);
                 }
                 //Egyptian2.transform.parent = objParent.transform;
                 Egyptian2.transform.parent = workers_gameObject.transform;
                 Egyptian2.isStatic = true;
+                Egyptian2.transform.position = Egyptian2.transform.position + new Vector3(0, -2.8f, 0);
             }
         }
     }
@@ -3227,7 +3595,7 @@ public class GeneratePyramid : MonoBehaviour
         float a1 = Mathf.Atan(sep / (base_size - sep));
         float a2 = Mathf.Atan(h / (base_size - sep));
         // Ramp 1
-        if (!Method2Ramp || level % 2 == 1)
+        if (minBaseSize4Ramps < base_size && (!Method2Ramp || level % 2 == 1))
         {
             GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cube.name = "4Ramp_" + level + "_" + row + "_1";
@@ -3260,13 +3628,14 @@ public class GeneratePyramid : MonoBehaviour
             cube.GetComponent<DeleteObject>().generatePyramid = this;
             cube.GetComponent<DeleteObject>().CommonGameObject = objParent;
             cube.GetComponent<DeleteObject>().deleteObject = !Decomisioning;
+            cube.GetComponent<DeleteObject>().mainRamp = true;
             cube.GetComponent<MeshRenderer>().enabled = false;
             //cube.GetComponent<ShowHideObject>().hide = true;
             cube.GetComponent<BoxCollider>().isTrigger = true;
             cube1 = cube;
         }
 
-        if (minBaseSize2Ramps < base_size && (!Method2Ramp || level % 2 == 0))
+        if (!Method2Ramp || level % 2 == 0)
         {
             // Ramp 2
             GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -3307,7 +3676,7 @@ public class GeneratePyramid : MonoBehaviour
         }        
 
         // Ramp 3
-        if (!Method2Ramp || level % 2 == 1)
+        if (minBaseSize4Ramps < base_size &&  (!Method2Ramp || level % 2 == 1))
         {
             GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cube.name = "4Ramp_" + level + "_" + row + "_3";
@@ -3347,7 +3716,7 @@ public class GeneratePyramid : MonoBehaviour
             cube3 = cube;
         }
 
-        if (minBaseSize2Ramps < base_size && (!Method2Ramp || level % 2 == 0))
+        if (!Method2Ramp || level % 2 == 0)
         {
             // Ramp 4
             GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -3393,7 +3762,7 @@ public class GeneratePyramid : MonoBehaviour
         {
             float holeDiag = MathF.Sqrt(((holeWide + 1) * blockwide) * ((holeWide + 1) * blockwide));
             // Ramp 1
-            if (!Method2Ramp || level % 2 == 1)
+            if (minBaseSize4Ramps < base_size &&  (!Method2Ramp || level % 2 == 1))
             {
                 GameObject cube_c = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 cube_c.name = "4Ramp-corner_" + level + "_" + row + "_1";
@@ -3405,12 +3774,12 @@ public class GeneratePyramid : MonoBehaviour
                 cube_c.AddComponent<DeleteObject>();
                 cube_c.GetComponent<DeleteObject>().generatePyramid = this;
                 cube_c.GetComponent<DeleteObject>().CommonGameObject = objParent;
-                cube_c.GetComponent<DeleteObject>().deleteObject = !Decomisioning;
+                cube_c.GetComponent<DeleteObject>().deleteObject = !Decomisioning;                
                 cube_c.GetComponent<MeshRenderer>().enabled = false;
                 cube_c.GetComponent<BoxCollider>().isTrigger = true;
             }
             // Ramp 2
-            if (minBaseSize2Ramps < base_size && (!Method2Ramp || level % 2 == 0))
+            if (!Method2Ramp || level % 2 == 0)
             {
                 GameObject cube_c = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 cube_c.name = "4Ramp-corner_" + level + "_" + row + "_2";
@@ -3427,7 +3796,7 @@ public class GeneratePyramid : MonoBehaviour
                 cube_c.GetComponent<BoxCollider>().isTrigger = true;
             }
 
-            if (!Method2Ramp || level % 2 == 1)
+            if (minBaseSize4Ramps < base_size &&  (!Method2Ramp || level % 2 == 1))
             {
                 GameObject cube_c = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 cube_c.name = "4Ramp-corner_" + level + "_" + row + "_3";
@@ -3444,7 +3813,7 @@ public class GeneratePyramid : MonoBehaviour
                 cube_c.GetComponent<BoxCollider>().isTrigger = true;
             }
 
-            if (minBaseSize2Ramps < base_size && (!Method2Ramp || level % 2 == 0))
+            if (!Method2Ramp || level % 2 == 0)
             {
                 GameObject cube_c = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 cube_c.name = "4Ramp-corner_" + level + "_" + row + "_4";
@@ -3464,10 +3833,11 @@ public class GeneratePyramid : MonoBehaviour
 
         // ramp floor
         GameObject cubefloor = null;        
-        if (DrawFloor && (!Method2Ramp || level % 2 == 1))
+        if (minBaseSize4Ramps < base_size && DrawFloor && (!Method2Ramp || level % 2 == 1))
         {
             cubefloor = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cubefloor.name = "4Ramp_floor_" + level + "_" + row + "_1";
+            cubefloor.tag = "Ramp";
             if (DrawUntilRow && row > DrawRow)
                 cubefloor.transform.position = objParent.transform.position + (last_v0 + last_v1) / 2 + new Vector3(-(holeWide - 2) * blockwide / 2, height - bh2, 0);
             else
@@ -3489,6 +3859,8 @@ public class GeneratePyramid : MonoBehaviour
                     cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 2, bh2 + 0.4f, holeWide * blockwide + setbackWide);
                 else
                     cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 2, bh2 + 0.4f, holeWide * blockwide);
+                if (rampMethod == RampMethodType.Spiral)
+                    cubefloor.transform.localScale = new Vector3(length + (blockwide * spiralRampSeparation), bh2 + 0.4f, holeWide * blockwide);
             }
             cubefloor.transform.rotation = Quaternion.Euler(0, 90 + radians_to_degrees(a1), radians_to_degrees(a2));
             //cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 1, bh2 + 0.4f, 3 * blockwide);
@@ -3499,12 +3871,16 @@ public class GeneratePyramid : MonoBehaviour
                 cubefloor.GetComponent<MeshRenderer>().material = m_Material_floor;
             cubefloor.isStatic = true;
             cubefloor1 = cubefloor;
+
+            if (rampMethod == RampMethodType.Spiral)
+                DrawSteppedEmbankment(cubefloor, false);
         }
 
-        if (minBaseSize2Ramps < base_size && DrawFloor && (!Method2Ramp || level % 2 == 0))
+        if (DrawFloor && (!Method2Ramp || level % 2 == 0))
         {
             cubefloor = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cubefloor.name = "4Ramp_floor_" + level + "_" + row + "_2";
+            cubefloor.tag = "Ramp";
             if (DrawUntilRow && row > DrawRow)
                 cubefloor.transform.position = objParent.transform.position + (Quaternion.Euler(0, 90f, 0) * last_v0 + Quaternion.Euler(0, 90f, 0) * last_v1) / 2 + new Vector3(0, height - bh2, (holeWide - 2) * blockwide / 2);
             else
@@ -3529,6 +3905,8 @@ public class GeneratePyramid : MonoBehaviour
                     cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 2, bh2 + 0.4f, holeWide * blockwide + setbackWide);
                 else
                     cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 2, bh2 + 0.4f, holeWide * blockwide);
+                if (rampMethod == RampMethodType.Spiral)
+                    cubefloor.transform.localScale = new Vector3(length + (blockwide * spiralRampSeparation), bh2 + 0.4f, holeWide * blockwide);
             }
             //cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 1, bh2 + 0.4f, 3 * blockwide);
             //cubefloor.transform.parent = objParent.transform;
@@ -3538,12 +3916,16 @@ public class GeneratePyramid : MonoBehaviour
                 cubefloor.GetComponent<MeshRenderer>().material = m_Material_floor;
             cubefloor.isStatic = true;
             cubefloor2 = cubefloor;
+
+            if (rampMethod == RampMethodType.Spiral)
+                DrawSteppedEmbankment(cubefloor, false);
         }
 
-        if (DrawFloor && (!Method2Ramp || level % 2 == 1))
+        if (minBaseSize4Ramps < base_size && DrawFloor && (!Method2Ramp || level % 2 == 1))
         {
             cubefloor = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cubefloor.name = "4Ramp_floor_" + level + "_" + row + "_3";
+            cubefloor.tag = "Ramp";
             if (DrawUntilRow && row > DrawRow)
                 cubefloor.transform.position = objParent.transform.position + (Quaternion.Euler(0, 180f, 0) * last_v0 + Quaternion.Euler(0, 180f, 0) * last_v1) / 2 + new Vector3((holeWide - 2) * blockwide / 2, height - bh2, 0);
             else
@@ -3568,6 +3950,8 @@ public class GeneratePyramid : MonoBehaviour
                     cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 2, bh2 + 0.5f, holeWide * blockwide + setbackWide);
                 else
                     cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 2, bh2 + 0.4f, holeWide * blockwide);
+                if (rampMethod == RampMethodType.Spiral)
+                    cubefloor.transform.localScale = new Vector3(length + (blockwide * spiralRampSeparation), bh2 + 0.4f, holeWide * blockwide);
             }
             //cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 1, bh2 + 0.4f, 3 * blockwide);
             //cubefloor.transform.parent = objParent.transform;
@@ -3577,12 +3961,16 @@ public class GeneratePyramid : MonoBehaviour
                 cubefloor.GetComponent<MeshRenderer>().material = m_Material_floor;
             cubefloor.isStatic = true;
             cubefloor3 = cubefloor;
+
+            if (rampMethod == RampMethodType.Spiral)
+                DrawSteppedEmbankment(cubefloor, false);
         }
         
-        if (minBaseSize2Ramps < base_size && DrawFloor && (!Method2Ramp || level % 2 == 0))
+        if (DrawFloor && (!Method2Ramp || level % 2 == 0))
         {
             cubefloor = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cubefloor.name = "4Ramp_floor_" + level + "_" + row + "_4";
+            cubefloor.tag = "Ramp";
             if (DrawUntilRow && row > DrawRow)
                 cubefloor.transform.position = objParent.transform.position + (Quaternion.Euler(0, 270f, 0) * last_v0 + Quaternion.Euler(0, 270f, 0) * last_v1) / 2 + new Vector3(0, height - bh2, -(holeWide - 2) * blockwide / 2);
             else
@@ -3607,6 +3995,8 @@ public class GeneratePyramid : MonoBehaviour
                     cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 2, bh2 + 0.4f, holeWide * blockwide + setbackWide);
                 else
                     cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 2, bh2 + 0.4f, holeWide * blockwide);
+                if (rampMethod == RampMethodType.Spiral)
+                    cubefloor.transform.localScale = new Vector3(length + (blockwide * spiralRampSeparation), bh2 + 0.4f, holeWide * blockwide);
             }
             //cubefloor.transform.localScale = new Vector3(length + 2 * blockwide - 1, bh2 + 0.4f, 3 * blockwide);
             //cubefloor.transform.parent = objParent.transform;
@@ -3616,14 +4006,18 @@ public class GeneratePyramid : MonoBehaviour
                 cubefloor.GetComponent<MeshRenderer>().material = m_Material_floor;
             cubefloor.isStatic = true;
             cubefloor4 = cubefloor;
+
+            if (rampMethod == RampMethodType.Spiral)
+                DrawSteppedEmbankment(cubefloor, false);
         }
         
         // ramp wall
         GameObject cubewall = null;        
-        if (DrawWall && (!Method2Ramp || level % 2 == 1))
+        if (minBaseSize4Ramps < base_size && DrawWall && (!Method2Ramp || level % 2 == 1))
         {
             cubewall = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cubewall.name = "4Ramp_wall_" + level + "_" + row + "_1";
+            cubewall.tag = "Ramp";
             if (DrawUntilRow && row > DrawRow)
                 cubewall.transform.position = objParent.transform.position + (last_v0 + last_v1) / 2 + new Vector3(-(holeWide - 1) * blockwide, height + blockheight * holeHeight / 2, 0);
             else
@@ -3652,10 +4046,11 @@ public class GeneratePyramid : MonoBehaviour
             cubewall1 = cubewall;
         }
         
-        if (minBaseSize2Ramps < base_size && DrawWall && (!Method2Ramp || level % 2 == 0))
+        if (DrawWall && (!Method2Ramp || level % 2 == 0))
         {
             cubewall = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cubewall.name = "4Ramp_wall_" + level + "_" + row + "_2";
+            cubewall.tag = "Ramp";
             if (DrawUntilRow && row > DrawRow)
                 cubewall.transform.position = objParent.transform.position + (Quaternion.Euler(0, 90f, 0) * last_v0 + Quaternion.Euler(0, 90f, 0) * last_v1) / 2 + new Vector3(0, height + blockheight * holeHeight / 2, (holeWide - 1) * blockwide);
             else
@@ -3684,10 +4079,11 @@ public class GeneratePyramid : MonoBehaviour
             cubewall2 = cubewall;
         }
         
-        if (DrawWall && (!Method2Ramp || level % 2 == 1))
+        if (minBaseSize4Ramps < base_size && DrawWall && (!Method2Ramp || level % 2 == 1))
         {
             cubewall = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cubewall.name = "4Ramp_wall_" + level + "_" + row + "_3";
+            cubewall.tag = "Ramp";
             if (DrawUntilRow && row > DrawRow)
                 cubewall.transform.position = objParent.transform.position + (Quaternion.Euler(0, 180f, 0) * last_v0 + Quaternion.Euler(0, 180f, 0) * last_v1) / 2 + new Vector3((holeWide - 1) * blockwide, height + blockheight * holeHeight / 2, 0);
             else
@@ -3716,10 +4112,11 @@ public class GeneratePyramid : MonoBehaviour
             cubewall3 = cubewall;
         }
         
-        if (minBaseSize2Ramps < base_size && DrawWall && (!Method2Ramp || level % 2 == 0))
+        if (DrawWall && (!Method2Ramp || level % 2 == 0))
         {
             cubewall = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cubewall.name = "4Ramp_wall_" + level + "_" + row + "_4";
+            cubewall.tag = "Ramp";
             if (DrawUntilRow && row > DrawRow)
                 cubewall.transform.position = objParent.transform.position + (Quaternion.Euler(0, 270f, 0) * last_v0 + Quaternion.Euler(0, 270f, 0) * last_v1) / 2 + new Vector3(0, height + blockheight * holeHeight/2, -(holeWide - 1) * blockwide);
             else
@@ -3752,10 +4149,11 @@ public class GeneratePyramid : MonoBehaviour
         if (DrawFloor)
         {
             float holeDiag = MathF.Sqrt((holeWide * blockwide) * (holeWide * blockwide));
-            if (!Method2Ramp || level % 2 == 1)
+            if (minBaseSize4Ramps < base_size && (!Method2Ramp || level % 2 == 1))
             {
                 GameObject cubecorner = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 cubecorner.name = "4Ramp_corner_" + level + "_" + row + "_1";
+                cubecorner.tag = "Ramp";
                 cubecorner.transform.position = objParent.transform.position + new Vector3((base_size / 2 - holeDiag), height, (base_size / 2 - holeDiag));
                 if (setback)
                     cubecorner.transform.position += new Vector3(setbackWide, 0, setbackWide);
@@ -3770,10 +4168,11 @@ public class GeneratePyramid : MonoBehaviour
                 cubecorner.isStatic = true;
             }
 
-            if (minBaseSize2Ramps < base_size && (!Method2Ramp || level % 2 == 1))
+            if (!Method2Ramp || level % 2 == 0)
             {
                 GameObject cubecorner = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 cubecorner.name = "4Ramp_corner_" + level + "_" + row + "_2";
+                cubecorner.tag = "Ramp";
                 cubecorner.transform.position = objParent.transform.position + new Vector3((base_size / 2 - holeDiag), height, -(base_size / 2 - holeDiag));
                 if (setback)
                     cubecorner.transform.position += new Vector3(setbackWide, 0, -setbackWide);
@@ -3788,10 +4187,11 @@ public class GeneratePyramid : MonoBehaviour
                 cubecorner.isStatic = true;
             }
 
-            if (!Method2Ramp || level % 2 == 1)
+            if (minBaseSize4Ramps < base_size && (!Method2Ramp || level % 2 == 1))
             {
                 GameObject cubecorner = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 cubecorner.name = "4Ramp_corner_" + level + "_" + row + "_3";
+                cubecorner.tag = "Ramp";
                 cubecorner.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - holeDiag), height, -(base_size / 2 - holeDiag));
                 if (setback)
                     cubecorner.transform.position += new Vector3(-setbackWide, 0, -setbackWide);
@@ -3806,10 +4206,11 @@ public class GeneratePyramid : MonoBehaviour
                 cubecorner.isStatic = true;
             }
 
-            if (minBaseSize2Ramps < base_size && (!Method2Ramp || level % 2 == 0))
+            if (!Method2Ramp || level % 2 == 0)
             {
                 GameObject cubecorner = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 cubecorner.name = "4Ramp_corner_" + level + "_" + row + "_4";
+                cubecorner.tag = "Ramp";
                 cubecorner.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - holeDiag), height, (base_size / 2 - holeDiag));
                 if (setback)
                     cubecorner.transform.position += new Vector3(-setbackWide, 0, setbackWide);
@@ -3829,10 +4230,11 @@ public class GeneratePyramid : MonoBehaviour
         if (DrawWall)
         {
             float holeDiag = MathF.Sqrt(((holeWide + 1) * blockwide) * ((holeWide + 1) * blockwide));
-            if (!Method2Ramp || level % 2 == 1)
+            if (minBaseSize4Ramps < base_size && (!Method2Ramp || level % 2 == 1))
             {
                 GameObject cubecorner_wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 cubecorner_wall.name = "4Ramp_cornerwall_" + level + "_" + row + "_1";
+                cubecorner_wall.tag = "Ramp";
                 cubecorner_wall.transform.position = objParent.transform.position + new Vector3((base_size / 2) - holeDiag, height + blockheight * holeHeight / 2, (base_size / 2) - holeDiag);
                 cubecorner_wall.transform.localRotation = Quaternion.Euler(180.0f, 60.0f, 0.0f);
                 cubecorner_wall.transform.localScale = new Vector3((holeWide + 1) * blockwide, blockheight * holeHeight, 0.1f);
@@ -3842,10 +4244,11 @@ public class GeneratePyramid : MonoBehaviour
                 cubecorner_wall.isStatic = true;
             }
 
-            if (minBaseSize2Ramps < base_size && (!Method2Ramp || level % 2 == 0))
+            if (!Method2Ramp || level % 2 == 0)
             {
                 GameObject cubecorner_wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 cubecorner_wall.name = "4Ramp_cornerwall_" + level + "_" + row + "_2";
+                cubecorner_wall.tag = "Ramp";
                 cubecorner_wall.transform.position = objParent.transform.position + new Vector3((base_size / 2) - holeDiag, height + blockheight * holeHeight / 2, -(base_size / 2) + holeDiag);
                 cubecorner_wall.transform.localRotation = Quaternion.Euler(0.0f, -30.0f, 0.0f);
                 cubecorner_wall.transform.localScale = new Vector3((holeWide + 1) * blockwide, blockheight * holeHeight, 0.1f);
@@ -3855,10 +4258,11 @@ public class GeneratePyramid : MonoBehaviour
                 cubecorner_wall.isStatic = true;
             }
 
-            if (!Method2Ramp || level % 2 == 1)
+            if (minBaseSize4Ramps < base_size &&  (!Method2Ramp || level % 2 == 1))
             {
                 GameObject cubecorner_wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 cubecorner_wall.name = "4Ramp_cornerwall_" + level + "_" + row + "_3";
+                cubecorner_wall.tag = "Ramp";
                 cubecorner_wall.transform.position = objParent.transform.position + new Vector3(-(base_size / 2) + holeDiag, height + blockheight * holeHeight / 2, -(base_size / 2) + holeDiag);
                 cubecorner_wall.transform.localRotation = Quaternion.Euler(0.0f, 60.0f, 90.0f);
                 cubecorner_wall.transform.localScale = new Vector3((holeWide + 1) * blockwide, blockheight * holeHeight, 0.1f);
@@ -3868,10 +4272,11 @@ public class GeneratePyramid : MonoBehaviour
                 cubecorner_wall.isStatic = true;
             }
 
-            if (minBaseSize2Ramps < base_size && (!Method2Ramp || level % 2 == 0))
+            if (!Method2Ramp || level % 2 == 0)
             {
                 GameObject cubecorner_wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 cubecorner_wall.name = "4Ramp_cornerwall_" + level + "_" + row + "_4";
+                cubecorner_wall.tag = "Ramp";
                 cubecorner_wall.transform.position = objParent.transform.position + new Vector3(-(base_size / 2) + holeDiag, height + blockheight * holeHeight / 2, (base_size / 2) - holeDiag);
                 cubecorner_wall.transform.localRotation = Quaternion.Euler(180.0f, -30.0f, 0.0f);
                 cubecorner_wall.transform.localScale = new Vector3((holeWide + 1) * blockwide, blockheight * holeHeight, 0.1f);
@@ -3890,7 +4295,7 @@ public class GeneratePyramid : MonoBehaviour
             float hypotenuse_wood = baseWidth / MathF.Cos(angleInRadians) * 2 / 3;
 
             // wooden cylinder
-            if (!Method2Ramp || level % 2 == 1)
+            if (minBaseSize4Ramps < base_size &&  (!Method2Ramp || level % 2 == 1))
             {
                 GameObject woodencyl = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                 woodencyl.name = "Ramp_wooden_cylinder_" + level + "_" + row + "_1";
@@ -3903,7 +4308,7 @@ public class GeneratePyramid : MonoBehaviour
                 woodencyl.isStatic = true;
             }
 
-            if (minBaseSize2Ramps < base_size && (!Method2Ramp || level % 2 == 0))
+            if (!Method2Ramp || level % 2 == 0)
             {
                 GameObject woodencyl = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                 woodencyl.name = "Ramp_wooden_cylinder_" + level + "_" + row + "_2";
@@ -3916,7 +4321,7 @@ public class GeneratePyramid : MonoBehaviour
                 woodencyl.isStatic = true;
             }
 
-            if (!Method2Ramp || level % 2 == 1)
+            if (minBaseSize4Ramps < base_size && (!Method2Ramp || level % 2 == 1))
             {
                 GameObject woodencyl = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                 woodencyl.name = "Ramp_wooden_cylinder_" + level + "_" + row + "_3";
@@ -3929,7 +4334,7 @@ public class GeneratePyramid : MonoBehaviour
                 woodencyl.isStatic = true;
             }
 
-            if (minBaseSize2Ramps < base_size && (!Method2Ramp || level % 2 == 0))
+            if (!Method2Ramp || level % 2 == 0)
             {
                 GameObject woodencyl = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                 woodencyl.name = "Ramp_wooden_cylinder_" + level + "_" + row + "_4";
@@ -3953,48 +4358,52 @@ public class GeneratePyramid : MonoBehaviour
         // stone sled
         if (DrawEgyptians && stone_sled && height < Height * 0.9f && !exportPyramidObj)
         {
-            if (!Method2Ramp || level % 2 == 1)
+            if (minBaseSize4Ramps < base_size &&  (!Method2Ramp || level % 2 == 1))
             {
                 GameObject stone_sled1 = Instantiate(stone_sled, objParent.transform.position + new Vector3(0, 0, 0), Quaternion.identity);
                 stone_sled1.name = "stone_sled_" + level + "_" + row + "_1";
-                stone_sled1.transform.position = objParent.transform.position + new Vector3((base_size / 2 - holeWide * blockwide / 2 + 0.75f), height + 0.75f, (base_size / 2 - 2.5f * blockwide));
+                stone_sled1.transform.position = objParent.transform.position + new Vector3((base_size / 2 - holeWide * blockwide / 2), height + 1.5f, (base_size / 2 - 2.5f * blockwide));
                 stone_sled1.transform.localRotation = Quaternion.Euler(0.0f, 90.0f + RampInclination, RampInclination);
                 //stone_sled1.transform.parent = objParent.transform;
                 stone_sled1.transform.parent = workers_gameObject.transform;
                 stone_sled1.isStatic = true;
+                stone_sled1.transform.position = stone_sled1.transform.position + new Vector3(0, -0.8f, 0);
             }
 
-            if (minBaseSize2Ramps < base_size && (!Method2Ramp || level % 2 == 0))
+            if (!Method2Ramp || level % 2 == 0)
             {
                 GameObject stone_sled1 = Instantiate(stone_sled, objParent.transform.position + new Vector3(0, 0, 0), Quaternion.identity);
                 stone_sled1.name = "stone_sled_" + level + "_" + row + "_2";
-                stone_sled1.transform.position = objParent.transform.position + new Vector3((base_size / 2 - 2.5f * blockwide), height + 0.75f, -(base_size / 2 - holeWide * blockwide / 2 + 0.75f));
+                stone_sled1.transform.position = objParent.transform.position + new Vector3((base_size / 2 - 2.5f * blockwide), height + 1.5f, -(base_size / 2 - holeWide * blockwide / 2));
                 stone_sled1.transform.localRotation = Quaternion.Euler(0.0f, RampInclination, -RampInclination);
                 //stone_sled1.transform.parent = objParent.transform;
                 stone_sled1.transform.parent = workers_gameObject.transform;
                 stone_sled1.isStatic = true;
+                stone_sled1.transform.position = stone_sled1.transform.position + new Vector3(0, -0.8f, 0);
             }
 
-            if (!Method2Ramp || level % 2 == 1)
+            if (minBaseSize4Ramps < base_size &&  (!Method2Ramp || level % 2 == 1))
             {
                 GameObject stone_sled1 = Instantiate(stone_sled, objParent.transform.position + new Vector3(0, 0, 0), Quaternion.identity);
                 stone_sled1.name = "stone_sled_" + level + "_" + row + "_3";
-                stone_sled1.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - holeWide * blockwide / 2 + 0.75f), height + 0.75f, -(base_size / 2 - 2.5f * blockwide));
+                stone_sled1.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - holeWide * blockwide / 2), height + 1.5f, -(base_size / 2 - 2.5f * blockwide));
                 stone_sled1.transform.localRotation = Quaternion.Euler(0.0f, 90.0f+ RampInclination, -RampInclination);
                 //stone_sled1.transform.parent = objParent.transform;
                 stone_sled1.transform.parent = workers_gameObject.transform;
                 stone_sled1.isStatic = true;
+                stone_sled1.transform.position = stone_sled1.transform.position + new Vector3(0, -0.8f, 0);
             }
 
-            if (minBaseSize2Ramps < base_size && (!Method2Ramp || level % 2 == 0))
+            if (!Method2Ramp || level % 2 == 0)
             {
                 GameObject stone_sled1 = Instantiate(stone_sled, new Vector3(0, 0, 0), Quaternion.identity);
                 stone_sled1.name = "stone_sled_" + level + "_" + row + "_4";
-                stone_sled1.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - 2.5f * blockwide), height + 0.75f, (base_size / 2 - holeWide * blockwide / 2 + 0.75f));
+                stone_sled1.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - 2.5f * blockwide), height + 1.5f, (base_size / 2 - holeWide * blockwide / 2));
                 stone_sled1.transform.localRotation = Quaternion.Euler(0.0f, RampInclination, RampInclination);
                 //stone_sled1.transform.parent = objParent.transform;
                 stone_sled1.transform.parent = workers_gameObject.transform;
                 stone_sled1.isStatic = true;
+                stone_sled1.transform.position = stone_sled1.transform.position + new Vector3(0, -0.8f, 0);
             }
         }
 
@@ -4004,97 +4413,105 @@ public class GeneratePyramid : MonoBehaviour
             for (int i = 0; i < 12; i++)
             {
                 // left hand
-                if (!Method2Ramp || level % 2 == 1)
+                if (minBaseSize4Ramps < base_size &&  (!Method2Ramp || level % 2 == 1))
                 {
                     GameObject Egyptian = Instantiate(Egyptian_body, new Vector3(0, 0, 0), Quaternion.identity);
                     Egyptian.name = "Egyptian_left_" + level + "_" + row + "_" + i + "_1";
-                    Egyptian.transform.position = objParent.transform.position + new Vector3((base_size / 2 - (0.75f + 0.1f * i) - holeWide * blockwide / 2), height + 2.25f + 0.16f * i, (base_size / 2 - (4.5f + i) * blockwide));
-                    Egyptian.transform.localRotation = Quaternion.Euler(RampInclination, RampInclination, 0.0f);                    
+                    Egyptian.transform.position = objParent.transform.position + new Vector3((base_size / 2 - (1.25f + 0.1f * i) - holeWide * blockwide / 2), height + 3.5f + 0.16f * i, (base_size / 2 - (4.5f + i) * blockwide));
+                    Egyptian.transform.localRotation = Quaternion.Euler(RampInclination, RampInclination + 180f, 0.0f);                    
                     //Egyptian.transform.parent = objParent.transform;
                     Egyptian.transform.parent = workers_gameObject.transform;
-                    Egyptian.isStatic = true;                    
+                    Egyptian.isStatic = true;
+                    Egyptian.transform.position = Egyptian.transform.position + new Vector3(0, -2.8f, 0);
                 }
 
-                if (minBaseSize2Ramps < base_size && (!Method2Ramp || level % 2 == 0))
+                if (!Method2Ramp || level % 2 == 0)
                 {
                     GameObject Egyptian = Instantiate(Egyptian_body, new Vector3(0, 0, 0), Quaternion.identity);
                     Egyptian.name = "Egyptian_left_" + level + "_" + row + "_" + i + "_2";
-                    Egyptian.transform.position = objParent.transform.position + new Vector3((base_size / 2 - (4.5f + i) * blockwide), height + 2.25f + 0.16f * i, -(base_size / 2 - (0.75f + 0.1f * i) - holeWide * blockwide / 2));
-                    Egyptian.transform.localRotation = Quaternion.Euler(RampInclination, 90.0f+ RampInclination, 0.0f);
+                    Egyptian.transform.position = objParent.transform.position + new Vector3((base_size / 2 - (4.5f + i) * blockwide), height + 3.5f + 0.16f * i, -(base_size / 2 - (1.25f + 0.1f * i) - holeWide * blockwide / 2));
+                    Egyptian.transform.localRotation = Quaternion.Euler(RampInclination, 90.0f+ RampInclination + 180f, 0.0f);
                     //Egyptian.transform.parent = objParent.transform;
                     Egyptian.transform.parent = workers_gameObject.transform;
                     Egyptian.isStatic = true;
+                    Egyptian.transform.position = Egyptian.transform.position + new Vector3(0, -2.8f, 0);
                 }
 
-                if (!Method2Ramp || level % 2 == 1)
+                if (minBaseSize4Ramps < base_size && (!Method2Ramp || level % 2 == 1))
                 {
                     GameObject Egyptian = Instantiate(Egyptian_body, new Vector3(0, 0, 0), Quaternion.identity);
                     Egyptian.name = "Egyptian_left_" + level + "_" + row + "_" + i + "_3";
-                    Egyptian.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - (0.75f + 0.1f * i) - holeWide * blockwide / 2), height + 2.25f + 0.16f * i, -(base_size / 2 - (4.5f + i) * blockwide));
-                    Egyptian.transform.localRotation = Quaternion.Euler(RampInclination, 180.0f+ RampInclination, 0.0f);
+                    Egyptian.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - (1.25f + 0.1f * i) - holeWide * blockwide / 2), height + 3.5f + 0.16f * i, -(base_size / 2 - (4.5f + i) * blockwide));
+                    Egyptian.transform.localRotation = Quaternion.Euler(RampInclination, 180.0f+ RampInclination + 180f, 0.0f);
                     //Egyptian.transform.parent = objParent.transform;
                     Egyptian.transform.parent = workers_gameObject.transform;
                     Egyptian.isStatic = true;
+                    Egyptian.transform.position = Egyptian.transform.position + new Vector3(0, -2.8f, 0);
                 }
 
-                if (minBaseSize2Ramps < base_size && (!Method2Ramp || level % 2 == 0))
+                if (!Method2Ramp || level % 2 == 0)
                 {
                     GameObject Egyptian = Instantiate(Egyptian_body, new Vector3(0, 0, 0), Quaternion.identity);
                     Egyptian.name = "Egyptian_left_" + level + "_" + row + "_" + i + "_4";
-                    Egyptian.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - (4.5f + i) * blockwide), height + 2.25f + 0.16f * i, (base_size / 2 - (0.75f + 0.1f * i) - holeWide * blockwide / 2));
-                    Egyptian.transform.localRotation = Quaternion.Euler(RampInclination, -90.0f+ RampInclination, 0.0f);
+                    Egyptian.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - (4.5f + i) * blockwide), height + 3.5f + 0.16f * i, (base_size / 2 - (1.25f + 0.1f * i) - holeWide * blockwide / 2));
+                    Egyptian.transform.localRotation = Quaternion.Euler(RampInclination, -90.0f+ RampInclination + 180f, 0.0f);
                     //Egyptian.transform.parent = objParent.transform;
                     Egyptian.transform.parent = workers_gameObject.transform;
                     Egyptian.isStatic = true;
+                    Egyptian.transform.position = Egyptian.transform.position + new Vector3(0, -2.8f, 0);
                 }
 
                 // right hand
-                if (!Method2Ramp || level % 2 == 1)
+                if (minBaseSize4Ramps < base_size && (!Method2Ramp || level % 2 == 1))
                 {
                     GameObject Egyptian2 = Instantiate(Egyptian_body, new Vector3(0, 0, 0), Quaternion.identity);
                     Egyptian2.name = "Egyptian_right_" + level + "_" + row + "_" + i + "_1";
-                    Egyptian2.transform.position = objParent.transform.position + new Vector3((base_size / 2 + (1.5f - 0.1f * i) - holeWide * blockwide / 2), height + 2.25f + 0.16f * i, (base_size / 2 - (4.5f + i) * blockwide));
-                    Egyptian2.transform.localRotation = Quaternion.Euler(RampInclination, RampInclination, 0.0f);
+                    Egyptian2.transform.position = objParent.transform.position + new Vector3((base_size / 2 + (0.75f - 0.1f * i) - holeWide * blockwide / 2), height + 3.5f + 0.16f * i, (base_size / 2 - (4.5f + i) * blockwide));
+                    Egyptian2.transform.localRotation = Quaternion.Euler(RampInclination, RampInclination + 180f, 0.0f);
                     Egyptian2.transform.position -= new Vector3(0.25f, 0, 0);
                     //Egyptian2.transform.parent = objParent.transform;
                     Egyptian2.transform.parent = workers_gameObject.transform;
-                    Egyptian2.isStatic = true;      
+                    Egyptian2.isStatic = true;
+                    Egyptian2.transform.position = Egyptian2.transform.position + new Vector3(0, -2.8f, 0);
                 }
 
-                if (minBaseSize2Ramps < base_size && (!Method2Ramp || level % 2 == 0))
+                if (!Method2Ramp || level % 2 == 0)
                 {
                     GameObject Egyptian2 = Instantiate(Egyptian_body, new Vector3(0, 0, 0), Quaternion.identity);
                     Egyptian2.name = "Egyptian_right_" + level + "_" + row + "_" + i + "_2";
-                    Egyptian2.transform.position = objParent.transform.position + new Vector3((base_size / 2 - (4.5f + i) * blockwide), height + 2.25f + 0.16f * i, -(base_size / 2 + (1.5f - 0.1f * i) - holeWide * blockwide / 2));
-                    Egyptian2.transform.localRotation = Quaternion.Euler(RampInclination, 90.0f+ RampInclination, 0.0f);
+                    Egyptian2.transform.position = objParent.transform.position + new Vector3((base_size / 2 - (4.5f + i) * blockwide), height + 3.5f + 0.16f * i, -(base_size / 2 + (0.75f - 0.1f * i) - holeWide * blockwide / 2));
+                    Egyptian2.transform.localRotation = Quaternion.Euler(RampInclination, 90.0f+ RampInclination + 180f, 0.0f);
                     Egyptian2.transform.position -= new Vector3(0, 0, -0.25f);
                     //Egyptian2.transform.parent = objParent.transform;
                     Egyptian2.transform.parent = workers_gameObject.transform;
                     Egyptian2.isStatic = true;
+                    Egyptian2.transform.position = Egyptian2.transform.position + new Vector3(0, -2.8f, 0);
                 }
 
-                if (!Method2Ramp || level % 2 == 1)
+                if (minBaseSize4Ramps < base_size && (!Method2Ramp || level % 2 == 1))
                 {
                     GameObject Egyptian2 = Instantiate(Egyptian_body, new Vector3(0, 0, 0), Quaternion.identity);
                     Egyptian2.name = "Egyptian_right_" + level + "_" + row + "_" + i + "_3";
-                    Egyptian2.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 + (1.5f - 0.1f * i) - holeWide * blockwide / 2), height + 2.25f + 0.16f * i, -(base_size / 2 - (4.5f + i) * blockwide));
-                    Egyptian2.transform.localRotation = Quaternion.Euler(RampInclination, 180.0f+ RampInclination, 0.0f);
+                    Egyptian2.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 + (0.75f - 0.1f * i) - holeWide * blockwide / 2), height + 3.5f + 0.16f * i, -(base_size / 2 - (4.5f + i) * blockwide));
+                    Egyptian2.transform.localRotation = Quaternion.Euler(RampInclination, 180.0f+ RampInclination + 180f, 0.0f);
                     Egyptian2.transform.position -= new Vector3(-0.25f, 0, 0);
                     //Egyptian2.transform.parent = objParent.transform;
                     Egyptian2.transform.parent = workers_gameObject.transform;
                     Egyptian2.isStatic = true;
+                    Egyptian2.transform.position = Egyptian2.transform.position + new Vector3(0, -2.8f, 0);
                 }
 
-                if (minBaseSize2Ramps < base_size && (!Method2Ramp || level % 2 == 0))
+                if (!Method2Ramp || level % 2 == 0)
                 {
                     GameObject Egyptian2 = Instantiate(Egyptian_body, new Vector3(0, 0, 0), Quaternion.identity);
                     Egyptian2.name = "Egyptian_right_" + level + "_" + row + "_" + i + "_4";
-                    Egyptian2.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - (4.5f + i) * blockwide), height + 2.25f + 0.16f * i, (base_size / 2 + (1.5f - 0.1f * i) - holeWide * blockwide / 2));
-                    Egyptian2.transform.localRotation = Quaternion.Euler(RampInclination, -90.0f+ RampInclination, 0.0f);
+                    Egyptian2.transform.position = objParent.transform.position + new Vector3(-(base_size / 2 - (4.5f + i) * blockwide), height + 3.5f + 0.16f * i, (base_size / 2 + (0.75f - 0.1f * i) - holeWide * blockwide / 2));
+                    Egyptian2.transform.localRotation = Quaternion.Euler(RampInclination, -90.0f+ RampInclination + 180f, 0.0f);
                     Egyptian2.transform.position -= new Vector3(0, 0, 0.25f);
                     //Egyptian2.transform.parent = objParent.transform;
                     Egyptian2.transform.parent = workers_gameObject.transform;
                     Egyptian2.isStatic = true;
+                    Egyptian2.transform.position = Egyptian2.transform.position + new Vector3(0, -2.8f, 0);
                 }
             }
         }
@@ -4134,24 +4551,28 @@ public class GeneratePyramid : MonoBehaviour
                 //cubefloor.transform.parent = objParent.transform;
                 cubefloor.transform.parent = ramp_gameObject.transform;
                 cubefloor.name = "Middle_4Ramp_floor_" + level + "_" + row + "_1";
+                cubefloor.tag = "Ramp";
                 cubefloor.transform.position += new Vector3(0, 0, -base_size / 2);
 
                 cubefloor = Instantiate(cubefloor2);
                 //cubefloor.transform.parent = objParent.transform;
                 cubefloor.transform.parent = ramp_gameObject.transform;
                 cubefloor.name = "Middle_4Ramp_floor_" + level + "_" + row + "_2";
+                cubefloor.tag = "Ramp";
                 cubefloor.transform.position += new Vector3(-base_size / 2, 0, 0);
 
                 cubefloor = Instantiate(cubefloor3);
                 //cubefloor.transform.parent = objParent.transform;
                 cubefloor.transform.parent = ramp_gameObject.transform;
                 cubefloor.name = "Middle_4Ramp_floor_" + level + "_" + row + "_3";
+                cubefloor.tag = "Ramp";
                 cubefloor.transform.position += new Vector3(0, 0, base_size / 2);
 
                 cubefloor = Instantiate(cubefloor4);
                 //cubefloor.transform.parent = objParent.transform;
                 cubefloor.transform.parent = ramp_gameObject.transform;
                 cubefloor.name = "Middle_4Ramp_floor_" + level + "_" + row + "_4";
+                cubefloor.tag = "Ramp";
                 cubefloor.transform.position += new Vector3(base_size / 2, 0, 0);
             }
 
@@ -4162,24 +4583,28 @@ public class GeneratePyramid : MonoBehaviour
                 //cubewall.transform.parent = objParent.transform;
                 cubewall.transform.parent = ramp_gameObject.transform;
                 cubewall.name = "Middle_4Ramp_wall_" + level + "_" + row + "_1";
+                cubewall.tag = "Ramp";
                 cubewall.transform.position += new Vector3(0, 0, -base_size / 2);
 
                 cubewall = Instantiate(cubewall2);
                 //cubewall.transform.parent = objParent.transform;
                 cubewall.transform.parent = ramp_gameObject.transform;
                 cubewall.name = "Middle_4Ramp_wall_" + level + "_" + row + "_2";
+                cubewall.tag = "Ramp";
                 cubewall.transform.position += new Vector3(-base_size / 2, 0, 0);
 
                 cubewall = Instantiate(cubewall3);
                 //cubewall.transform.parent = objParent.transform;
                 cubewall.transform.parent = ramp_gameObject.transform;
                 cubewall.name = "Middle_4Ramp_wall_" + level + "_" + row + "_3";
+                cubewall.tag = "Ramp";
                 cubewall.transform.position += new Vector3(0, 0, base_size / 2);
 
                 cubewall = Instantiate(cubewall4);
                 //cubewall.transform.parent = objParent.transform;
                 cubewall.transform.parent = ramp_gameObject.transform;
                 cubewall.name = "Middle_4Ramp_wall_" + level + "_" + row + "_4";
+                cubewall.tag = "Ramp";
                 cubewall.transform.position += new Vector3(base_size / 2, 0, 0);
             }
 
@@ -4240,48 +4665,56 @@ public class GeneratePyramid : MonoBehaviour
                     //cubefloor.transform.parent = objParent.transform;
                     cubefloor.transform.parent = ramp_gameObject.transform;
                     cubefloor.name = "Middle_8Ramp_floor_" + level + "_" + row + "_1";
+                    cubefloor.tag = "Ramp";
                     cubefloor.transform.position += new Vector3(0, 0, -base_size * 3 / 4);
 
                     cubefloor = Instantiate(cubefloor1);
                     //cubefloor.transform.parent = objParent.transform;
                     cubefloor.transform.parent = ramp_gameObject.transform;
                     cubefloor.name = "Middle_8Ramp_floor_" + level + "_" + row + "_2";
+                    cubefloor.tag = "Ramp";
                     cubefloor.transform.position += new Vector3(0, 0, -base_size / 4);
 
                     cubefloor = Instantiate(cubefloor2);
                     //cubefloor.transform.parent = objParent.transform;
                     cubefloor.transform.parent = ramp_gameObject.transform;
                     cubefloor.name = "Middle_8Ramp_floor_" + level + "_" + row + "_3";
+                    cubefloor.tag = "Ramp";
                     cubefloor.transform.position += new Vector3(-base_size * 3 / 4, 0, 0);
 
                     cubefloor = Instantiate(cubefloor2);
                     //cubefloor.transform.parent = objParent.transform;
                     cubefloor.transform.parent = ramp_gameObject.transform;
                     cubefloor.name = "Middle_8Ramp_floor_" + level + "_" + row + "_4";
+                    cubefloor.tag = "Ramp";
                     cubefloor.transform.position += new Vector3(-base_size / 4, 0, 0);
 
                     cubefloor = Instantiate(cubefloor3);
                     //cubefloor.transform.parent = objParent.transform;
                     cubefloor.transform.parent = ramp_gameObject.transform;
                     cubefloor.name = "Middle_8Ramp_floor_" + level + "_" + row + "_5";
+                    cubefloor.tag = "Ramp";
                     cubefloor.transform.position += new Vector3(0, 0, base_size * 3 / 4);
 
                     cubefloor = Instantiate(cubefloor3);
                     //cubefloor.transform.parent = objParent.transform;
                     cubefloor.transform.parent = ramp_gameObject.transform;
                     cubefloor.name = "Middle_8Ramp_floor_" + level + "_" + row + "_6";
+                    cubefloor.tag = "Ramp";
                     cubefloor.transform.position += new Vector3(0, 0, base_size / 4);
 
                     cubefloor = Instantiate(cubefloor4);
                     //cubefloor.transform.parent = objParent.transform;
                     cubefloor.transform.parent = ramp_gameObject.transform;
                     cubefloor.name = "Middle_8Ramp_floor_" + level + "_" + row + "_7";
+                    cubefloor.tag = "Ramp";
                     cubefloor.transform.position += new Vector3(base_size * 3 / 4, 0, 0);
 
                     cubefloor = Instantiate(cubefloor4);
                     //cubefloor.transform.parent = objParent.transform;
                     cubefloor.transform.parent = ramp_gameObject.transform;
                     cubefloor.name = "Middle_8Ramp_floor_" + level + "_" + row + "_8";
+                    cubefloor.tag = "Ramp";
                     cubefloor.transform.position += new Vector3(base_size / 4, 0, 0);
                 }
 
@@ -4292,48 +4725,56 @@ public class GeneratePyramid : MonoBehaviour
                     //cubewall.transform.parent = objParent.transform;
                     cubewall.transform.parent = ramp_gameObject.transform;
                     cubewall.name = "Middle_8Ramp_wall_" + level + "_" + row + "_1";
+                    cubewall.tag = "Ramp";
                     cubewall.transform.position += new Vector3(0, 0, -base_size * 3 / 4);
 
                     cubewall = Instantiate(cubewall1);
                     //cubewall.transform.parent = objParent.transform;
                     cubewall.transform.parent = ramp_gameObject.transform;
                     cubewall.name = "Middle_8Ramp_wall_" + level + "_" + row + "_2";
+                    cubewall.tag = "Ramp";
                     cubewall.transform.position += new Vector3(0, 0, -base_size / 4);
 
                     cubewall = Instantiate(cubewall2);
                     //cubewall.transform.parent = objParent.transform;
                     cubewall.transform.parent = ramp_gameObject.transform;
                     cubewall.name = "Middle_8Ramp_wall_" + level + "_" + row + "_3";
+                    cubewall.tag = "Ramp";
                     cubewall.transform.position += new Vector3(-base_size * 3 / 4, 0, 0);
 
                     cubewall = Instantiate(cubewall2);
                     //cubewall.transform.parent = objParent.transform;
                     cubewall.transform.parent = ramp_gameObject.transform;
                     cubewall.name = "Middle_8Ramp_wall_" + level + "_" + row + "_4";
+                    cubewall.tag = "Ramp";
                     cubewall.transform.position += new Vector3(-base_size / 4, 0, 0);
 
                     cubewall = Instantiate(cubewall3);
                     //cubewall.transform.parent = objParent.transform;
                     cubewall.transform.parent = ramp_gameObject.transform;
                     cubewall.name = "Middle_8Ramp_wall_" + level + "_" + row + "_5";
+                    cubewall.tag = "Ramp";
                     cubewall.transform.position += new Vector3(0, 0, base_size * 3 / 4);
 
                     cubewall = Instantiate(cubewall3);
                     //cubewall.transform.parent = objParent.transform;
                     cubewall.transform.parent = ramp_gameObject.transform;
                     cubewall.name = "Middle_8Ramp_wall_" + level + "_" + row + "_6";
+                    cubewall.tag = "Ramp";
                     cubewall.transform.position += new Vector3(0, 0, base_size / 4);
 
                     cubewall = Instantiate(cubewall4);
                     //cubewall.transform.parent = objParent.transform;
                     cubewall.transform.parent = ramp_gameObject.transform;
                     cubewall.name = "Middle_8Ramp_wall_" + level + "_" + row + "_7";
+                    cubewall.tag = "Ramp";
                     cubewall.transform.position += new Vector3(base_size * 3 / 4, 0, 0);
 
                     cubewall = Instantiate(cubewall4);
                     //cubewall.transform.parent = objParent.transform;
                     cubewall.transform.parent = ramp_gameObject.transform;
                     cubewall.name = "Middle_8Ramp_wall_" + level + "_" + row + "_8";
+                    cubewall.tag = "Ramp";
                     cubewall.transform.position += new Vector3(base_size / 4, 0, 0);
                 }
             }
@@ -4388,6 +4829,7 @@ public class GeneratePyramid : MonoBehaviour
     /// </summary>
     public void ResetValues()
     {
+        rampMethod = RampMethodType.Integrated;
         selectedPyramid = PyramidType.Default;
         BaseSize = 230;
         Height = 147; // 147 is the height of the pyramid of Khufu
@@ -4425,6 +4867,44 @@ public class GeneratePyramid : MonoBehaviour
         DrawAll = false;
         showRamps = true;
         halfPyramid = false;
+        setback = false;
+        StraightRampFace = RampPositionFace.NorthFace;
+        DrawPyramidInterior = false;
+        DrawPyramidInteriorTransparent = true;
+
+        PyramidVolume = 0f;
+        EmbankmentVolume = 0f;
+        Decomisioning = false;
+        AnimateDecommissioning = false;
+        DecommissioningTimeLapse = 0.1f;
+        DecommissioningStep = 0.05f;               
+        SideSlopeAngle = 30.0f;
+        spiralRampSeparation = 2;
+        internalRampStraightRampHigh = 40.0f;
+        pyramidTransparency = 0.25f;
+
+        showInfoGranite = false;        
+        numberOfGranite10tons = 6;
+        numberOfLimestone40tons = 24;
+        numberOfGranite50tons = 0;
+        numberOfGranite60tons = 0;
+        numberOfGranite70tons = 45;
+        numberOfGranite80tons = 0;
+        startCourseKingsChamber = 60;
+        endCourseKingsChamber = 85;
+        endCourseGableteKingsChamber = 96;
+        forcePerPullerNewtons = 250.0f;
+        mezzanineRampAngleDegrees = 3.0f;
+        mezzanineFrictionCoef = 0.2f;
+        horizontalTransferDistanceMeters = 10.0f;
+        setupTimePerCourseHours = 2.0f;
+        setupTimePerCourseGroups = 6;
+        pullingSpeedRampMetersPerSecond = 0.15f;
+        pullingSpeedTerraceMetersPerSecond = 0.20f;
+        useCapstan = true;
+        frictionCoefCapstan = 0.3f;
+        capstanWrapAngleRadians = Mathf.PI;
+        totalGraniteMoveTimeWorkingYears = 0;
 
         Debug.Log("Properties reset to default values.");
     }
@@ -4583,22 +5063,22 @@ public class GeneratePyramid : MonoBehaviour
 
         switch (StraightRampFace)
         {
-            case CameraPositionFace.NorthFace:
+            case RampPositionFace.NorthFace:
                 startPosition = new Vector3(0, startHeight, faceOffset);
                 endPosition = new Vector3(0, 0, startPosition.z + horizontalProjection);
                 rampRotation = Quaternion.Euler(RampInclination, 0, 0);
                 break;
-            case CameraPositionFace.SouthFace:
+            case RampPositionFace.SouthFace:
                 startPosition = new Vector3(0, startHeight, -faceOffset);
                 endPosition = new Vector3(0, 0, startPosition.z - horizontalProjection);
                 rampRotation = Quaternion.Euler(-RampInclination, 0, 0);
                 break;
-            case CameraPositionFace.EastFace:
+            case RampPositionFace.EastFace:
                 startPosition = new Vector3(faceOffset, startHeight, 0);
                 endPosition = new Vector3(startPosition.x + horizontalProjection, 0, 0);
                 rampRotation = Quaternion.Euler(0, 90, 0) * Quaternion.Euler(RampInclination, 0, 0);
                 break;
-            case CameraPositionFace.WestFace:
+            case RampPositionFace.WestFace:
                 startPosition = new Vector3(-faceOffset, startHeight, 0);
                 endPosition = new Vector3(startPosition.x - horizontalProjection, 0, 0);
                 rampRotation = Quaternion.Euler(0, -90, 0) * Quaternion.Euler(RampInclination, 0, 0);
@@ -4727,16 +5207,16 @@ public class GeneratePyramid : MonoBehaviour
         // 3. Determine the coordinate of the entry point based on the selected face.
         switch (StraightRampFace)
         {
-            case CameraPositionFace.NorthFace:
+            case RampPositionFace.NorthFace:
                 entryPoint = new Vector3(0, currentHeight, faceOffset);
                 break;
-            case CameraPositionFace.SouthFace:
+            case RampPositionFace.SouthFace:
                 entryPoint = new Vector3(0, currentHeight, -faceOffset);
                 break;
-            case CameraPositionFace.EastFace:
+            case RampPositionFace.EastFace:
                 entryPoint = new Vector3(faceOffset, currentHeight, 0);
                 break;
-            case CameraPositionFace.WestFace:
+            case RampPositionFace.WestFace:
                 entryPoint = new Vector3(-faceOffset, currentHeight, 0);
                 break;
         }
@@ -4927,4 +5407,621 @@ public class GeneratePyramid : MonoBehaviour
             }
         }
     }
+
+    /// <summary>
+    /// Calculates the force required to pull a single block up the mezzanine ramp.
+    /// </summary>
+    private float CalculatePullForce(float mass, float rampAngleRad, float rampFrictionCoeff, out float totalPullForce)
+    {
+        float sinTheta = Mathf.Sin(rampAngleRad);
+        float cosTheta = Mathf.Cos(rampAngleRad);
+
+        float forceParallel = mass * g * sinTheta;
+        float forceFriction = mass * g * cosTheta * rampFrictionCoeff;
+        totalPullForce = forceParallel + forceFriction; // This is the raw force needed
+
+        if (useCapstan)
+        {
+            float forceMultiplier = Mathf.Exp(frictionCoefCapstan * capstanWrapAngleRadians);
+            return totalPullForce / forceMultiplier; // This is the final force to apply
+        }
+        else
+        {
+            return totalPullForce; // No capstan, final force is the raw force
+        }
+    }
+
+    /// <summary>
+    /// Calculates the number of pullers required for a given force.
+    /// </summary>
+    private int CalculatePullers(float totalForceToApply)
+    {
+        if (forcePerPullerNewtons <= 0) return 0;
+        return Mathf.CeilToInt(totalForceToApply / forcePerPullerNewtons);
+    }
+
+    /// <summary>
+    /// Calculates the total work (energy) in MegaJoules to move one block.
+    /// </summary>
+    private float CalculateWork(float mass, float distanceOnRamp, float rampAngleRad, float frictionCoeff)
+    {
+        // Work on ramp = (Force) * distance
+        float sinTheta = Mathf.Sin(rampAngleRad);
+        float cosTheta = Mathf.Cos(rampAngleRad);
+        float totalPullForce = (mass * g * sinTheta) + (mass * g * cosTheta * frictionCoeff);
+        float workOnRamp_J = totalPullForce * distanceOnRamp;
+
+        // Work on horizontal transfer
+        float workHorizontal_J = (mass * g * frictionCoeff) * horizontalTransferDistanceMeters;
+
+        return (workOnRamp_J + workHorizontal_J) / 1000000f; // Convert to MegaJoules
+    }
+
+    /// <summary>
+    /// Processes and logs the calculations for moving granite megaliths for a specific course.
+    /// </summary>
+    private void ProcessGraniteCalculations(int row, float currentCourseHeight)
+    {
+        if (!showInfoGranite || csvgranitewriter == null) return;
+        if (endCourseGableteKingsChamber==0) endCourseGableteKingsChamber = endCourseKingsChamber;
+        if (row > endCourseGableteKingsChamber) return;
+
+        // 1. Calculate blocks for *this course*
+        float totalCourses = (endCourseKingsChamber - startCourseKingsChamber) + 1;
+        if (totalCourses <= 0 && row>startCourseKingsChamber) return;
+
+        float remainingPercentage = 0f;
+        if (row < startCourseKingsChamber)
+        {
+            remainingPercentage = 1.0f;
+        }
+        else if (row > endCourseKingsChamber)
+        {
+            remainingPercentage = 0.0f;
+        }
+        else
+        {
+            float totalCoursesInRange = (endCourseKingsChamber - startCourseKingsChamber) + 1;
+            if (totalCoursesInRange <= 0) totalCoursesInRange = 1;
+            float coursesCompleted = row - startCourseKingsChamber;
+            remainingPercentage = Mathf.Clamp01(1.0f - (coursesCompleted / totalCoursesInRange));
+        }
+
+        float remainingPercentageLimestone = 0f;
+        if (row < endCourseKingsChamber)
+        {
+            remainingPercentageLimestone = 1.0f;
+        }
+        else if (row > endCourseGableteKingsChamber)
+        {
+            remainingPercentageLimestone = 0.0f;
+        }
+        else 
+        {
+            float totalCoursesInRangeLimestone = (endCourseGableteKingsChamber - endCourseKingsChamber);
+            if (totalCoursesInRangeLimestone <= 0) totalCoursesInRangeLimestone = 1;
+            float coursesCompletedLimestone = endCourseGableteKingsChamber - row;
+            remainingPercentageLimestone = 1.0f - Mathf.Clamp01(1.0f - (coursesCompletedLimestone / totalCoursesInRangeLimestone));
+        }
+
+        int blocks10t = (int)Mathf.Ceil(numberOfGranite10tons * remainingPercentage);
+        int blocks40t = (int)Mathf.Ceil(numberOfLimestone40tons * remainingPercentageLimestone);
+        int blocks50t = (int)Mathf.Ceil(numberOfGranite50tons * remainingPercentage);
+        int blocks60t = (int)Mathf.Ceil(numberOfGranite60tons * remainingPercentage);
+        int blocks70t = (int)Mathf.Ceil(numberOfGranite70tons * remainingPercentage);
+        int blocks80t = (int)Mathf.Ceil(numberOfGranite80tons * remainingPercentage);
+        int totalBlocksThisCourse = blocks10t + blocks40t + blocks50t + blocks60t + blocks70t + blocks80t;
+
+        if (totalBlocksThisCourse == 0) return;
+
+        // 2. Calculate distances and ramp angle
+        float rampAngleRad = mezzanineRampAngleDegrees * Mathf.Deg2Rad;
+        float verticalDistance = currentCourseHeight;
+        if (Mathf.Sin(rampAngleRad) == 0) return;
+        float distanceOnRamp = verticalDistance / Mathf.Sin(rampAngleRad);
+
+        // 3. Calculate forces and pullers per block type
+        float forceToApply10t = CalculatePullForce(10000, rampAngleRad, mezzanineFrictionCoef, out float rawForce10t);
+        float forceToApply40t = CalculatePullForce(40000, rampAngleRad, mezzanineFrictionCoef, out float rawForce40t);
+        float forceToApply50t = CalculatePullForce(50000, rampAngleRad, mezzanineFrictionCoef, out float rawForce50t);
+        float forceToApply60t = CalculatePullForce(60000, rampAngleRad, mezzanineFrictionCoef, out float rawForce60t);
+        float forceToApply70t = CalculatePullForce(70000, rampAngleRad, mezzanineFrictionCoef, out float rawForce70t);
+        float forceToApply80t = CalculatePullForce(80000, rampAngleRad, mezzanineFrictionCoef, out float rawForce80t);
+
+        // TotalPullers is the team size needed *without* a capstan
+        int totalPullers10t = CalculatePullers(rawForce10t);
+        int totalPullers40t = CalculatePullers(rawForce40t);
+        int totalPullers50t = CalculatePullers(rawForce50t);
+        int totalPullers60t = CalculatePullers(rawForce60t);
+        int totalPullers70t = CalculatePullers(rawForce70t);
+        int totalPullers80t = CalculatePullers(rawForce80t);
+
+        // CapstanOperators is the smaller team applying the *reduced* force
+        int capstanOperators10t = CalculatePullers(forceToApply10t);
+        int capstanOperators40t = CalculatePullers(forceToApply40t);
+        int capstanOperators50t = CalculatePullers(forceToApply50t);
+        int capstanOperators60t = CalculatePullers(forceToApply60t);
+        int capstanOperators70t = CalculatePullers(forceToApply70t);
+        int capstanOperators80t = CalculatePullers(forceToApply80t);
+
+        // 4. Calculate Work (Energy) for this course
+        float work10t_MJ = CalculateWork(10000, distanceOnRamp, rampAngleRad, mezzanineFrictionCoef) * blocks10t;
+        float work40t_MJ = CalculateWork(40000, distanceOnRamp, rampAngleRad, mezzanineFrictionCoef) * blocks40t;
+        float work50t_MJ = CalculateWork(50000, distanceOnRamp, rampAngleRad, mezzanineFrictionCoef) * blocks50t;
+        float work60t_MJ = CalculateWork(60000, distanceOnRamp, rampAngleRad, mezzanineFrictionCoef) * blocks60t;
+        float work70t_MJ = CalculateWork(70000, distanceOnRamp, rampAngleRad, mezzanineFrictionCoef) * blocks70t;
+        float work80t_MJ = CalculateWork(80000, distanceOnRamp, rampAngleRad, mezzanineFrictionCoef) * blocks80t;
+        float totalWorkThisCourse_MJ = work10t_MJ + work40t_MJ + work50t_MJ + work60t_MJ + work70t_MJ + work80t_MJ;
+
+        // 5. Calculate Time for this course
+        float setupTime_hours = 0;
+        if (setupTimePerCourseGroups > 0)
+        {
+            setupTime_hours = setupTimePerCourseHours * setupTimePerCourseGroups * remainingPercentage;
+            if (row > endCourseKingsChamber && row < endCourseKingsChamber)
+                setupTime_hours = setupTimePerCourseHours * setupTimePerCourseGroups * remainingPercentageLimestone;
+            if (setupTime_hours< setupTimePerCourseHours) {
+                setupTime_hours = setupTimePerCourseHours;
+            }
+        }
+
+        float timeOnRamp_sec = 0;
+        if (pullingSpeedRampMetersPerSecond > 0)
+        {
+            timeOnRamp_sec = distanceOnRamp / pullingSpeedRampMetersPerSecond;
+        }
+
+        float timeOnTerrace_sec = 0;
+        if (pullingSpeedTerraceMetersPerSecond > 0)
+        {
+            timeOnTerrace_sec = horizontalTransferDistanceMeters / pullingSpeedTerraceMetersPerSecond;
+        }
+
+        float timePerTrip_sec = timeOnRamp_sec + timeOnTerrace_sec;
+
+        float totalDisplacementTime_hours = (timePerTrip_sec * totalBlocksThisCourse) / 3600f;
+        float totalTimeThisCourse_hours = setupTime_hours + totalDisplacementTime_hours;
+
+        // Calculate Working Years
+        float totalTimeThisCourse_minutes = totalTimeThisCourse_hours * 60f;
+        float totalTimeThisCourse_years = 0f;
+        if (WorkingYearMinutes > 0)
+        {
+            totalTimeThisCourse_years = totalTimeThisCourse_minutes / WorkingYearMinutes;
+        }
+
+        // 6. Accumulate total time
+        totalGraniteMoveTimeWorkingYears += totalTimeThisCourse_years;
+
+        // 7. Log to CSV
+
+        // Create formatted string for pullers: TotalPullers(CapstanOperators)xNumBlocks
+        var pullerLogParts = new List<string>();
+
+        // Add log part only if there are blocks of that type
+        if (blocks10t > 0)
+        {
+            pullerLogParts.Add($"{totalPullers10t}({capstanOperators10t})x{blocks10t} 10t");
+        }
+        if (blocks40t > 0)
+        {
+            pullerLogParts.Add($"{totalPullers40t}({capstanOperators40t})x{blocks40t} 40t");
+        }
+        if (blocks50t > 0)
+        {
+            pullerLogParts.Add($"{totalPullers50t}({capstanOperators50t})x{blocks50t} 50t");
+        }
+        if (blocks60t > 0)
+        {
+            pullerLogParts.Add($"{totalPullers60t}({capstanOperators60t})x{blocks60t} 60t");
+        }
+        if (blocks70t > 0)
+        {
+            pullerLogParts.Add($"{totalPullers70t}({capstanOperators70t})x{blocks70t} 70t");
+        }
+        if (blocks80t > 0)
+        {
+            pullerLogParts.Add($"{totalPullers80t}({capstanOperators80t})x{blocks80t} 80t");
+        }
+
+        // Join the parts with " | "
+        string pullersLogString = string.Join(" | ", pullerLogParts);
+
+        if (showInfoGranite)
+            csvgranitewriter.WriteLine(
+            $"{row};" +
+            $"{remainingPercentage:F1};" +
+            $"{currentCourseHeight:F2};" +
+            $"{mezzanineRampAngleDegrees:F1};" +
+            $"{distanceOnRamp:F1};" +
+            $"{horizontalTransferDistanceMeters:F1};" +
+            $"{totalBlocksThisCourse};" +
+            $"{totalDisplacementTime_hours:F2};" +
+            $"{setupTime_hours:F2};" +
+            $"{totalTimeThisCourse_hours:F2};" +
+            $"{totalTimeThisCourse_years:F5};" + // UPDATED COLUMN
+            $"{pullersLogString};" +
+            $"{totalWorkThisCourse_MJ:F3}"
+        );
+    }
+
+    /// <summary>
+    /// Dynamically calculates the turning points (iterations) of the
+    /// helical ramp based on the coupled geometry from S4 (Fig S4.1).
+    /// h = (B * tan(a)) / (1 + (tan(a) / tan(b)))
+    /// </summary>
+    public List<TurningPoint> CalculateIERTurningPoints()
+    {
+        var turningPoints = new List<TurningPoint>();
+        float currentHeight = 0f;
+        int iteration = 1;
+
+        // Convert angles from degrees to radians for trigonometric functions
+        float rampAngleRad = this.RampInclination * Mathf.Deg2Rad; // Alpha (a)
+        float pyramidAngleRad = this.PyramidInclination * Mathf.Deg2Rad; // Beta (b)
+
+        // Pre-calculate tangents
+        float tanRamp = Mathf.Tan(rampAngleRad);
+        float tanPyramid = Mathf.Tan(pyramidAngleRad);
+
+        // Error checking for invalid parameters
+        if (tanRamp <= 0)
+        {
+            Debug.LogError("RampInclination must be positive to calculate turns.");
+            return turningPoints; // Returns an empty list
+        }
+        if (tanPyramid <= 0)
+        {
+            Debug.LogError("PyramidInclination must be positive to calculate turns.");
+            return turningPoints; // Returns an empty list
+        }
+
+        // Calculate the ratio term from the derived formula
+        float tanRatio = tanRamp / tanPyramid;
+        
+        while (currentHeight < this.Height && iteration < MAX_TURNING_ITERATIONS)
+        {
+            // 1. Calculate B (currentBaseSize) at the currentHeight
+            // B(h) = BaseSize * (1 - h / Height)
+            float currentBaseSize = this.BaseSize * (1f - (currentHeight / this.Height));
+
+            if (currentBaseSize < this.blockwide)
+            {
+                break; // Pyramid is too narrow to continue
+            }
+
+            // 2. Calculate verticalGain (h) using the correct formula from S4 
+            // h = (B * tan(a)) / (1 + (tan(a) / tan(b)))
+            float verticalGain = (currentBaseSize * tanRamp) / (1f + tanRatio);
+
+
+            if (verticalGain < 0.001f)
+            {
+                break; // Insignificant gain, avoid infinite loop near apex
+            }
+
+            // 3. Calculate the new turning point height
+            float newHeight = currentHeight + verticalGain;
+
+            if (newHeight >= this.Height)
+            {
+                break; // The next turn would be above the apex
+            }      
+            
+            // 4. Save this turning point
+            int course = GetCourseAtHeight(newHeight);
+
+            int blocksOnCourse = GetBlockCountForCourse(course);
+            if (Math.Sqrt(blocksOnCourse) * blockwide < minBaseSize2Ramps / 2)
+            {
+                break; // maximum base size reached half for 2 ramps  
+            }
+
+            turningPoints.Add(new TurningPoint(iteration, newHeight, course, blocksOnCourse));
+
+            // 5. Prepare the next iteration
+            currentHeight = newHeight;
+            iteration++;
+        }
+
+        return turningPoints;
+    }
+
+    /// <summary>
+    /// Calculates the height (h) of a terrace based on the number of blocks
+    /// it contains, using your formula N = (Blocks per Side)^2.
+    /// </summary>
+    public float FindHeightForTerraceBlockCount(int targetBlockCount)
+    {
+        // Based on your clarification: "the total blocks would be its square"
+        // We invert this logic to find the blocks per side:
+        float blocksPerSide = Mathf.Sqrt(targetBlockCount);
+
+        // Calculate the length of that terrace side
+        float targetSideLength = blocksPerSide * this.blockwide;
+
+        // Invert the pyramid slope formula to find the height (h)
+        // Side(h) = BaseSize * (1 - h / Height)
+        //... solving for h:
+        // h = Height * (1 - (Side(h) / BaseSize))
+        float calculatedHeight = Height * (1f - (targetSideLength / BaseSize));
+
+        return calculatedHeight;
+    }
+
+    /// <summary>
+    /// (NEW) Gets the cumulative height from the base to the TOP of a given course number.
+    /// Uses the discrete khufuCourseHeights array if enabled.
+    /// </summary>
+    public float GetHeightAtCourse(int course)
+    {
+        // Use 1-based indexing for safety
+        if (course <= 0) return 0;
+
+        if (!useKhufuCourseHeights || khufuCourseHeights == null || khufuCourseHeights.Count == 0)
+        {
+            // Fallback to average height
+            return course * this.blockheight;
+        }
+
+        float cumulativeHeight = 0;
+        // Course is 1-indexed, array is 0-indexed
+        int targetIndex = course - 1;
+
+        // Sum heights up to and including the target course
+        for (int i = 0; i < khufuCourseHeights.Count && i <= targetIndex; i++)
+        {
+            cumulativeHeight += khufuCourseHeights[i];
+        }
+
+        // If course is out of bounds, return max height
+        if (targetIndex >= khufuCourseHeights.Count)
+        {
+            return cumulativeHeight;
+        }
+
+        return cumulativeHeight;
+    }
+
+    /// <summary>
+    /// (MODIFIED) Converts a height in meters to a course (row) number.
+    /// Now supports discrete course heights via the khufuCourseHeights array.
+    /// </summary>
+    public int GetCourseAtHeight(float height)
+    {
+        if (!useKhufuCourseHeights || khufuCourseHeights == null || khufuCourseHeights.Count == 0)
+        {
+            // Original logic: Fallback to average height
+            // Courses are 1-indexed
+            return Mathf.FloorToInt(height / blockheight) + 1;
+        }
+
+        // (NEW) Discrete height logic
+        float cumulativeHeight = 0;
+        for (int i = 0; i < khufuCourseHeights.Count; i++)
+        {
+            cumulativeHeight += khufuCourseHeights[i];
+            // If the cumulative height *at the end* of this course
+            // is greater than or equal to the target height,
+            // then this is the correct course.
+            if (cumulativeHeight >= height)
+            {
+                return i + 1; // Course is 1-indexed
+            }
+        }
+
+        // If height is greater than all courses, return the top course
+        return khufuCourseHeights.Count;
+    }
+
+    /// <summary>
+    /// Finds the nearest IER turning point (Iteration and Height)
+    /// to a given targetHeight.
+    /// </summary>
+    public TurningPoint FindNearestIERTurn(float targetHeight)
+    {
+        // Use the _ierTurningNodes list that was dynamically calculated in Start()
+        if (_ierTurningNodes == null || _ierTurningNodes.Count == 0)
+        {
+            // This should only happen if RampInclination is <= 0
+            return default(TurningPoint); // Returns an empty (default) turn
+        }
+
+        // Find the nearest turn using Linq, comparing the
+        // absolute height difference.
+        TurningPoint nearestTurn = _ierTurningNodes
+         .OrderBy(turn => Mathf.Abs(turn.Height - targetHeight))
+         .First();
+
+        return nearestTurn;
+    }
+
+    /// <summary>
+    /// Calculates the total number of blocks on a specific course (terrace).
+    /// This is the inverse function of FindHeightForTerraceBlockCount.
+    /// </summary>
+    public int GetBlockCountForCourse(int course)
+    {
+        // 1. Find the actual cumulative height at the top of this course
+        // This respects the useKhufuCourseHeights setting
+        float h = GetHeightAtCourse(course);
+
+        // 2. Calculate the side length of the pyramid terrace at that height
+        // Side(h) = BaseSize * (1 - h / Height)
+        float terraceSideLength = this.BaseSize * (1f - (h / this.Height));
+
+        // 3. Calculate how many blocks fit on one side
+        float blocksPerSide = terraceSideLength / this.blockwide;
+
+        // 4. Calculate total blocks (N = side * side), as per your formula
+        float totalBlockCount = blocksPerSide * blocksPerSide;
+
+        // Return the integer number of blocks
+        return Mathf.RoundToInt(totalBlockCount);
+    }
+
+    public RampTargetMetrics CalculateRampTargetMetrics(int targetRow)
+    {
+        RampTargetMetrics result = new RampTargetMetrics();
+        result.IsValid = false;
+
+        if (targetRow < 0) return result;
+
+        float currentBaseSize = BaseSize;
+        float currentHeight = 0f;
+        int currentRowIndex = 0; 
+        int level = 0;           
+
+        float rampTg = Mathf.Tan(RampInclination * Mathf.Deg2Rad);
+        float pyrTg = Mathf.Tan(PyramidInclination * Mathf.Deg2Rad);
+
+        int startFaceOffset = 0;
+        switch (SingleRampFaceStart)
+        {
+            case RampPositionFace.NorthFace: startFaceOffset = 3; break;
+            case RampPositionFace.WestFace: startFaceOffset = 0; break;
+            case RampPositionFace.SouthFace: startFaceOffset = 1; break;
+            case RampPositionFace.EastFace: startFaceOffset = 2; break;
+        }
+
+        while (currentHeight < Height)
+        {
+            float h_level_theoretical = currentBaseSize * rampTg * pyrTg / (rampTg + pyrTg);
+
+            float h_level_accumulated = 0f;
+            int coursesInThisLevel = 0;
+            int tempRowCounter = currentRowIndex;
+
+            while (true)
+            {
+                float nextCourseHeight = GetBlockHeightForRow(tempRowCounter);
+
+                if ((h_level_accumulated + nextCourseHeight) > h_level_theoretical && h_level_accumulated > 0) break;
+                if ((currentHeight + h_level_accumulated + nextCourseHeight) > Height) break;
+
+                if (tempRowCounter == targetRow)
+                {
+                    result.Level = level;
+                    result.Height = currentHeight + h_level_accumulated;
+
+                    float sep_total_level = currentBaseSize * rampTg / (rampTg + pyrTg);
+                    float sepi = sep_total_level * (h_level_accumulated / h_level_theoretical);
+
+                    float bs2 = currentBaseSize / 2;
+
+                    float h_local = h_level_accumulated;
+                    Vector3 localPos = new Vector3(bs2 - sepi, h_local, -(bs2 - sepi));
+
+                    int effectiveFaceIndex = (level + startFaceOffset) % 4;
+
+                    result.FaceIndex = effectiveFaceIndex;
+                    Quaternion rotation = Quaternion.identity;
+
+                    switch (effectiveFaceIndex)
+                    {
+                        case 0:
+                            result.FaceName = "North";
+                            rotation = Quaternion.Euler(0, 0, 0);
+                            break;
+                        case 1:
+                            result.FaceName = "East";
+                            rotation = Quaternion.Euler(0, 90, 0);
+                            break;
+                        case 2:
+                            result.FaceName = "South";
+                            rotation = Quaternion.Euler(0, 180, 0);
+                            break;
+                        case 3:
+                            result.FaceName = "West";
+                            rotation = Quaternion.Euler(0, 270, 0);
+                            break;
+                    }
+
+                    Vector3 flatLocalPos = new Vector3(localPos.x, 0, localPos.z);
+                    Vector3 rotatedPos = rotation * flatLocalPos;
+                    rotatedPos.y = result.Height; // height
+
+                    result.Position = rotatedPos;
+
+                    if (objParent != null)
+                    {
+                        result.Position += objParent.transform.position;
+                    }
+
+                    result.IsValid = true;
+                    return result;
+                }
+
+                h_level_accumulated += nextCourseHeight;
+                coursesInThisLevel++;
+                tempRowCounter++;
+            }
+
+            // Next level
+            float sep_level_final = currentBaseSize * rampTg / (rampTg + pyrTg);
+            currentBaseSize -= (2 * PathWide + 2 * PathSeparation + 2 * sep_level_final);
+            currentHeight += h_level_accumulated;
+            currentRowIndex += coursesInThisLevel;
+            level++;
+
+            if (currentBaseSize <= 0 || coursesInThisLevel == 0) break;
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Calculates a position at a specific distance from the center (origin) that lies on the line
+    /// connecting the center and a target point.
+    /// Calcula una posición a una distancia específica del centro que pasa por la línea
+    /// que une el centro y el punto objetivo.
+    /// </summary>
+    /// <param name="targetPoint">The point that defines the direction vector from the center.</param>
+    /// <param name="distanceFromCenter">The desired distance from the center (0,0,0).</param>
+    /// <returns>The calculated position Vector3.</returns>
+    public Vector3 GetTargetPositionFromCenter(Vector3 targetPoint, float distanceFromCenter)
+    {
+        // Asumimos que el "centro" de la pirámide es la posición del objeto padre (objParent)
+        // o el origen (0,0,0) si queremos ser puramente locales.
+        // Dado que CalculateRampTargetMetrics devuelve coordenadas MUNDIALES (si objParent != null),
+        // usaremos la posición del objParent como el "centro" del universo de la pirámide.
+
+        Vector3 center = (objParent != null) ? objParent.transform.position : Vector3.zero;
+
+        // 1. Calcular la dirección desde el centro hacia el punto objetivo
+        Vector3 direction = (targetPoint - center).normalized;
+
+        // 2. Calcular el nuevo punto a la distancia deseada
+        Vector3 resultPosition = center + (direction * distanceFromCenter);
+
+        return resultPosition;
+    }
+
+    /// <summary>
+    /// Moves the camera in an orbit around the pyramid.
+    /// </summary>
+    private IEnumerator OrbitCameraAroundPyramid()
+    {
+        Debug.Log("Starting camera orbit...");
+
+        Vector3 centerPoint = objParent.transform.position + new Vector3(0, Height / 3f, 0); 
+
+        float maxDimension = Mathf.Max(BaseSize, Height);
+        float distance = maxDimension * camOrbitDistanceFactor;
+        float heightOffset = Height * camOrbitHeightOffsetFactor; 
+
+        Vector3 startOffset = new Vector3(0, heightOffset, -distance);
+        cam.transform.position = centerPoint + startOffset;
+        cam.transform.LookAt(centerPoint);
+
+        while (OrbitCameraOnFinish)
+        {
+            cam.transform.RotateAround(centerPoint, Vector3.up, OrbitSpeed * Time.deltaTime);
+
+            cam.transform.LookAt(centerPoint);
+
+            yield return null; 
+        }
+    }
+
 }

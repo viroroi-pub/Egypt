@@ -79,4 +79,4 @@ pyramid_row_Keops_100_Houdin.csv	Combined Houdin (straight + internal 5°) datas
 
 Comparison_Spiral_IER.xlsx	Secondary check of Spiral vs IER distance/work ratios used in Supplement S13.
 
-
+pyramid_grannite.xlsx  This dataset provides the detailed course-by-course calculation of the mechanical work, time, and workforce requirements for the on-site transport of granite megaliths (King’s Chamber beams and relieving chamber blocks). The model assumes a segmented transport strategy where blocks are moved sequentially through a series of inclined ramps (3° slope) and horizontal terrace transfers.

@@ -427,6 +427,7 @@ MonoBehaviour:
   totalLengthRamp: 0
   PyramidVolume: 0
   EmbankmentVolume: 0
+  SingleRampFaceStart: 0
   m_Material: {fileID: 2100000, guid: 8c57f0c93bcdf45419ad1c37ef578135, type: 2}
   m_Material_corner: {fileID: 2100000, guid: ccc151909cb3b6144a2156cc5792c0b9, type: 2}
   m_Material_wood: {fileID: 2100000, guid: 1ec7a28ff55f44a4a87a704aee7ecc7c, type: 2}
@@ -467,8 +468,10 @@ MonoBehaviour:
   Method16Ramp: 1
   DrawUntilRow: 0
   DrawOnlyRow: 0
+  DrawUntilTurn: 0
   DrawCasing: 1
   DrawRow: 40
+  DrawTurn: 0
   DrawBlocks: 5
   DeletedBlocks: 0
   DrawWall: 0
@@ -480,8 +483,8 @@ MonoBehaviour:
   showRamps: 1
   halfPyramid: 0
   DrawPyramidInterior: 0
-  DrawPyramidInteriorTransparent: 1
-  PyramidInterior: {fileID: 0}
+  DrawPyramidInteriorTransparent: 0
+  PyramidInterior: {fileID: 1298317959}
   Decomisioning: 0
   AnimateDecommissioning: 0
   DecommissioningTimeLapse: 0.1
@@ -527,9 +530,38 @@ MonoBehaviour:
   CavityC1: {fileID: 416110599}
   CavityC2: {fileID: 470315469}
   ShowKhufuNotchs: 0
+  DisplayGameObjectOnFinish: {fileID: 0}
   cameraPositionFace: 4
+  OrbitCameraOnFinish: 0
+  OrbitSpeed: 10
+  camOrbitDistanceFactor: 1.5
+  camOrbitHeightOffsetFactor: 0.6
   progressBar: {fileID: 1793016753}
+  lastRampMidPoint: {x: 0, y: 0, z: 0}
   useKhufuCourseHeights: 0
+  showInfoGranite: 0
+  numberOfGranite10tons: 6
+  numberOfLimestone40tons: 24
+  numberOfGranite50tons: 9
+  numberOfGranite60tons: 0
+  numberOfGranite70tons: 42
+  numberOfGranite80tons: 0
+  startCourseKingsChamber: 43
+  endCourseKingsChamber: 62
+  endCourseGableteKingsChamber: 96
+  forcePerPullerNewtons: 250
+  mezzanineRampAngleDegrees: 3
+  mezzanineFrictionCoef: 0.2
+  horizontalTransferDistanceMeters: 10
+  setupTimePerCourseHours: 2
+  setupTimePerCourseGroups: 6
+  pullingSpeedRampMetersPerSecond: 0.15
+  pullingSpeedTerraceMetersPerSecond: 0.2
+  useCapstan: 1
+  frictionCoefCapstan: 0.3
+  capstanWrapAngleRadians: 3.1415927
+  csvGraniteName: pyramid_granite.csv
+  totalGraniteMoveTimeWorkingYears: 0
 --- !u!114 &350862445
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -575,6 +607,104 @@ Transform:
   - {fileID: 650123635}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: -45, z: 0}
+--- !u!1001 &458597650
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 591611386347261975, guid: 77ed63fc310b2314d885435bac0f8f03,
+        type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: de885c4d9c3da57479a5a2fee3cac56c, type: 2}
+    - target: {fileID: 1699885356572092629, guid: 77ed63fc310b2314d885435bac0f8f03,
+        type: 3}
+      propertyPath: m_Name
+      value: Pyramid Interior
+      objectReference: {fileID: 0}
+    - target: {fileID: 1699885356572092629, guid: 77ed63fc310b2314d885435bac0f8f03,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2079787907587928687, guid: 77ed63fc310b2314d885435bac0f8f03,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 2079787907587928687, guid: 77ed63fc310b2314d885435bac0f8f03,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 13.37
+      objectReference: {fileID: 0}
+    - target: {fileID: 2079787907587928687, guid: 77ed63fc310b2314d885435bac0f8f03,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 6.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2079787907587928687, guid: 77ed63fc310b2314d885435bac0f8f03,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 2079787907587928687, guid: 77ed63fc310b2314d885435bac0f8f03,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2079787907587928687, guid: 77ed63fc310b2314d885435bac0f8f03,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 2079787907587928687, guid: 77ed63fc310b2314d885435bac0f8f03,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2079787907587928687, guid: 77ed63fc310b2314d885435bac0f8f03,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2079787907587928687, guid: 77ed63fc310b2314d885435bac0f8f03,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 90
+      objectReference: {fileID: 0}
+    - target: {fileID: 2079787907587928687, guid: 77ed63fc310b2314d885435bac0f8f03,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4082253151844265528, guid: 77ed63fc310b2314d885435bac0f8f03,
+        type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: de885c4d9c3da57479a5a2fee3cac56c, type: 2}
+    - target: {fileID: 4955843217928421815, guid: 77ed63fc310b2314d885435bac0f8f03,
+        type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: de885c4d9c3da57479a5a2fee3cac56c, type: 2}
+    - target: {fileID: 5776372489962991853, guid: 77ed63fc310b2314d885435bac0f8f03,
+        type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: de885c4d9c3da57479a5a2fee3cac56c, type: 2}
+    - target: {fileID: 8264392882452188714, guid: 77ed63fc310b2314d885435bac0f8f03,
+        type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: de885c4d9c3da57479a5a2fee3cac56c, type: 2}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 77ed63fc310b2314d885435bac0f8f03, type: 3}
 --- !u!1 &470315469
 GameObject:
   m_ObjectHideFlags: 0
@@ -2346,6 +2476,12 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c901863f8fa43984b9d67e1e389d9730, type: 3}
+--- !u!1 &1298317959 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1699885356572092629, guid: 77ed63fc310b2314d885435bac0f8f03,
+    type: 3}
+  m_PrefabInstance: {fileID: 458597650}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1315386615
 GameObject:
   m_ObjectHideFlags: 0
@@ -2408,6 +2544,7 @@ MonoBehaviour:
   totalLengthRamp: 0
   PyramidVolume: 0
   EmbankmentVolume: 0
+  SingleRampFaceStart: 0
   m_Material: {fileID: 2100000, guid: 8c57f0c93bcdf45419ad1c37ef578135, type: 2}
   m_Material_corner: {fileID: 2100000, guid: ccc151909cb3b6144a2156cc5792c0b9, type: 2}
   m_Material_wood: {fileID: 2100000, guid: 1ec7a28ff55f44a4a87a704aee7ecc7c, type: 2}
@@ -2448,8 +2585,10 @@ MonoBehaviour:
   Method16Ramp: 0
   DrawUntilRow: 1
   DrawOnlyRow: 0
+  DrawUntilTurn: 0
   DrawCasing: 0
   DrawRow: 1
+  DrawTurn: 0
   DrawBlocks: 5
   DeletedBlocks: 0
   DrawWall: 0
@@ -2508,9 +2647,38 @@ MonoBehaviour:
   CavityC1: {fileID: 0}
   CavityC2: {fileID: 0}
   ShowKhufuNotchs: 0
+  DisplayGameObjectOnFinish: {fileID: 0}
   cameraPositionFace: 1
+  OrbitCameraOnFinish: 0
+  OrbitSpeed: 10
+  camOrbitDistanceFactor: 1.5
+  camOrbitHeightOffsetFactor: 0.6
   progressBar: {fileID: 0}
+  lastRampMidPoint: {x: 0, y: 0, z: 0}
   useKhufuCourseHeights: 0
+  showInfoGranite: 0
+  numberOfGranite10tons: 6
+  numberOfLimestone40tons: 24
+  numberOfGranite50tons: 9
+  numberOfGranite60tons: 0
+  numberOfGranite70tons: 42
+  numberOfGranite80tons: 0
+  startCourseKingsChamber: 43
+  endCourseKingsChamber: 62
+  endCourseGableteKingsChamber: 96
+  forcePerPullerNewtons: 250
+  mezzanineRampAngleDegrees: 3
+  mezzanineFrictionCoef: 0.2
+  horizontalTransferDistanceMeters: 10
+  setupTimePerCourseHours: 2
+  setupTimePerCourseGroups: 6
+  pullingSpeedRampMetersPerSecond: 0.15
+  pullingSpeedTerraceMetersPerSecond: 0.2
+  useCapstan: 1
+  frictionCoefCapstan: 0.3
+  capstanWrapAngleRadians: 3.1415927
+  csvGraniteName: pyramid_granite.csv
+  totalGraniteMoveTimeWorkingYears: 0
 --- !u!114 &1315386617
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3323,3 +3491,4 @@ SceneRoots:
   - {fileID: 1172789009}
   - {fileID: 636182818}
   - {fileID: 1793016752}
+  - {fileID: 458597650}

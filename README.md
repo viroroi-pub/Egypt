@@ -6,7 +6,7 @@
 
 ## 📊 Metadata & Citation
 
-**Version:** v1.0.10 (final submission package for npj Heritage Science)  
+**Version:** v1.0.11 (final submission package for npj Heritage Science)  
 **DOI:** [https://doi.org/10.5281/zenodo.16732345](https://doi.org/10.5281/zenodo.16732345)  
 **Author:** Vicente Luis Rosell Roig (ORCID: 0009-0003-8857-9706)  
 **Affiliation:** Independent Researcher; PhD in Pattern Recognition, Artificial Intelligence and Computer Graphics, Universitat Politècnica de València (UPV), Spain.  
@@ -19,7 +19,7 @@ If you use this dataset or code, please cite:
 
 ## 🔍 Software dependencies
 
-* **Unity 6000 ** or newer (tested with Unity 6000.2).  
+* **Unity 6000** or newer (tested with Unity 6000.2).  
 * **C# 9.0** (scripts in `Assets/Scripts`).  
 * **Python 3.11** with `numpy`, `pandas`, `matplotlib` (for additional analysis).  
 * **SimScale / Code_Aster v15.6.10/MUMPS v5.2.1** (for FEA runs; models exported under `AdditionalData/SimScale/`).  
@@ -61,6 +61,7 @@ All methods implement identical physical parameters for direct comparative analy
 
 ## 📑 Changelog
 
+* **v1.0.11** – Added code updates.
 * **v1.0.10** – Added code updates.
 * **v1.0.4** – Added code updates.  
 * **v1.0.3** – Added refined Monte Carlo tables; Code updates for UI; Images.  
@@ -122,11 +123,12 @@ All simulation scripts, block‑by‑row tables and the Unity scene are archived
 | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
 | **Geometry**          | `BaseSize`, `Height`, `PyramidInclination`, `RampInclination`                                                                             | Global pyramid and ramp angles/sizes.                                      |
 |                       | `DrawUntilRow`, `DrawOnlyRow`, `DrawRow`, `DrawBlocks`                                                                                    | Build up to a course, only a course, or a fixed number of outer layers.    |
-| **Ramp modes**        | `Method16Ramp`, `Method8Ramp`, `Method4Ramp`, `Method2Ramp`, `MethodInsideRamp`                                                           | Select 16/8/4/2 edge‑ramps and inside/edge variant.                          |
+| **Ramp modes**        | `Method16Ramp`, `Method8Ramp`, `Method4Ramp`, `Method2Ramp`, `MethodInsideRamp`                                                           | Select 16/8/4/2 edge-ramps and inside/edge variant.                        |
 | **Visuals**           | `DrawWall`, `DrawFloor`, `DrawWoodenCyl`, `DrawEgyptians`, `DrawGranite`, `DrawCover`, `showRamps`, `halfPyramid`                         | Rendering toggles for inspection.                                          |
-| **Logging (CSV/TXT)** | `showInfoLevel`, `showInfoLevelTotal`, `showInfoLevelDec`, `showInfoRow`; filenames: `csvitername`, `csvrowname`, `csvheadway`, `txtname` | Write iteration, per‑row and headway summaries to `/persistentDataPath/…`. |
+| **Logging (CSV/TXT)** | `showInfoLevel`, `showInfoLevelTotal`, `showInfoLevelDec`, `showInfoRow`, `showInfoGranite`;                                              |                                                                            |
+|                       |  filenames: `csvitername`, `csvrowname`, `csvheadway`, `txtname`, `pyramid_granite`                                                       | Write iteration, per-row and headway summaries to `/persistentDataPath/…`  |
 | **Headway model**     | `AverageHeadway`, `MinHeadway`, `MaxHeadway`, `WorkingYearMinutes`, `PyramidHeadwayType`                                                  | Throughput assumptions used in time estimates.                             |
-| **Export**            | `exportPyramidObj`, `exportCombineMeshes`, `exportSubFolder`, `outputFileName`                                                            | OBJ export of the generated meshes.                                        |
+| **Export**            | `exportPyramidObj`, `exportCombineMeshes`, `exportSubFolder`, `outputFileName`                                                            | OBJ export of the generated meshes (pyramid, ramp).                        |
 
 ---
 
@@ -144,14 +146,6 @@ This is ideal to render time‑lapses or to verify per‑course geometry and hea
 ---
 
 ## 🏃‍♀️ Recipes
-
-### Build half‑pyramid for debugging
-
-```csharp
-var gp = GetComponent<GeneratePyramid>();
-gp.halfPyramid = true;
-gp.DrawGranite = false; // skip interior details
-```
 
 ### Adaptive ramp schedule (16 → 8 → 4)
 
@@ -178,13 +172,15 @@ ps.showInfoLevel = true;
 ps.showInfoLevelTotal = true;
 ps.showInfoLevelDec = true;
 ps.showInfoRow = true;
+ps.showInfoGranite = true;
 ```
 
-| File              | Columns    
-| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | 
-| **pyramid_row.csv**          | Row;blocks;ramp inclination;Ramp length (m);Ramp length total (m);distance blocks (Km);distance blocks Ramp (Km);distance blocks Horiz (Km);Sum force blocks (GJ);Sum Vert. force blocks (GJ);Sum Horiz. force blocks (GJ);Vert. force blocks row (GJ);Horiz. force blocks row (GJ);Total force blocks row (GJ);% Decrement blocks;% increase Distance;% increase Force|
+| File                         | Columns    
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | 
+| **pyramid_row.csv**          | Row;blocks;ramp inclination;Ramp length (m);Ramp length total (m);distance blocks (Km);distance blocks Ramp (Km);distance blocks Horiz (Km);Sum force blocks (MJ);Sum Vert. force blocks (MJ);Sum Horiz. force blocks (MJ);Vert. force blocks row (MJ);Horiz. force blocks row (MJ);Total force blocks row (MJ);% Decrement blocks;% increase Distance;% increase Force|
 | **pyramid_iter.csv**         | Course;Height;blocks;Separation;New base size;Length;Ramp inclination;Start height;% total height;Ramp length (m)|
 | **pyramid_headway.csv**      | Row;blocks;up ramps;blocks per ramp;fixed headway(min);adaptative headway(min);total time(min);adaptative total time(min);total time(working years);adaptativive total time(working years)|
+| **pyramid_granite.csv**      | row;Percentage;Curse heigh(m);ramp slope(degrees);ramp distance(m);horiz distance(m);total blocks;total displacement time (h);setup time (h);total time (h);total (working years);pullers x blocks;total Work (MJ)|
 
 ---
 

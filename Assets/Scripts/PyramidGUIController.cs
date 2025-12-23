@@ -28,6 +28,10 @@ public class PyramidGUIController : MonoBehaviour
     private string decommissioningTimeLapseStr, decommissioningStepStr;
     private string sideSlopeAngleStr;
     private string spiralRampSeparationStr, internalRampStraightRampHighStr;
+    private string numGranite50tStr, numGranite60tStr, numGranite70tStr, numGranite80tStr;
+    private string startCourseKingsStr, endCourseKingsStr, forcePerPullerStr, mezzanineRampAngleStr;
+    private string mezzanineFrictionCoefStr, horizontalTransferStr, setupTimeStr, setupGroupsStr;
+    private string frictionCapstanStr, capstanWrapAngleStr, pullingSpeedRampStr, pullingSpeedTerraceStr;
 
     private Vector2 scrollPosition; // For the scrollbar
     private bool showGUI = true; // To toggle GUI visibility
@@ -40,6 +44,7 @@ public class PyramidGUIController : MonoBehaviour
     private bool showHeadway = false;
     private bool showDrawingOptions = false;
     private bool showVisibility = false;
+    private bool showGraniteProject = false;
     private bool showLogging = false;
     private bool showDecommissioning = false;
     private bool showRampMethod = false;
@@ -120,7 +125,8 @@ public class PyramidGUIController : MonoBehaviour
         DrawCollapsiblePanel("Adaptive Ramp System", ref showAdaptiveRamps, DrawAdaptiveRampSystem);
         DrawCollapsiblePanel("Headway & Timings", ref showHeadway, DrawHeadwayAndTimings);
         DrawCollapsiblePanel("Drawing Options", ref showDrawingOptions, DrawDrawingOptions);
-        DrawCollapsiblePanel("Element Visibility", ref showVisibility, DrawElementVisibility);        
+        DrawCollapsiblePanel("Element Visibility", ref showVisibility, DrawElementVisibility);
+        DrawCollapsiblePanel("Granite Megalith Project", ref showGraniteProject, DrawGraniteProjectPanel);
         DrawCollapsiblePanel("Decommissioning", ref showDecommissioning, DrawDecommissioningPanel);
         DrawCollapsiblePanel("Logging & Export", ref showLogging, DrawLoggingOptions);
 
@@ -224,11 +230,15 @@ public class PyramidGUIController : MonoBehaviour
         generatePyramid.Method8Ramp = GUILayout.Toggle(generatePyramid.Method8Ramp, "8-Ramp Method");
         generatePyramid.Method16Ramp = GUILayout.Toggle(generatePyramid.Method16Ramp, "16-Ramp Method");
         GUILayout.EndHorizontal();
+        GUILayout.BeginHorizontal();
+        GUIStyle subHeaderStyle = new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold };
+        GUILayout.Label("Single Ramp Start Face", subHeaderStyle);
+        generatePyramid.SingleRampFaceStart = (RampPositionFace)GUILayout.Toolbar((int)generatePyramid.SingleRampFaceStart, Enum.GetNames(typeof(RampPositionFace)));
+        GUILayout.EndHorizontal();
 
         GUILayout.Space(10);
-        GUIStyle subHeaderStyle = new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold };
         GUILayout.Label("Straight Ramp Orientation", subHeaderStyle);
-        generatePyramid.StraightRampFace = (CameraPositionFace)GUILayout.Toolbar((int)generatePyramid.StraightRampFace, Enum.GetNames(typeof(CameraPositionFace)));
+        generatePyramid.StraightRampFace = (RampPositionFace)GUILayout.Toolbar((int)generatePyramid.StraightRampFace, Enum.GetNames(typeof(RampPositionFace)));
         DrawLabeledTextField("Side Slope Angle (°)", ref sideSlopeAngleStr);
         DrawLabeledTextField("Spiral Sep. (m)", ref spiralRampSeparationStr);
         DrawLabeledTextField("Internal Ramp H (m)", ref internalRampStraightRampHighStr);
@@ -298,6 +308,37 @@ public class PyramidGUIController : MonoBehaviour
         GUIStyle subHeaderStyle = new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold };
         GUILayout.Label("Camera Position", subHeaderStyle);
         generatePyramid.cameraPositionFace = (CameraPositionFace)GUILayout.Toolbar((int)generatePyramid.cameraPositionFace, Enum.GetNames(typeof(CameraPositionFace)));       
+    }
+
+    private void DrawGraniteProjectPanel()
+    {
+        generatePyramid.showInfoGranite = GUILayout.Toggle(generatePyramid.showInfoGranite, "Log Granite Calculations (CSV)");
+
+        GUILayout.Space(5);
+        DrawLabeledTextField("Num. 50-ton Blocks", ref numGranite50tStr);
+        DrawLabeledTextField("Num. 60-ton Blocks", ref numGranite60tStr);
+        DrawLabeledTextField("Num. 70-ton Blocks", ref numGranite70tStr);
+        DrawLabeledTextField("Num. 80-ton Blocks", ref numGranite80tStr);
+        GUILayout.Space(5);
+        DrawLabeledTextField("Start Course", ref startCourseKingsStr);
+        DrawLabeledTextField("End Course", ref endCourseKingsStr);
+        GUILayout.Space(5);
+        DrawLabeledTextField("Force per Puller (N)", ref forcePerPullerStr);
+        DrawLabeledTextField("Mezzanine Ramp (°)", ref mezzanineRampAngleStr);
+        DrawLabeledTextField("Mezzanine Friction (μ)", ref mezzanineFrictionCoefStr);
+        DrawLabeledTextField("Horizontal Dist (m)", ref horizontalTransferStr);
+        DrawLabeledTextField("Ramp Pull Speed (m/s)", ref pullingSpeedRampStr);
+        DrawLabeledTextField("Terrace Pull Speed (m/s)", ref pullingSpeedTerraceStr);
+        DrawLabeledTextField("Setup Time (h)", ref setupTimeStr);
+        DrawLabeledTextField("Setup Groups", ref setupGroupsStr);
+        GUILayout.Space(5);
+        generatePyramid.useCapstan = GUILayout.Toggle(generatePyramid.useCapstan, "Use Capstan");
+
+        bool wasEnabled = GUI.enabled;
+        GUI.enabled = generatePyramid.useCapstan;
+        DrawLabeledTextField("Capstan Friction (μ)", ref frictionCapstanStr);
+        DrawLabeledTextField("Capstan Wrap (rad)", ref capstanWrapAngleStr);
+        GUI.enabled = wasEnabled;
     }
 
     private void DrawLoggingOptions()
@@ -442,6 +483,24 @@ public class PyramidGUIController : MonoBehaviour
         if (float.TryParse(sideSlopeAngleStr, NumberStyles.Any, CultureInfo.InvariantCulture, out val)) generatePyramid.SideSlopeAngle = val;
         if (int.TryParse(spiralRampSeparationStr, NumberStyles.Any, CultureInfo.InvariantCulture, out int valVal9)) generatePyramid.spiralRampSeparation = valVal9;
         if (float.TryParse(internalRampStraightRampHighStr, NumberStyles.Any, CultureInfo.InvariantCulture, out val)) generatePyramid.internalRampStraightRampHigh = val;
+
+        // Apply Granite Project Settings
+        if (int.TryParse(numGranite50tStr, out intVal)) generatePyramid.numberOfGranite50tons = intVal;
+        if (int.TryParse(numGranite60tStr, out intVal)) generatePyramid.numberOfGranite60tons = intVal;
+        if (int.TryParse(numGranite70tStr, out intVal)) generatePyramid.numberOfGranite70tons = intVal;
+        if (int.TryParse(numGranite80tStr, out intVal)) generatePyramid.numberOfGranite80tons = intVal;
+        if (int.TryParse(startCourseKingsStr, out intVal)) generatePyramid.startCourseKingsChamber = intVal;
+        if (int.TryParse(endCourseKingsStr, out intVal)) generatePyramid.endCourseKingsChamber = intVal;
+        if (int.TryParse(setupGroupsStr, out intVal)) generatePyramid.setupTimePerCourseGroups = intVal;
+        if (float.TryParse(forcePerPullerStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float floatVal1)) generatePyramid.forcePerPullerNewtons = floatVal1;
+        if (float.TryParse(mezzanineRampAngleStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float floatVal2)) generatePyramid.mezzanineRampAngleDegrees = floatVal2;
+        if (float.TryParse(mezzanineFrictionCoefStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float floatVal3)) generatePyramid.mezzanineFrictionCoef = floatVal3;
+        if (float.TryParse(horizontalTransferStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float floatVal4)) generatePyramid.horizontalTransferDistanceMeters = floatVal4;
+        if (float.TryParse(setupTimeStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float floatVal5)) generatePyramid.setupTimePerCourseHours = floatVal5;
+        if (float.TryParse(pullingSpeedRampStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float floatVal6)) generatePyramid.pullingSpeedRampMetersPerSecond = floatVal6;
+        if (float.TryParse(pullingSpeedTerraceStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float floatVal7)) generatePyramid.pullingSpeedTerraceMetersPerSecond = floatVal7;
+        if (float.TryParse(frictionCapstanStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float floatVal8)) generatePyramid.frictionCoefCapstan = floatVal8;
+        if (float.TryParse(capstanWrapAngleStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float floatVal9)) generatePyramid.capstanWrapAngleRadians = floatVal9;
     }
 
     /// <summary>
@@ -494,6 +553,24 @@ public class PyramidGUIController : MonoBehaviour
         sideSlopeAngleStr = generatePyramid.SideSlopeAngle.ToString("F2", CultureInfo.InvariantCulture);
         spiralRampSeparationStr = generatePyramid.spiralRampSeparation.ToString("F2", CultureInfo.InvariantCulture);
         internalRampStraightRampHighStr = generatePyramid.internalRampStraightRampHigh.ToString("F2", CultureInfo.InvariantCulture);
+
+        // Update Granite Project Fields
+        numGranite50tStr = generatePyramid.numberOfGranite50tons.ToString();
+        numGranite60tStr = generatePyramid.numberOfGranite60tons.ToString();
+        numGranite70tStr = generatePyramid.numberOfGranite70tons.ToString();
+        numGranite80tStr = generatePyramid.numberOfGranite80tons.ToString();
+        startCourseKingsStr = generatePyramid.startCourseKingsChamber.ToString();
+        endCourseKingsStr = generatePyramid.endCourseKingsChamber.ToString();
+        setupGroupsStr = generatePyramid.setupTimePerCourseGroups.ToString();
+        forcePerPullerStr = generatePyramid.forcePerPullerNewtons.ToString("F2", CultureInfo.InvariantCulture);
+        mezzanineRampAngleStr = generatePyramid.mezzanineRampAngleDegrees.ToString("F2", CultureInfo.InvariantCulture);
+        mezzanineFrictionCoefStr = generatePyramid.mezzanineFrictionCoef.ToString("F2", CultureInfo.InvariantCulture);
+        horizontalTransferStr = generatePyramid.horizontalTransferDistanceMeters.ToString("F2", CultureInfo.InvariantCulture);
+        setupTimeStr = generatePyramid.setupTimePerCourseHours.ToString("F2", CultureInfo.InvariantCulture);
+        pullingSpeedRampStr = generatePyramid.pullingSpeedRampMetersPerSecond.ToString("F2", CultureInfo.InvariantCulture);
+        pullingSpeedTerraceStr = generatePyramid.pullingSpeedTerraceMetersPerSecond.ToString("F2", CultureInfo.InvariantCulture);
+        frictionCapstanStr = generatePyramid.frictionCoefCapstan.ToString("F2", CultureInfo.InvariantCulture);
+        capstanWrapAngleStr = generatePyramid.capstanWrapAngleRadians.ToString("F2", CultureInfo.InvariantCulture);
     }
 
     // Utility to create a texture for the GUI background

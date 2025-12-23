@@ -25,52 +25,88 @@ public class ObjExporter : MonoBehaviour
             Directory.CreateDirectory(folderPath);
         }
 
+        // --- 1. Filter and Sort Meshes ---
+        List<MeshFilter> allMeshFilters = new List<MeshFilter>();
+        rootObject.GetComponentsInChildren(true, allMeshFilters);
+
+        List<MeshFilter> nonTriggerMeshes = new List<MeshFilter>();
+        List<MeshFilter> triggerMeshes = new List<MeshFilter>();
+        List<MeshFilter> rampsMeshes = new List<MeshFilter>();
+
+        foreach (MeshFilter mf in allMeshFilters)
+        {
+            // Skip inactive GameObjects
+            if (!mf.gameObject.activeInHierarchy)
+            {
+                continue;
+            }
+
+            // Skip meshes with no renderer or no valid mesh
+            if (mf.sharedMesh == null || mf.GetComponent<Renderer>() == null || mf.sharedMesh.triangles.Length == 0)
+            {
+                Debug.LogWarning($"Skipping GameObject '{mf.name}' from OBJ export: no valid mesh or Renderer.");
+                continue;
+            }
+
+            // Check for BoxCollider trigger
+            BoxCollider bc = mf.GetComponent<BoxCollider>();
+            if (bc != null && bc.isTrigger)
+            {
+                // This is a trigger, add it to the trigger list
+                triggerMeshes.Add(mf);
+            }
+            else
+            if (mf.tag == "Ramp")
+            {
+                // This is a ramp mesh
+                rampsMeshes.Add(mf);
+            }
+            else
+            {
+                // This is a normal, non-trigger mesh
+                nonTriggerMeshes.Add(mf);
+            }
+        }
+
+        // --- 2. Export the Non-Trigger (Visual) Meshes ---
+        if (nonTriggerMeshes.Count > 0)
+        {
+            WriteMeshListToObj(nonTriggerMeshes, folderPath, fileName, combineMeshes);
+        }
+        else
+        {
+            Debug.LogWarning($"No non-trigger meshes found to export for '{fileName}'.");
+        }
+
+        // --- 3. Export the Trigger Meshes to a separate file ---
+        if (triggerMeshes.Count > 0)
+        {
+            string triggerFileName = fileName + "_Triggers";
+            WriteMeshListToObj(triggerMeshes, folderPath, triggerFileName, combineMeshes);
+        }
+
+        // --- 4. Export the Ramp Meshes to a separate file ---
+        if (rampsMeshes.Count > 0)
+        {
+            string triggerFileName = fileName + "_Ramps";
+            WriteMeshListToObj(rampsMeshes, folderPath, triggerFileName, combineMeshes);
+        }
+    }
+
+    /// <summary>
+    /// Private helper function that performs the actual mesh data collection and file writing.
+    /// </summary>
+    private static void WriteMeshListToObj(List<MeshFilter> meshList, string folderPath, string fileName, bool combineMeshes)
+    {
         string objFullPath = Path.Combine(folderPath, fileName + ".obj");
         string mtlFullPath = Path.Combine(folderPath, fileName + ".mtl");
 
         StringBuilder objSb = new StringBuilder();
         StringBuilder mtlSb = new StringBuilder();
 
-        List<MeshFilter> meshFilters = new List<MeshFilter>();
-        rootObject.GetComponentsInChildren(true, meshFilters);
-
-        List<MeshFilter> filteredMeshFilters = new List<MeshFilter>();
-        foreach (MeshFilter mf in meshFilters)
-        {
-            // Filtrar GameObjects inactivos
-            if (!mf.gameObject.activeInHierarchy)
-            {
-                Debug.LogWarning($"Omitiendo GameObject '{mf.name}' de la exportación OBJ porque está inactivo.");
-                continue;
-            }
-
-            // Filtrar GameObjects con BoxCollider que es 'isTrigger'
-            BoxCollider bc = mf.GetComponent<BoxCollider>();
-            if (bc != null && bc.isTrigger)
-            {
-                Debug.LogWarning($"Omitiendo GameObject '{mf.name}' de la exportación OBJ porque tiene un BoxCollider que es 'isTrigger'.");
-                continue;
-            }
-
-            // Asegurarse de que la malla y el renderizador sean válidos
-            if (mf.sharedMesh == null || mf.GetComponent<Renderer>() == null || mf.sharedMesh.triangles.Length == 0)
-            {
-                Debug.LogWarning($"Omitiendo GameObject '{mf.name}' de la exportación OBJ porque no tiene malla válida o Renderer.");
-                continue;
-            }
-
-            filteredMeshFilters.Add(mf);
-        }
-
-        if (filteredMeshFilters.Count == 0)
-        {
-            Debug.LogWarning($"Después de filtrar, el GameObject '{rootObject.name}' y sus hijos no tienen componentes MeshFilter válidos para exportar a OBJ.");
-            return;
-        }
-
-        // --- Recopilar materiales únicos para el MTL (común a ambos modos) ---
+        // --- Collect unique materials for the MTL ---
         HashSet<Material> uniqueMaterials = new HashSet<Material>();
-        foreach (MeshFilter mf in filteredMeshFilters)
+        foreach (MeshFilter mf in meshList)
         {
             Renderer renderer = mf.GetComponent<Renderer>();
             if (renderer != null && renderer.sharedMaterials != null)
@@ -82,7 +118,7 @@ public class ObjExporter : MonoBehaviour
             }
         }
 
-        // --- Generar el contenido del archivo MTL (común a ambos modos) ---
+        // --- Generate MTL file content ---
         mtlSb.Append("# Material Library Exported from Unity by ObjExporter\n\n");
         foreach (Material mat in uniqueMaterials)
         {
@@ -117,7 +153,7 @@ public class ObjExporter : MonoBehaviour
                     }
                     catch (System.Exception e)
                     {
-                        Debug.LogWarning($"No se pudo copiar la textura '{mat.mainTexture.name}' para el material '{mat.name}': {e.Message}");
+                        Debug.LogWarning($"Could not copy texture '{mat.mainTexture.name}' for material '{mat.name}': {e.Message}");
                     }
                 }
 #endif
@@ -125,17 +161,24 @@ public class ObjExporter : MonoBehaviour
             mtlSb.Append("\n");
         }
 
+        // Add a default material for meshes that might not have one (like triggers)
+        if (uniqueMaterials.Count == 0)
+        {
+            mtlSb.Append("newmtl default_material\n");
+            mtlSb.Append("Kd 0.8 0.8 0.8\n");
+        }
 
-        // --- Lógica condicional para exportar como mallas combinadas o individuales ---
+        // --- Logic to export as combined or individual meshes ---
         if (combineMeshes)
         {
-            // --- Lógica para Mallas Combinadas ---
+            // --- Combined Mesh Logic ---
             List<Vector3> combinedVertices = new List<Vector3>();
             List<Vector3> combinedNormals = new List<Vector3>();
             List<Vector2> combinedUVs = new List<Vector2>();
+            // Use 'Material' (nullable) as key to handle null materials
             Dictionary<Material, List<int>> combinedTrianglesByMaterial = new Dictionary<Material, List<int>>();
 
-            foreach (MeshFilter mf in filteredMeshFilters)
+            foreach (MeshFilter mf in meshList)
             {
                 Mesh mesh = mf.sharedMesh;
                 Renderer renderer = mf.GetComponent<Renderer>();
@@ -147,7 +190,6 @@ public class ObjExporter : MonoBehaviour
                 {
                     combinedVertices.Add(localToWorld.MultiplyPoint3x4(v));
                 }
-
                 if (mesh.normals.Length > 0)
                 {
                     foreach (Vector3 n in mesh.normals)
@@ -155,7 +197,6 @@ public class ObjExporter : MonoBehaviour
                         combinedNormals.Add(localToWorld.MultiplyVector(n).normalized);
                     }
                 }
-
                 if (mesh.uv.Length > 0)
                 {
                     foreach (Vector2 uv in mesh.uv)
@@ -166,47 +207,37 @@ public class ObjExporter : MonoBehaviour
 
                 for (int materialIndex = 0; materialIndex < mesh.subMeshCount; materialIndex++)
                 {
+                    // Handle null or out-of-bounds materials
                     Material currentMaterial = null;
                     if (renderer.sharedMaterials.Length > materialIndex && renderer.sharedMaterials[materialIndex] != null)
                     {
                         currentMaterial = renderer.sharedMaterials[materialIndex];
                     }
-                    // Si no hay material, para el modo combinado, podríamos asignarle un material por defecto
-                    // o simplemente ignorar estos triángulos si no queremos un material "null" en el OBJ.
-                    // Para este ejemplo, si currentMaterial es null, los triángulos no se añadirán al diccionario
-                    // lo que significa que no se exportarán si no tienen un material válido.
-                    // Esto es una decisión de diseño; podrías crear un material "default_unassigned" si lo necesitas.
 
-                    if (currentMaterial != null)
+                    if (!combinedTrianglesByMaterial.ContainsKey(currentMaterial))
                     {
-                        if (!combinedTrianglesByMaterial.ContainsKey(currentMaterial))
-                        {
-                            combinedTrianglesByMaterial.Add(currentMaterial, new List<int>());
-                        }
+                        combinedTrianglesByMaterial.Add(currentMaterial, new List<int>());
+                    }
 
-                        int[] triangles = mesh.GetTriangles(materialIndex);
-                        for (int i = 0; i < triangles.Length; i++)
-                        {
-                            combinedTrianglesByMaterial[currentMaterial].Add(triangles[i] + currentVertexOffset);
-                        }
+                    int[] triangles = mesh.GetTriangles(materialIndex);
+                    for (int i = 0; i < triangles.Length; i++)
+                    {
+                        combinedTrianglesByMaterial[currentMaterial].Add(triangles[i] + currentVertexOffset);
                     }
                 }
             }
 
-            // --- Encabezado del OBJ Combinado ---
-            objSb.Append("# Exportado desde Unity por ObjExporter (Mallas Combinadas)\n");
-            objSb.Append($"# Objeto raíz: {rootObject.name}\n\n");
+            // --- Write Combined OBJ ---
+            objSb.Append("# Exported from Unity by ObjExporter (Combined Meshes)\n");
             objSb.Append($"mtllib {fileName}.mtl\n\n");
-
             objSb.Append($"o {fileName}_Combined\n");
             objSb.Append($"g {fileName}_Combined\n");
 
             foreach (Vector3 v in combinedVertices)
             {
-                objSb.Append(string.Format("v {0} {1} {2}\n", -v.x, v.y, v.z));
+                objSb.Append(string.Format("v {0} {1} {2}\n", -v.x, v.y, v.z)); // Flipped X-axis for Unity to standard OBJ
             }
             objSb.Append("\n");
-
             if (combinedNormals.Count > 0)
             {
                 foreach (Vector3 n in combinedNormals)
@@ -215,7 +246,6 @@ public class ObjExporter : MonoBehaviour
                 }
                 objSb.Append("\n");
             }
-
             if (combinedUVs.Count > 0)
             {
                 foreach (Vector2 uv in combinedUVs)
@@ -230,8 +260,15 @@ public class ObjExporter : MonoBehaviour
                 Material mat = entry.Key;
                 List<int> triangles = entry.Value;
 
-                objSb.Append($"usemtl {mat.name}\n");
-                objSb.Append($"usemap {mat.name}\n");
+                if (mat != null)
+                {
+                    objSb.Append($"usemtl {mat.name}\n");
+                    objSb.Append($"usemap {mat.name}\n");
+                }
+                else
+                {
+                    objSb.Append("usemtl default_material\n"); // Use default for triggers
+                }
 
                 for (int i = 0; i < triangles.Count; i += 3)
                 {
@@ -243,18 +280,16 @@ public class ObjExporter : MonoBehaviour
         }
         else // if (!combineMeshes)
         {
-            // --- Lógica para Mallas Individuales (original) ---
-            objSb.Append("# Exportado desde Unity por ObjExporter (Mallas Individuales)\n");
-            objSb.Append($"# Objeto raíz: {rootObject.name}\n\n");
+            // --- Individual Mesh Logic ---
+            objSb.Append("# Exported from Unity by ObjExporter (Individual Meshes)\n");
             objSb.Append($"mtllib {fileName}.mtl\n\n");
 
             int vertexOffset = 0;
 
-            foreach (MeshFilter mf in filteredMeshFilters)
+            foreach (MeshFilter mf in meshList)
             {
                 Mesh mesh = mf.sharedMesh;
                 Renderer renderer = mf.GetComponent<Renderer>();
-
                 Matrix4x4 localToWorld = mf.transform.localToWorldMatrix;
 
                 objSb.Append($"o {mf.name}\n");
@@ -295,7 +330,7 @@ public class ObjExporter : MonoBehaviour
                     }
                     else
                     {
-                        objSb.Append("usemtl default_material\n");
+                        objSb.Append("usemtl default_material\n"); // Use default for triggers
                     }
 
                     int[] triangles = mesh.GetTriangles(materialIndex);
@@ -312,16 +347,16 @@ public class ObjExporter : MonoBehaviour
             }
         }
 
-        // --- Escribir los archivos ---
+        // --- Write the files ---
         try
         {
             File.WriteAllText(objFullPath, objSb.ToString());
             File.WriteAllText(mtlFullPath, mtlSb.ToString());
-            Debug.Log($"GameObject '{rootObject.name}' exportado a OBJ ({(combineMeshes ? "Combinado" : "Individual")}) exitosamente a:\nOBJ: '{objFullPath}'\nMTL: '{mtlFullPath}'");
+            Debug.Log($"Successfully exported '{fileName}' ({(combineMeshes ? "Combined" : "Individual")}) to:\nOBJ: '{objFullPath}'\nMTL: '{mtlFullPath}'");
         }
         catch (System.Exception e)
         {
-            Debug.LogError($"Error al exportar GameObject '{rootObject.name}' a OBJ/MTL: {e.Message}");
+            Debug.LogError($"Error exporting '{fileName}' to OBJ/MTL: {e.Message}");
         }
     }
 }

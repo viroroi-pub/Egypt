@@ -1,4 +1,4 @@
-Row;blocks;ramp inclination;Ramp length (m);Ramp length total (m);distance blocks (Km);distance blocks Ramp (Km);distance blocks Horiz (Km);Sum force blocks (GJ);Sum Vert, force blocks (GJ);Sum Horiz, force blocks (GJ);Vert, force blocks row (GJ);Horiz, force blocks row (GJ);Total force blocks row (GJ);% Decrement blocks;% increase Distance;% increase Force
+Row;blocks;ramp inclination;Ramp length (m);Ramp length total (m);distance blocks (Km);distance blocks Ramp (Km);distance blocks Horiz (Km);Sum force blocks (MJ);Sum Vert, force blocks (MJ);Sum Horiz, force blocks (MJ);Vert, force blocks row (MJ);Horiz, force blocks row (MJ);Total force blocks row (MJ);% Decrement blocks;% increase Distance;% increase Force
 0;32902;5;0;0;5786,182;0;5786,182;89885,65;0;89885,65;0;89885,65;89885,65;;;
 1;32589;5,27;7,69;7,69;5797,444;251,977;5545,467;180494,8;4421,744;176071,6;4421,744;86185,84;90608,97;99;100,19;100,8
 2;32278;5,29;15,33;15,33;5813,379;496,38;5317;271885,8;13139,51;258744,6;8713,394;82673,45;91390,55;99;100,27;100,86

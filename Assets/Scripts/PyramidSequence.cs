@@ -65,6 +65,15 @@ public class PyramidSequence : MonoBehaviour
 
             Debug.Log("Total height " + GeneratePyramid.total_height);
 
+            if (GeneratePyramid.cameraPositionFace == CameraPositionFace.InfrontRamp)
+            {
+                Debug.Log("Ramp Target Position : " + GeneratePyramid.lastRampMidPoint.ToString());
+                Vector3 lastRampMidPointCam = GeneratePyramid.GetTargetPositionFromCenter(GeneratePyramid.lastRampMidPoint, GeneratePyramid.BaseSize);
+                Debug.Log("Camera Ramp Target Position : " + lastRampMidPointCam.ToString());
+                GeneratePyramid.cam.transform.localPosition = lastRampMidPointCam;
+                GeneratePyramid.cam.transform.LookAt(GeneratePyramid.lastRampMidPoint);
+            }
+
             yield return new WaitForSeconds(lapse);
 
             if (capture)

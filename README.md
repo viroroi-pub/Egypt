@@ -54,7 +54,7 @@ All methods implement identical physical parameters for direct comparative analy
 * `.mp4` – supplementary videos (course-by-course and ramp sequences).  
 * `.zip` – bundled project exports from SimScale.  
 * `.cs`  – C# scripts.  
-* `.py` – Phyton.  
+* `.py` – Python.  
 * `.ipynb` – Python Notebook.  
 
 ---

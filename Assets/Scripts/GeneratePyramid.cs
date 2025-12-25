@@ -2,15 +2,16 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
+using System.Security.Principal;
 using UnityEngine;
 using UnityEngine.ProBuilder.Shapes;
 using UnityEngine.Rendering;
 using UnityEngine.UIElements;
 using static UnityEngine.Rendering.DebugUI.Table;
 using static UnityEngine.UI.GridLayoutGroup;
-using System.Linq;
 
 /// <summary>
 /// Defines the type of ramp construction method to be used.
@@ -130,6 +131,18 @@ public struct RampTargetMetrics
     public string FaceName; // Human-readable name of the face
     public bool IsValid; // If the calculation was successful (the row exists)
     public int Level;    // level of iteration IER
+}
+
+// Defines the granite pullers to draw
+public enum DrawGranitePullers
+{
+    pullers10t,
+    pullers40t,
+    pullers50t,
+    pullers60t,
+    pullers70t,
+    pullers80t,
+    pullersmean
 }
 
 public class GeneratePyramid : MonoBehaviour
@@ -333,10 +346,29 @@ public class GeneratePyramid : MonoBehaviour
     /// Prefab for granite block type 2.
     /// </summary>
     public GameObject graniteRockPrefab2;
+    /// Prefab for granite block type 3. Limestone
+    /// </summary>
+    public GameObject graniteRockPrefab3;
     /// <summary>
     /// Prefab for the pyramidion (capstone).
     /// </summary>
     public GameObject piramidon;
+    /// <summary>
+    /// Prefab for terrace ramp
+    /// </summary>
+    public GameObject courseRampPrefab;
+    /// <summary>
+    /// Draw half terrace for granite blocks
+    /// </summary>
+    public bool DrawHalfCourseForGraniteBlocks=false;
+    /// <summary>
+    /// Draw pullers according to the block size
+    /// </summary>
+    public DrawGranitePullers DrawGranitePullers = DrawGranitePullers.pullersmean;
+    /// <summary>
+    /// Draw pullers according to the block size
+    /// </summary>
+    public int NumberOfRopesGroups = 12;
     /// <summary>
     /// Prefab for a stone sledge.
     /// </summary>
@@ -553,11 +585,15 @@ public class GeneratePyramid : MonoBehaviour
     /// <summary>
     /// Number of granite blocks of type 1 < 50 tons.
     /// </summary>
-    public int numOfGraniteRock1 = 9;
+    public int numOfGraniteRock1 = 6;
     /// <summary>
     /// Number of granite blocks of type 2 > 50 tons.
     /// </summary>
-    public int numOfGraniteRock2 = 42;
+    public int numOfGraniteRock2 = 45;
+    /// <summary>
+    /// Number of granite blocks of type 2 > 50 tons. Limestone
+    /// </summary>
+    public int numOfGraniteRock3 = 24;
     /// <summary>
     /// Minimum height (in meters) to start placing granite blocks.
     /// </summary>
@@ -565,7 +601,11 @@ public class GeneratePyramid : MonoBehaviour
     /// <summary>
     /// Maximum height to place granite blocks.
     /// </summary>
-    public int maxHeightGraniteRock = 62;
+    public int maxHeightGraniteRock = 60;
+    /// <summary>
+    /// Maximum height to place limetone blocks.
+    /// </summary>
+    public int maxHeightGraniteRock2 = 68;
     /// <summary>
     /// Minimum base size to use a 2-ramp system.
     /// </summary>
@@ -770,7 +810,23 @@ public class GeneratePyramid : MonoBehaviour
     /// <summary>
     /// Safety limit to prevent infinite loops if the slope is 0 or at the apex
     /// </summary>
-    private const int MAX_TURNING_ITERATIONS = 500;    
+    private const int MAX_TURNING_ITERATIONS = 500;
+
+    // TotalPullers is the team size needed *without* a capstan
+    private int totalPullers10t;
+    private int totalPullers40t;
+    private int totalPullers50t;
+    private int totalPullers60t;
+    private int totalPullers70t;
+    private int totalPullers80t;
+
+    // CapstanOperators is the smaller team applying the *reduced* force
+    private int capstanOperators10t;
+    private int capstanOperators40t;
+    private int capstanOperators50t;
+    private int capstanOperators60t;
+    private int capstanOperators70t;
+    private int capstanOperators80t;
 
     // This runs in the editor whenever a value is changed in the Inspector.
     private void OnValidate()
@@ -2688,35 +2744,31 @@ public class GeneratePyramid : MonoBehaviour
                     for (int i = 0; i < numOfGraniteRock1Def; i++)
                     {
                         GameObject objGranite = null;
-                        /*if (row % 4 == 0)
+                        // Try to find a non-overlapping position
+                        Vector3 spawnPos = Vector3.zero;
+                        bool positionFound = false;
+                        int attempts = 0;
+                        int maxAttempts = 30; // maximum attempts to find a position
+
+                        // Dimensions for OverlapBox
+                        //Vector3 halfExtents = graniteRockPrefab1.transform.localScale / 2f * 0.9f;
+                        Vector3 halfExtents = new Vector3(1.3f,1.3f,4.0f) / 2f * 0.9f;  // size 10 t block
+
+                        while (!positionFound && attempts < maxAttempts)
                         {
-                            objGranite = Instantiate(graniteRockPrefab1, objParent.transform.position + new Vector3(UnityEngine.Random.Range(0, new_base_size / 4), heightGranite + graniteRockPrefab1.transform.localScale.y / 2, UnityEngine.Random.Range(0, new_base_size / 4)), Quaternion.identity);                            
+                            spawnPos = GetRandomPositionOnTerrace(row, new_base_size, heightGranite, graniteRockPrefab1.transform.localScale.y);
+
+                            Collider[] colliders = Physics.OverlapBox(spawnPos, halfExtents, Quaternion.identity, blockLayer);
+
+                            if (colliders.Length == 0)
+                            {
+                                positionFound = true;
+                            }
+                            attempts++;
                         }
-                        else
-                        if (row % 4 == 1)
-                        {
-                            objGranite = Instantiate(graniteRockPrefab1, objParent.transform.position + new Vector3(-UnityEngine.Random.Range(0, new_base_size / 4), heightGranite + graniteRockPrefab1.transform.localScale.y / 2, UnityEngine.Random.Range(0, new_base_size / 4)), Quaternion.identity);                            
-                        }
-                        else
-                        if (row % 4 == 2)
-                        {
-                            objGranite = Instantiate(graniteRockPrefab1, objParent.transform.position + new Vector3(-UnityEngine.Random.Range(0, new_base_size / 4), heightGranite + graniteRockPrefab1.transform.localScale.y / 2, -UnityEngine.Random.Range(0, new_base_size / 4)), Quaternion.identity);                                                        
-                        }
-                        else
-                        if (row % 4 == 3)
-                        {
-                            objGranite = Instantiate(graniteRockPrefab1, objParent.transform.position + new Vector3(UnityEngine.Random.Range(0, new_base_size / 4), heightGranite + graniteRockPrefab1.transform.localScale.y / 2, -UnityEngine.Random.Range(0, new_base_size / 4)), Quaternion.identity);                                                        
-                        }*/
-                        if (row % 2 == 0)
-                        {
-                            objGranite = Instantiate(graniteRockPrefab1, objParent.transform.position + new Vector3(UnityEngine.Random.Range(0, new_base_size / 4), heightGranite + graniteRockPrefab1.transform.localScale.y / 2, UnityEngine.Random.Range(0, new_base_size / 4)), Quaternion.identity);
-                        }
-                        else
-                        if (row % 2 == 1)
-                        {
-                            objGranite = Instantiate(graniteRockPrefab1, objParent.transform.position + new Vector3(UnityEngine.Random.Range(0, new_base_size / 4), heightGranite + graniteRockPrefab1.transform.localScale.y / 2, -UnityEngine.Random.Range(0, new_base_size / 4)), Quaternion.identity);
-                        }
-                        //objGranite.transform.parent = objParent.transform;
+
+                        // if no position found after max attempts, use the last calculated position (it will overlap, but better than not placing it)
+                        objGranite = Instantiate(graniteRockPrefab1, spawnPos, Quaternion.identity);
                         objGranite.transform.parent = granite_gameObject.transform;
                     }
                 }
@@ -2725,75 +2777,84 @@ public class GeneratePyramid : MonoBehaviour
                     for (int i = 0; i < numOfGraniteRock2Def; i++)
                     {
                         GameObject objGranite = null;
-                        /*if (row % 4 == 0)
+                        // Try to find a non-overlapping position
+                        Vector3 spawnPos = Vector3.zero;
+                        bool positionFound = false;
+                        int attempts = 0;
+                        int maxAttempts = 30; // maximum attempts to find a position
+
+                        // Dimensions for OverlapBox
+                        //Vector3 halfExtents = graniteRockPrefab2.transform.localScale / 2f * 0.9f;
+                        Vector3 halfExtents = new Vector3(1.3f, 1.8f, 8.0f) / 2f * 0.9f;  // size 70 t block
+
+                        while (!positionFound && attempts < maxAttempts)
                         {
-                            objGranite = Instantiate(graniteRockPrefab2, objParent.transform.position + new Vector3(UnityEngine.Random.Range(0, new_base_size / 4), heightGranite + graniteRockPrefab1.transform.localScale.y / 2, UnityEngine.Random.Range(0, new_base_size / 4)), Quaternion.identity);
+                            spawnPos = GetRandomPositionOnTerrace(row, new_base_size, heightGranite, graniteRockPrefab2.transform.localScale.y);
+
+                            Collider[] colliders = Physics.OverlapBox(spawnPos, halfExtents, Quaternion.identity, blockLayer);
+
+                            if (colliders.Length == 0)
+                            {
+                                positionFound = true;
+                            }
+                            attempts++;
                         }
-                        else
-                        if (row % 4 == 1)
-                        {
-                            objGranite = Instantiate(graniteRockPrefab2, objParent.transform.position + new Vector3(-UnityEngine.Random.Range(0, new_base_size / 4), heightGranite + graniteRockPrefab1.transform.localScale.y / 2, UnityEngine.Random.Range(0, new_base_size / 4)), Quaternion.identity);
-                        }
-                        else
-                        if (row % 4 == 2)
-                        {
-                            objGranite = Instantiate(graniteRockPrefab2, objParent.transform.position + new Vector3(-UnityEngine.Random.Range(0, new_base_size / 4), heightGranite + graniteRockPrefab1.transform.localScale.y / 2, -UnityEngine.Random.Range(0, new_base_size / 4)), Quaternion.identity);                                                        
-                        }
-                        else
-                        if (row % 4 == 3)
-                        {
-                            objGranite = Instantiate(graniteRockPrefab1, objParent.transform.position + new Vector3(UnityEngine.Random.Range(0, new_base_size / 4), heightGranite + graniteRockPrefab1.transform.localScale.y / 2, -UnityEngine.Random.Range(0, new_base_size / 4)), Quaternion.identity);                            
-                        }*/
-                        if (row % 2 == 0)
-                        {
-                            objGranite = Instantiate(graniteRockPrefab2, objParent.transform.position + new Vector3(UnityEngine.Random.Range(0, new_base_size / 4), heightGranite + graniteRockPrefab1.transform.localScale.y / 2, UnityEngine.Random.Range(0, new_base_size / 4)), Quaternion.identity);
-                        }
-                        else
-                        if (row % 2 == 1)
-                        {
-                            objGranite = Instantiate(graniteRockPrefab1, objParent.transform.position + new Vector3(UnityEngine.Random.Range(0, new_base_size / 4), heightGranite + graniteRockPrefab1.transform.localScale.y / 2, -UnityEngine.Random.Range(0, new_base_size / 4)), Quaternion.identity);
-                        }
-                        //objGranite.transform.parent = objParent.transform;
+
+                        // if no position found after max attempts, use the last calculated position (it will overlap, but better than not placing it)
+                        objGranite = Instantiate(graniteRockPrefab2, spawnPos, Quaternion.identity);
                         objGranite.transform.parent = granite_gameObject.transform;
                     }
                 }
             }
-            if (piramidon)
+            // limestone meghalitic blocks
+            if ((heightGranite < maxHeightGraniteRock2) && (heightGranite > 0))
             {
-                /*if (row % 4 == 0)
+                int numOfGraniteRock3Def = numOfGraniteRock3;
+                if (heightGranite > minHeightGraniteRock)
                 {
-                    GameObject objPiramidon = Instantiate(piramidon, objParent.transform.position + new Vector3(UnityEngine.Random.Range(0, new_base_size / 4), heightGranite + 1, UnityEngine.Random.Range(0, new_base_size / 4)), Quaternion.identity);
-                    //objPiramidon.transform.parent = objParent.transform;
-                    objPiramidon.transform.parent = granite_gameObject.transform;
-                    objPiramidon.transform.rotation = Quaternion.Euler(275, 0, 0);
+                    numOfGraniteRock3Def = (int)UnityEngine.Random.Range((maxHeightGraniteRock2 - heightGranite) * numOfGraniteRock3 / maxHeightGraniteRock2, numOfGraniteRock3);
                 }
-                else
-                        if (row % 4 == 1)
+
+                if (numOfGraniteRock3Def > 0 && graniteRockPrefab3)
                 {
-                    GameObject objPiramidon = Instantiate(piramidon, objParent.transform.position + new Vector3(-UnityEngine.Random.Range(0, new_base_size / 4), heightGranite + 1, UnityEngine.Random.Range(0, new_base_size / 4)), Quaternion.identity);
-                    //objPiramidon.transform.parent = objParent.transform;
-                    objPiramidon.transform.parent = granite_gameObject.transform;
-                    objPiramidon.transform.rotation = Quaternion.Euler(275, 0, 0);
+                    for (int i = 0; i < numOfGraniteRock3Def; i++)
+                    {
+                        GameObject objGranite = null;
+                        // Try to find a non-overlapping position
+                        Vector3 spawnPos = Vector3.zero;
+                        bool positionFound = false;
+                        int attempts = 0;
+                        int maxAttempts = 30; // maximum attempts to find a position
+
+                        // Dimensions for OverlapBox
+                        //Vector3 halfExtents = graniteRockPrefab3.transform.localScale / 2f * 0.9f;
+                        Vector3 halfExtents = new Vector3(1.3f, 1.3f, 7.0f) / 2f * 0.9f;  // size 50 t block
+
+                        while (!positionFound && attempts < maxAttempts)
+                        {
+                            spawnPos = GetRandomPositionOnTerrace(row, new_base_size, heightGranite, graniteRockPrefab3.transform.localScale.y);
+
+                            Collider[] colliders = Physics.OverlapBox(spawnPos, halfExtents, Quaternion.identity, blockLayer);
+
+                            if (colliders.Length == 0)
+                            {
+                                positionFound = true;
+                            }
+                            attempts++;
+                        }
+
+                        // if no position found after max attempts, use the last calculated position (it will overlap, but better than not placing it)
+                        objGranite = Instantiate(graniteRockPrefab3, spawnPos, Quaternion.identity);
+                        objGranite.transform.parent = granite_gameObject.transform;
+                    }
                 }
-                else
-                        if (row % 4 == 2)
-                {
-                    GameObject objPiramidon = Instantiate(piramidon, objParent.transform.position + new Vector3(-UnityEngine.Random.Range(0, new_base_size / 4), heightGranite + 1, -UnityEngine.Random.Range(0, new_base_size / 4)), Quaternion.identity);
-                    //objPiramidon.transform.parent = objParent.transform;
-                    objPiramidon.transform.parent = granite_gameObject.transform;
-                    objPiramidon.transform.rotation = Quaternion.Euler(275, 0, 0);
-                }
-                else
-                        if (row % 4 == 3)
-                {
-                    GameObject objPiramidon = Instantiate(piramidon, objParent.transform.position + new Vector3(UnityEngine.Random.Range(0, new_base_size / 4), heightGranite + 1, -UnityEngine.Random.Range(0, new_base_size / 4)), Quaternion.identity);
-                    //objPiramidon.transform.parent = objParent.transform;
-                    objPiramidon.transform.parent = granite_gameObject.transform;
-                    objPiramidon.transform.rotation = Quaternion.Euler(275, 0, 0);
-                } */
+            }
+
+            if (piramidon)
+            {               
                 if (row % 2 == 0)
                 {
-                    GameObject objPiramidon = Instantiate(piramidon, objParent.transform.position + new Vector3(UnityEngine.Random.Range(0, new_base_size / 4), heightGranite + 1, UnityEngine.Random.Range(0, new_base_size / 4)), Quaternion.identity);
+                    GameObject objPiramidon = Instantiate(piramidon, objParent.transform.position + new Vector3(UnityEngine.Random.Range(horizontalTransferDistanceMeters, new_base_size / 4), heightGranite + 1, UnityEngine.Random.Range(horizontalTransferDistanceMeters, new_base_size / 4)), Quaternion.identity);
                     //objPiramidon.transform.parent = objParent.transform;
                     objPiramidon.transform.parent = granite_gameObject.transform;
                     objPiramidon.transform.rotation = Quaternion.Euler(275, 0, 0);
@@ -2801,12 +2862,359 @@ public class GeneratePyramid : MonoBehaviour
                 else
                 if (row % 2 == 1)
                 {
-                    GameObject objPiramidon = Instantiate(piramidon, objParent.transform.position + new Vector3(UnityEngine.Random.Range(0, new_base_size / 4), heightGranite + 1, -UnityEngine.Random.Range(0, new_base_size / 4)), Quaternion.identity);
+                    GameObject objPiramidon = Instantiate(piramidon, objParent.transform.position + new Vector3(UnityEngine.Random.Range(horizontalTransferDistanceMeters, new_base_size / 4), heightGranite + 1, -UnityEngine.Random.Range(horizontalTransferDistanceMeters, new_base_size / 4)), Quaternion.identity);
                     //objPiramidon.transform.parent = objParent.transform;
                     objPiramidon.transform.parent = granite_gameObject.transform;
                     objPiramidon.transform.rotation = Quaternion.Euler(275, 0, 0);
                 }
-            }            
+            }   
+
+            // setup ramps course
+            if (courseRampPrefab)
+            {
+                currentCourseHeight = blockheight;
+                // uses thickness from Khufu courses
+                if (selectedPyramid == PyramidType.Khufu && useKhufuCourseHeights)
+                    currentCourseHeight = GetBlockHeightForRow(DrawRow + 1);                                    
+
+                Vector3 DesiredSize = new Vector3(horizontalTransferDistanceMeters, currentCourseHeight, 3.0f);
+
+                Debug.Log(" capstanOperators10t: " + capstanOperators10t +
+                          " capstanOperators40t: " + capstanOperators40t +
+                          " capstanOperators50t: " + capstanOperators50t +
+                          " capstanOperators60t: " + capstanOperators60t +
+                          " capstanOperators70t: " + capstanOperators70t +
+                          " capstanOperators80t: " + capstanOperators80t);
+
+                int capstanOperators = (capstanOperators10t + capstanOperators40t + capstanOperators50t + capstanOperators60t + capstanOperators70t + capstanOperators80t) / 6;
+                if (DrawGranitePullers == DrawGranitePullers.pullers10t) capstanOperators = capstanOperators10t;
+                if (DrawGranitePullers == DrawGranitePullers.pullers40t) capstanOperators = capstanOperators40t;
+                if (DrawGranitePullers == DrawGranitePullers.pullers50t) capstanOperators = capstanOperators50t;
+                if (DrawGranitePullers == DrawGranitePullers.pullers60t) capstanOperators = capstanOperators60t;
+                if (DrawGranitePullers == DrawGranitePullers.pullers70t) capstanOperators = capstanOperators70t;
+                if (DrawGranitePullers == DrawGranitePullers.pullers80t) capstanOperators = capstanOperators80t;
+
+                Debug.Log(" totalPullers10t: " + totalPullers10t +
+                          " totalPullers40t: " + totalPullers40t +
+                          " totalPullers50t: " + totalPullers50t +
+                          " totalPullers60t: " + totalPullers60t +
+                          " totalPullers70t: " + totalPullers70t +
+                          " totalPullers80t: " + totalPullers80t);
+
+                int totalPullers = (totalPullers10t + totalPullers40t + totalPullers50t + totalPullers60t + totalPullers70t + totalPullers80t) / 6;
+                if (DrawGranitePullers == DrawGranitePullers.pullers10t) totalPullers = totalPullers10t;
+                if (DrawGranitePullers == DrawGranitePullers.pullers40t) totalPullers = totalPullers40t;
+                if (DrawGranitePullers == DrawGranitePullers.pullers50t) totalPullers = totalPullers50t;
+                if (DrawGranitePullers == DrawGranitePullers.pullers60t) totalPullers = totalPullers60t;
+                if (DrawGranitePullers == DrawGranitePullers.pullers70t) totalPullers = totalPullers70t;
+                if (DrawGranitePullers == DrawGranitePullers.pullers80t) totalPullers = totalPullers80t;
+
+                // draw half setup ramps
+                for (int i = 0; i < setupTimePerCourseGroups / 2; i++)
+                {
+
+                    if (row % 2 == 0)
+                    {
+                        GameObject objSetupRamp = Instantiate(courseRampPrefab, objParent.transform.position + new Vector3(horizontalTransferDistanceMeters / 2, heightGranite + 0.3f, -UnityEngine.Random.Range(horizontalTransferDistanceMeters, new_base_size / 4)), Quaternion.identity);
+                        objSetupRamp.transform.parent = granite_gameObject.transform;
+                        objSetupRamp.transform.localScale = DesiredSize;
+                        objSetupRamp.transform.Rotate(0, 0, -mezzanineRampAngleDegrees, Space.World);
+                        // bollards
+                        GameObject woodencyl1 = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                        woodencyl1.name = "Course_Ramp_wooden_cylinder_" + level + "_" + row + "_1";
+                        woodencyl1.transform.position = objSetupRamp.transform.position + new Vector3(horizontalTransferDistanceMeters/2 + 0.5f, 1.0f, 1.75f);
+                        //woodencyl1.transform.localRotation = Quaternion.Euler(130.0f, -14.0f, 23.0f);
+                        woodencyl1.transform.localScale = new Vector3(0.3f, 2.0f, 0.3f);
+                        woodencyl1.transform.parent = granite_gameObject.transform;
+                        woodencyl1.GetComponent<MeshRenderer>().material = m_Material_wood;
+                        woodencyl1.isStatic = true;
+                        GameObject woodencyl2 = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                        woodencyl2.name = "Course_Ramp_wooden_cylinder_" + level + "_" + row + "_2";
+                        woodencyl2.transform.position = objSetupRamp.transform.position + new Vector3(horizontalTransferDistanceMeters / 2 + 0.5f, 1.0f, -1.75f);
+                        //woodencyl2.transform.localRotation = Quaternion.Euler(130.0f, -14.0f, 23.0f);
+                        woodencyl2.transform.localScale = new Vector3(0.3f, 2.0f, 0.3f);
+                        woodencyl2.transform.parent = granite_gameObject.transform;
+                        woodencyl2.GetComponent<MeshRenderer>().material = m_Material_wood;
+                        woodencyl2.isStatic = true;
+
+                        // draw egyptian only in the first ramp
+                        if (DrawEgyptians && Egyptian_body && i == 0)
+                        {
+                            GameObject workers_gameObject = new GameObject();
+                            workers_gameObject.name = "Team_Granite_" + level;
+                            workers_gameObject.transform.parent = granite_gameObject.transform;
+                            workers_gameObject.isStatic = true;
+                            if (Sequenced)
+                                workers_gameObject = objParent;
+
+                            // draw capstan Operators
+                            for (int j = 0; j < capstanOperators / 4; j++)
+                            {
+                                // left hand
+                                GameObject Egyptian = Instantiate(Egyptian_body, objParent.transform.position + new Vector3(0, 1.0f, 0), Quaternion.identity);
+                                Egyptian.name = "Egyptian_granite_left_" + level + "_" + row + "_" + i + "_" + j +"_1";
+                                Egyptian.transform.position = woodencyl1.transform.position + new Vector3(0.5f, 0, 1.75f + j * 1.0f);
+                                //Egyptian.transform.localRotation = Quaternion.Euler(RampInclination, RampInclination + 180f, 0.0f);
+                                Egyptian.transform.parent = workers_gameObject.transform;
+                                Egyptian.isStatic = true;
+                                // right hand
+                                GameObject Egyptian2 = Instantiate(Egyptian_body, objParent.transform.position + new Vector3(0, 1.0f, 0), Quaternion.identity);
+                                Egyptian2.name = "Egyptian_granite_left_" + level + "_" + row + "_" + i + j + "_2";
+                                Egyptian2.transform.position = woodencyl1.transform.position + new Vector3(1.5f, 0, 1.75f + j * 1.0f);
+                                //Egyptian2.transform.localRotation = Quaternion.Euler(RampInclination, RampInclination + 180f, 0.0f);
+                                Egyptian2.transform.parent = workers_gameObject.transform;
+                                Egyptian2.isStatic = true;
+
+                                // left hand
+                                GameObject Egyptian3 = Instantiate(Egyptian_body, objParent.transform.position + new Vector3(0, 0, 0), Quaternion.identity);
+                                Egyptian3.name = "Egyptian_granite_left_" + level + "_" + row + "_" + i + "_" + j + "_3";
+                                Egyptian3.transform.position = woodencyl2.transform.position + new Vector3(0.5f, 1.0f, -(1.75f + j * 1.0f));
+                                Egyptian3.transform.localRotation = Quaternion.Euler(0.0f, 180f, 0.0f);
+                                Egyptian3.transform.parent = workers_gameObject.transform;
+                                Egyptian3.isStatic = true;
+                                // right hand
+                                GameObject Egyptian4 = Instantiate(Egyptian_body, objParent.transform.position + new Vector3(0, 0, 0), Quaternion.identity);
+                                Egyptian4.name = "Egyptian_granite_left_" + level + "_" + row + "_" + i + "_" + j + "_4";
+                                Egyptian4.transform.position = woodencyl2.transform.position + new Vector3(1.5f, 1.0f, -(1.75f + j * 1.0f));
+                                Egyptian4.transform.localRotation = Quaternion.Euler(0.0f, 180f, 0.0f);
+                                Egyptian4.transform.parent = workers_gameObject.transform;
+                                Egyptian4.isStatic = true;
+                            }
+
+                            // draw Pullers
+                            int numPullersXRope = totalPullers / NumberOfRopesGroups;
+                            for (int j = 0; j < NumberOfRopesGroups; j++)
+                            {
+                                for (int k = 0; k < numPullersXRope; k++)
+                                {
+                                    GameObject Egyptian = Instantiate(Egyptian_body, objParent.transform.position + new Vector3(0, 0, 0), Quaternion.identity);
+                                    Egyptian.name = "Egyptian_granite_puller_" + level + "_" + row + "_" + i + "_" + j + "_" + k;
+                                    Egyptian.transform.position = (woodencyl1.transform.position + woodencyl2.transform.position) / 2 + new Vector3(5.0f + k * 1.0f, 1.0f, (NumberOfRopesGroups / 2 - j) * 1.5f);
+                                    Egyptian.transform.localRotation = Quaternion.Euler(0, 270f, 0.0f);
+                                    Egyptian.transform.parent = workers_gameObject.transform;
+                                    Egyptian.isStatic = true;
+                                }
+                            }
+                        }
+                    }
+                    else
+                    if (row % 2 == 1)
+                    {
+                        GameObject objSetupRamp = Instantiate(courseRampPrefab, objParent.transform.position + new Vector3(horizontalTransferDistanceMeters / 2, heightGranite + 0.3f, -UnityEngine.Random.Range(horizontalTransferDistanceMeters, new_base_size / 4)), Quaternion.identity);
+                        objSetupRamp.transform.parent = granite_gameObject.transform;
+                        objSetupRamp.transform.localScale = DesiredSize;
+                        objSetupRamp.transform.Rotate(0, 0, -mezzanineRampAngleDegrees, Space.World);
+                        // bollards
+                        GameObject woodencyl1 = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                        woodencyl1.name = "Course_Ramp_wooden_cylinder_" + level + "_" + row + "_1";
+                        woodencyl1.transform.position = objSetupRamp.transform.position + new Vector3(-horizontalTransferDistanceMeters / 2 - 0.5f, 1.0f, 1.75f);
+                        //woodencyl1.transform.localRotation = Quaternion.Euler(130.0f, -14.0f, 23.0f);
+                        woodencyl1.transform.localScale = new Vector3(0.3f, 2.0f, 0.3f);
+                        woodencyl1.transform.parent = granite_gameObject.transform;
+                        woodencyl1.GetComponent<MeshRenderer>().material = m_Material_wood;
+                        woodencyl1.isStatic = true;
+                        GameObject woodencyl2 = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                        woodencyl2.name = "Course_Ramp_wooden_cylinder_" + level + "_" + row + "_2";
+                        woodencyl2.transform.position = objSetupRamp.transform.position + new Vector3(-horizontalTransferDistanceMeters / 2 - 0.5f, 1.0f, -1.75f);
+                        //woodencyl2.transform.localRotation = Quaternion.Euler(130.0f, -14.0f, 23.0f);
+                        woodencyl2.transform.localScale = new Vector3(0.3f, 2.0f, 0.3f);
+                        woodencyl2.transform.parent = granite_gameObject.transform;
+                        woodencyl2.GetComponent<MeshRenderer>().material = m_Material_wood;
+                        woodencyl2.isStatic = true;
+
+                        // draw egyptian only in the first ramp
+                        if (DrawEgyptians && Egyptian_body && i == 0)
+                        {
+                            GameObject workers_gameObject = new GameObject();
+                            workers_gameObject.name = "Team_Granite_" + level;
+                            workers_gameObject.transform.parent = granite_gameObject.transform;
+                            workers_gameObject.isStatic = true;
+                            if (Sequenced)
+                                workers_gameObject = objParent;
+
+                            // draw capstan Operators
+                            for (int j = 0; j < capstanOperators / 6; j++)
+                            {
+                                // left hand
+                                GameObject Egyptian = Instantiate(Egyptian_body, objParent.transform.position + new Vector3(0, 0, 0), Quaternion.identity);
+                                Egyptian.name = "Egyptian_granite_left_" + level + "_" + row + "_" + i + "_" + j + "_1";
+                                Egyptian.transform.position = woodencyl1.transform.position + new Vector3(-0.5f, 0, 1.75f + j * 1.0f);
+                                Egyptian.transform.parent = workers_gameObject.transform;
+                                Egyptian.isStatic = true;
+                                // right hand
+                                GameObject Egyptian2 = Instantiate(Egyptian_body, objParent.transform.position + new Vector3(0, 0, 0), Quaternion.identity);
+                                Egyptian2.name = "Egyptian_granite_right_" + level + "_" + row + "_" + i + "_" + j + "_2";
+                                Egyptian2.transform.position = woodencyl1.transform.position + new Vector3(-1.5f, 0, 1.75f + j * 1.0f);
+                                Egyptian2.transform.parent = workers_gameObject.transform;
+                                Egyptian2.isStatic = true;
+                                // right hand 2
+                                GameObject Egyptian6 = Instantiate(Egyptian_body, objParent.transform.position + new Vector3(0, 0, 0), Quaternion.identity);
+                                Egyptian6.name = "Egyptian_granite_right_" + level + "_" + row + "_" + i + "_" + j + "_3";
+                                Egyptian6.transform.position = woodencyl1.transform.position + new Vector3(-2.5f, 0, 1.75f + j * 1.0f);
+                                Egyptian6.transform.parent = workers_gameObject.transform;
+                                Egyptian6.isStatic = true;
+
+                                // left hand
+                                GameObject Egyptian3 = Instantiate(Egyptian_body, objParent.transform.position + new Vector3(0, 0, 0), Quaternion.identity);
+                                Egyptian3.name = "Egyptian_granite_left_" + level + "_" + row + "_" + i + "_" + j + "_3";
+                                Egyptian3.transform.position = woodencyl2.transform.position + new Vector3(-0.5f, 0, -(1.75f + j * 1.0f));
+                                Egyptian3.transform.localRotation = Quaternion.Euler(0.0f, 180f, 0.0f);
+                                Egyptian3.transform.parent = workers_gameObject.transform;
+                                Egyptian3.isStatic = true;
+                                // right hand
+                                GameObject Egyptian4 = Instantiate(Egyptian_body, objParent.transform.position + new Vector3(0, 0, 0), Quaternion.identity);
+                                Egyptian4.name = "Egyptian_granite_right_" + level + "_" + row + "_" + i + "_" + j + "_4";
+                                Egyptian4.transform.position = woodencyl2.transform.position + new Vector3(-1.5f, 0, -(1.75f + j * 1.0f));
+                                Egyptian4.transform.localRotation = Quaternion.Euler(0.0f, 180f, 0.0f);
+                                Egyptian4.transform.parent = workers_gameObject.transform;
+                                Egyptian4.isStatic = true;
+                                // right hand 2
+                                GameObject Egyptian5 = Instantiate(Egyptian_body, objParent.transform.position + new Vector3(0, 0, 0), Quaternion.identity);
+                                Egyptian5.name = "Egyptian_granite_right_" + level + "_" + row + "_" + i + "_" + j + "_5";
+                                Egyptian5.transform.position = woodencyl2.transform.position + new Vector3(-2.5f, 0, -(1.75f + j * 1.0f));
+                                Egyptian5.transform.localRotation = Quaternion.Euler(0.0f, 180f, 0.0f);
+                                Egyptian5.transform.parent = workers_gameObject.transform;
+                                Egyptian5.isStatic = true;
+                            }
+
+                            // draw Pullers
+                            int numPullersXRope = totalPullers / NumberOfRopesGroups;
+                            for (int j = 0; j < NumberOfRopesGroups; j++)
+                            {
+                                for (int k = 0; k < numPullersXRope; k++)
+                                {
+                                    GameObject Egyptian = Instantiate(Egyptian_body, objParent.transform.position + new Vector3(0, 0, 0), Quaternion.identity);
+                                    Egyptian.name = "Egyptian_granite_puller_" + level + "_" + row + "_" + i + "_" + j + "_" + k;
+                                    Egyptian.transform.position = (woodencyl1.transform.position + woodencyl2.transform.position) / 2 + new Vector3(- 5.0f - k * 1.0f, 0, (-NumberOfRopesGroups / 2 + j)*1.5f);
+                                    Egyptian.transform.localRotation = Quaternion.Euler(0, 270f, 0.0f);
+                                    Egyptian.transform.parent = workers_gameObject.transform;
+                                    Egyptian.isStatic = true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Draw Half Course
+            if (DrawHalfCourseForGraniteBlocks && DrawRow > 0)
+            {
+                currentCourseHeight = blockheight;
+                // uses thickness from Khufu courses
+                if (selectedPyramid == PyramidType.Khufu && useKhufuCourseHeights)
+                {
+                    currentCourseHeight = GetBlockHeightForRow(DrawRow + 1);
+                    bh2 = currentCourseHeight / 2;
+                    bht2 = bh2 / pyramid_inclination_tg;
+                    bhtl = Mathf.Sqrt(currentCourseHeight * currentCourseHeight + bht2 * bht2) + 0.3f;
+                    setbackWide = currentCourseHeight / Mathf.Tan(degrees_to_radians(PyramidInclination));
+                }
+
+                GameObject row_gameObject = new GameObject();
+                row_gameObject.name = "Course_Granite_" + level + "_" + (DrawRow + 1);
+                row_gameObject.transform.parent = iter_gameObject.transform;
+                row_gameObject.isStatic = isStatic;
+
+                float sepi = sep * (DrawRow - row_ori + 1) / ch;
+                int bxi = 0;
+                float totalHeightUpToCurrentCourse = 0;
+                float totalHeightUpToCurrentCourseTotal = 0;
+                if (selectedPyramid == PyramidType.Khufu && useKhufuCourseHeights)
+                {
+                    for (int hIndex = 0; hIndex < DrawRow - row_ori + 1; hIndex++)
+                    {
+                        totalHeightUpToCurrentCourse += GetBlockHeightForRow(row_ori + hIndex);
+                    }
+                    setbackKhufuCourseHeights += setbackWide;
+                    sepi = setbackKhufuCourseHeights;
+                }
+                else
+                    totalHeightUpToCurrentCourse = (DrawRow - row_ori + 1) * currentCourseHeight;
+
+                last_h = totalHeightUpToCurrentCourse;
+                last_v0 = v0;
+                last_v1 = v1;
+                numberOfBlocksX = 0;
+                lastNumberOfBlockDrawnX = -1;
+                x = -bs2 + sepi + bw2;
+                v0 = new Vector3(bs2 - sepi, totalHeightUpToCurrentCourse, -(bs2 - sepi));
+                while (x < bs2 - sepi - bw2)
+                {
+                    lastCubeDrawn = null;
+                    numberOfBlocksX++;
+                    numberOfBlocksZ = 0;
+                    lastNumberOfBlockDrawnZ = -1;
+                    z = -bs2 + sepi + bw2;
+                    lastobj = null;
+                    while (z < bs2 - sepi - bw2)
+                    {
+                        numberOfBlocksZ++;
+                        num_block_real++;
+                        obj = null;
+                        if (x < 0)
+                        {
+                            int rnd = UnityEngine.Random.Range(0, RockPrefab.Length);
+                            obj = Instantiate(RockPrefab[rnd], objParent.transform.position + new Vector3(x, height + bh2 + totalHeightUpToCurrentCourse, z), Quaternion.identity);
+                            obj.transform.localScale = new Vector3(blockwide - blockSeparation, currentCourseHeight, blockwide - blockSeparation);
+                            obj.transform.name = "Block_" + row + "_" + numberOfBlocksX + "_" + numberOfBlocksZ;
+                            obj.transform.parent = row_gameObject.transform;
+                            obj.isStatic = isStatic || row == 0;
+                            lastobj = obj;
+                            lastNumberOfBlockDrawnZ = numberOfBlocksZ;
+                            lastCubeDrawn = obj;
+                            numberOfBlocksDrawn++;
+                        }
+                        z += blockwide;
+                        numberOfBlocks++;
+                        bxi++;
+                        biter++;
+
+                        if (maxBlocks > 0 && numberOfBlocks > maxBlocks) break;
+                    }
+                    // last block Z
+                    if ((z != bs2 - sepi) && (x < 0))
+                    {
+                        // adapt block size
+                        scaleChange = new Vector3(blockwide - blockSeparation, currentCourseHeight, blockwide - blockSeparation);
+                        scaleChange.z = bs2 - sepi - (z - bw2);
+                        z = z - (blockwide - scaleChange.z) / 2;
+                        obj = Instantiate(RockPrefab[UnityEngine.Random.Range(0, RockPrefab.Length)], objParent.transform.position + new Vector3(x, height + bh2 + totalHeightUpToCurrentCourse, z), Quaternion.identity);
+                        obj.transform.name = "Block_" + row + "_" + numberOfBlocksX + "_" + numberOfBlocksZ;
+                        obj.transform.parent = row_gameObject.transform;
+                        obj.transform.localScale = scaleChange;
+
+                        if (lastobj)
+                        {
+                            GameObject objnew = Instantiate(RockPrefab[UnityEngine.Random.Range(0, RockPrefab.Length)],
+                                        new Vector3(lastobj.transform.position.x,
+                                                    lastobj.transform.position.y,
+                                                    lastobj.transform.position.z + obj.transform.localScale.z / 2),
+                                        Quaternion.identity);
+                            objnew.transform.name = "BlockComb_Z_" + row + "_" + numberOfBlocksX + "_" + numberOfBlocksZ;
+                            objnew.transform.localScale = new Vector3(lastobj.transform.localScale.x, lastobj.transform.localScale.y, lastobj.transform.localScale.z + obj.transform.localScale.z);
+                            objnew.transform.parent = row_gameObject.transform;
+                            if (DrawCasing)
+                                objnew.GetComponent<MeshRenderer>().material = m_Material_Blank;
+                            // delete previous objects
+                            Destroy(lastobj);
+                            Destroy(obj);
+
+                            lastobj = null;
+                            obj = objnew;
+                        }
+
+                        obj.isStatic = isStatic || row == 0;
+                        lastobj = obj;
+
+                        numberOfBlocksDrawn++;
+                        num_block_real++;
+                    }
+                    x += blockwide;
+                    if (maxBlocks > 0 && numberOfBlocks > maxBlocks) break;
+                }                
+          
+            }
+
         }
 
         force_old_length += forceblocksrow_total_total;
@@ -5462,7 +5870,7 @@ public class GeneratePyramid : MonoBehaviour
     /// </summary>
     private void ProcessGraniteCalculations(int row, float currentCourseHeight)
     {
-        if (!showInfoGranite || csvgranitewriter == null) return;
+        //if (!showInfoGranite || csvgranitewriter == null) return;
         if (endCourseGableteKingsChamber==0) endCourseGableteKingsChamber = endCourseKingsChamber;
         if (row > endCourseGableteKingsChamber) return;
 
@@ -5529,20 +5937,20 @@ public class GeneratePyramid : MonoBehaviour
         float forceToApply80t = CalculatePullForce(80000, rampAngleRad, mezzanineFrictionCoef, out float rawForce80t);
 
         // TotalPullers is the team size needed *without* a capstan
-        int totalPullers10t = CalculatePullers(rawForce10t);
-        int totalPullers40t = CalculatePullers(rawForce40t);
-        int totalPullers50t = CalculatePullers(rawForce50t);
-        int totalPullers60t = CalculatePullers(rawForce60t);
-        int totalPullers70t = CalculatePullers(rawForce70t);
-        int totalPullers80t = CalculatePullers(rawForce80t);
+        totalPullers10t = CalculatePullers(rawForce10t);
+        totalPullers40t = CalculatePullers(rawForce40t);
+        totalPullers50t = CalculatePullers(rawForce50t);
+        totalPullers60t = CalculatePullers(rawForce60t);
+        totalPullers70t = CalculatePullers(rawForce70t);
+        totalPullers80t = CalculatePullers(rawForce80t);
 
         // CapstanOperators is the smaller team applying the *reduced* force
-        int capstanOperators10t = CalculatePullers(forceToApply10t);
-        int capstanOperators40t = CalculatePullers(forceToApply40t);
-        int capstanOperators50t = CalculatePullers(forceToApply50t);
-        int capstanOperators60t = CalculatePullers(forceToApply60t);
-        int capstanOperators70t = CalculatePullers(forceToApply70t);
-        int capstanOperators80t = CalculatePullers(forceToApply80t);
+        capstanOperators10t = CalculatePullers(forceToApply10t);
+        capstanOperators40t = CalculatePullers(forceToApply40t);
+        capstanOperators50t = CalculatePullers(forceToApply50t);
+        capstanOperators60t = CalculatePullers(forceToApply60t);
+        capstanOperators70t = CalculatePullers(forceToApply70t);
+        capstanOperators80t = CalculatePullers(forceToApply80t);
 
         // 4. Calculate Work (Energy) for this course
         float work10t_MJ = CalculateWork(10000, distanceOnRamp, rampAngleRad, mezzanineFrictionCoef) * blocks10t;
@@ -6022,6 +6430,31 @@ public class GeneratePyramid : MonoBehaviour
 
             yield return null; 
         }
+    }
+
+    // Get a random position on the terrace for block placement
+    private Vector3 GetRandomPositionOnTerrace(int row, float currentBaseSize, float currentHeight, float blockHeightY)
+    {
+        float offsetX = 0;
+        float offsetZ = 0;
+        float halfBase = currentBaseSize / 4; // Range within quarter of the base size
+
+        if (row % 2 == 0)
+        {
+            offsetX = UnityEngine.Random.Range(horizontalTransferDistanceMeters, halfBase);
+            offsetZ = UnityEngine.Random.Range(horizontalTransferDistanceMeters, halfBase);
+        }
+        else 
+        {
+            offsetX = UnityEngine.Random.Range(horizontalTransferDistanceMeters, halfBase);
+            offsetZ = -UnityEngine.Random.Range(horizontalTransferDistanceMeters, halfBase);
+        }
+
+        Vector3 localPos = new Vector3(offsetX, currentHeight + graniteRockPrefab1.transform.localScale.y / 2, offsetZ); 
+
+        localPos.y = currentHeight + 0.75f + blockHeightY / 2;
+
+        return objParent.transform.position + localPos;
     }
 
 }

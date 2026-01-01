@@ -429,7 +429,7 @@ MonoBehaviour:
   EmbankmentVolume: 0
   SingleRampFaceStart: 0
   m_Material: {fileID: 2100000, guid: 8c57f0c93bcdf45419ad1c37ef578135, type: 2}
-  m_Material_corner: {fileID: 2100000, guid: ccc151909cb3b6144a2156cc5792c0b9, type: 2}
+  m_Material_corner: {fileID: 2100000, guid: 7771e583028198f46b5c23521a75e8f9, type: 2}
   m_Material_wood: {fileID: 2100000, guid: 1ec7a28ff55f44a4a87a704aee7ecc7c, type: 2}
   m_Material_Blank: {fileID: 2100000, guid: 7c962ba6101e8614a81609559aafa9b2, type: 2}
   m_Material_floor: {fileID: 2100000, guid: 7771e583028198f46b5c23521a75e8f9, type: 2}
@@ -452,8 +452,13 @@ MonoBehaviour:
     type: 3}
   graniteRockPrefab2: {fileID: 1934847145488549955, guid: 5cc382f61102f4d44bf8e544449de839,
     type: 3}
+  graniteRockPrefab3: {fileID: 0}
   piramidon: {fileID: 1999908982366458336, guid: fe7e4f262ac125240b6af3c2b94ce895,
     type: 3}
+  courseRampPrefab: {fileID: 0}
+  DrawHalfCourseForGraniteBlocks: 0
+  DrawGranitePullers: 6
+  NumberOfRopesGroups: 12
   stone_sled: {fileID: 6667684075288102831, guid: 8dce8326a02527240ac0bacd72143721,
     type: 3}
   Egyptian_body: {fileID: 6708560359212677676, guid: 912133279bb52b440a38c710df404a5f,
@@ -470,7 +475,7 @@ MonoBehaviour:
   DrawOnlyRow: 0
   DrawUntilTurn: 0
   DrawCasing: 1
-  DrawRow: 40
+  DrawRow: 46
   DrawTurn: 0
   DrawBlocks: 5
   DeletedBlocks: 0
@@ -511,8 +516,10 @@ MonoBehaviour:
     m_Bits: 1
   numOfGraniteRock1: 21
   numOfGraniteRock2: 38
+  numOfGraniteRock3: 24
   minHeightGraniteRock: 43
   maxHeightGraniteRock: 62
+  maxHeightGraniteRock2: 68
   minBaseSize2Ramps: 32
   minBaseSize4Ramps: 64
   minBaseSize8Ramps: 128
@@ -2569,8 +2576,13 @@ MonoBehaviour:
     type: 3}
   graniteRockPrefab2: {fileID: 1934847145488549955, guid: 5cc382f61102f4d44bf8e544449de839,
     type: 3}
+  graniteRockPrefab3: {fileID: 0}
   piramidon: {fileID: 1999908982366458336, guid: fe7e4f262ac125240b6af3c2b94ce895,
     type: 3}
+  courseRampPrefab: {fileID: 0}
+  DrawHalfCourseForGraniteBlocks: 0
+  DrawGranitePullers: 6
+  NumberOfRopesGroups: 12
   stone_sled: {fileID: 6667684075288102831, guid: 8dce8326a02527240ac0bacd72143721,
     type: 3}
   Egyptian_body: {fileID: 6708560359212677676, guid: 912133279bb52b440a38c710df404a5f,
@@ -2628,8 +2640,10 @@ MonoBehaviour:
     m_Bits: 1
   numOfGraniteRock1: 21
   numOfGraniteRock2: 38
+  numOfGraniteRock3: 24
   minHeightGraniteRock: 43
   maxHeightGraniteRock: 62
+  maxHeightGraniteRock2: 68
   minBaseSize2Ramps: 32
   minBaseSize4Ramps: 64
   minBaseSize8Ramps: 128

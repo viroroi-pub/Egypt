@@ -31,22 +31,30 @@ Granite_Megaliths_60-85_courses_bollards.xlsx  Table: Supplementary Section S10 
 great_pyramid_khufu_course_turns.xlsx - Sheet1.csv  Table: Figure 10 & Supplementary Table S11.1 Description: Lists the specific course numbers where the IER model predicts a 90-degree turn. This data is used for the statistical correlation analysis against observed variations in course thickness. 
 
 Height just before changes in thickness thickness.xlsx  Table: Figure 10 & Supplementary Table S11.1 Description: Contains the predicted cumulative heights (in meters) at which the IER ramp would turn for different ramp angles. This data is used in the correlation analysis against observed changes in course thickness.   
+Height just before changes in thickness thickness corrected.xlsx  Table: Figure 10 & Supplementary Table S11.1 With the last changes of the algorithm (v1.0.12)
 
 Courses just before changes in thickness thickness.xlsx   Table: Figure 10 & Supplementary Table S11.1 Description: Lists the predicted course numbers where the IER ramp would turn. This is derived from the height data and is compared against the course numbers where architectural changes are observed.   
+Courses just before changes in thickness thickness corrected.xlsx   Table: Figure 10 & Supplementary Table S11.1 With the last changes of the algorithm (v1.0.12)
 
 Course per Turn for Different Ramp Angles.xlsx   Table: Supplementary Table S12.1 Description: A matrix showing the specific course number predicted for each of the first several turns of the helical ramp, calculated for a wide range of different ramp angles. This is the primary dataset for the course thickness correlation analysis.   
+Course per Turn for Different Ramp Angles corrected.xlsx   Table: Supplementary Table S12.1 With the last changes of the algorithm (v1.0.12)
 
-Cumulative Height per Turn for Different Ramp Angles ext.xlsx - Table: Figure 10, Figure 11, Supplementary Tables S11.1 & S12.2 Description: A high-resolution matrix of the predicted cumulative height (in meters) at each turn for a detailed sweep of ramp angles (e.g., in 0.1° increments). This is a core dataset for finding the best-fit angle against both course thickness data and ScanPyramids anomalies.   
+Cumulative Height per Turn for Different Ramp Angles ext.xlsx - Table: Figure 10, Figure 11, Supplementary Tables S12.1 & S12.2 Description: A high-resolution matrix of the predicted cumulative height (in meters) at each turn for a detailed sweep of ramp angles (e.g., in 0.1° increments). This is a core dataset for finding the best-fit angle against both course thickness data and ScanPyramids anomalies.   
+Cumulative Height per Turn for Different Ramp Angles ext corrected.xlsx - Table: Figure 10, Figure 11, Supplementary Tables S12.1 & S12.2 With the last changes of the algorithm (v1.0.12)
+
+Cumulative Height per Turn for Different Ramp Angles.csv  Table: Figure 10, Figure 11, Supplementary Tables S12.1 & S12.2 Description: Similar to the ext.xlsx file, this contains the predicted cumulative height at each turn for different ramp angles, used for the correlation analyses.   
+Cumulative Height per Turn for Different Ramp Angles corrected.csv   Table: Supplementary Table S12.1 With the last changes of the algorithm (v1.0.12)
+
+Cumulative Height per Turn for Different Ramp Angles_courses.csv  Table: Supplementary Table S12.1 Description: A dataset listing the predicted course number for each turn across a range of ramp angles. It is a variant of the data used for the course thickness correlation analysis.   
+Cumulative Height per Turn for Different Ramp Angles_courses corrected.csv  Table: Supplementary Table S12.1 With the last changes of the algorithm (v1.0.12)
 
 great_pyramid_khufu_course_heights_goyon1978_NEcorner.xlsx - great_pyramid_khufu_course_heig.csv  Table: Figure 10 & Supplementary Section S11 Description: The empirical dataset of the Great Pyramid's course structure, based on survey data. It lists the thickness and cumulative elevation for each course and serves as the "ground truth" for the correlation analysis.   
 
-Cumulative Height per Turn for Different Ramp Angles_courses.csv  Table: Supplementary Table S11.1 Description: A dataset listing the predicted course number for each turn across a range of ramp angles. It is a variant of the data used for the course thickness correlation analysis.   
-
 Kefren_heights_75.csv  Table: Supplementary Table S12.4 Description: Simulation output for applying the IER parametric model to the Pyramid of Khafre (Kefren). It demonstrates the framework's adaptability and generates falsifiable predictions for other monuments.   
+Kefren_heights_75 corrected.csv  Table: Supplementary Table S12.4 With the last changes of the algorithm (v1.0.12)
 
 Absolute Differences Table_Notches.csv  Table: Supplementary Table S12.3 Description: This table quantifies the geometric consistency between the IER model and the ScanPyramids anomalies. It lists the absolute difference in height between predicted turn locations and the centroids of muographic notches (N1, N2, N3) for various ramp angles, identifying 7.5° as the best fit.   
-
-Cumulative Height per Turn for Different Ramp Angles.csv  Table: Figure 10, Figure 11, Supplementary Tables S11.1 & S12.2 Description: Similar to the ext.xlsx file, this contains the predicted cumulative height at each turn for different ramp angles, used for the correlation analyses.   
+Absolute Differences Table_Notches corrected.csv  Table: Supplementary Table S12.3 With the last changes of the algorithm (v1.0.12)
 
 table1_crew_size_vs_mu_theta.csv — Main Table 1 — Crew size (haulers) required per ramp angle (6°, 7°, 8°) and friction μ (0.10–0.80); includes double-file team length (1.5 m/man → 0.75×crew).
 

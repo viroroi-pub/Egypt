@@ -46,14 +46,14 @@ public class ScreenshotController : MonoBehaviour
         // crucial for capturing the final, fully rendered image, including UI.
         yield return new WaitForEndOfFrame();
 
-        // --- 1. Define the File Path ---
+        //  Define the File Path ---
 
         // Application.persistentDataPath provides a safe, writable directory path
         // that persists between application updates and is consistent across
         // different operating systems (Windows, macOS, iOS, Android, etc.).
         string folderPath = Application.persistentDataPath;
 
-        // --- 2. Generate a Unique Filename ---
+        //  Generate a Unique Filename ---
 
         // A timestamp is used to create a unique filename for each screenshot,
         // preventing files from being overwritten. The format "yyyy-MM-dd_HH-mm-ss"
@@ -61,21 +61,21 @@ public class ScreenshotController : MonoBehaviour
         // that are safe for all major file systems.
         string fileName = "Screenshot_" + System.DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss") + ".png";
 
-        // --- 3. Combine Path and Filename ---
+        //  Combine Path and Filename ---
 
         // System.IO.Path.Combine is the recommended method for constructing file paths.
         // It automatically uses the correct directory separator character ('\' or '/')
         // for the target operating system, preventing cross-platform compatibility issues.
         string filePath = Path.Combine(folderPath, fileName);
 
-        // --- 4. Capture and Save the Screenshot ---
+        //  Capture and Save the Screenshot ---
 
         // ScreenCapture.CaptureScreenshot takes the full file path and saves the
         // current game view as a PNG file. This operation is asynchronous and
         // may take a few frames to complete, especially for high-resolution captures.
         ScreenCapture.CaptureScreenshot(filePath);
 
-        // --- 5. Provide User Feedback ---
+        //  Provide User Feedback ---
 
         // A debug log confirms that the action was triggered and shows the developer
         // exactly where the file has been saved, which is invaluable for testing

@@ -78,6 +78,16 @@ PrefabInstance:
       propertyPath: m_Name
       value: STONE_SLED
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: cd40189b99881464e835b2345397a243,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
+    - target: {fileID: 8164078558771037576, guid: cd40189b99881464e835b2345397a243,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -105,6 +115,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: CubeRockSimpleTextReal1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1934847145488549955, guid: 6b9161814bf4f6746a906570bf1e2c9f,
+        type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     - target: {fileID: 1934847145488550015, guid: 6b9161814bf4f6746a906570bf1e2c9f,
         type: 3}

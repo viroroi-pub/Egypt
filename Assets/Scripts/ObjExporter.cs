@@ -25,7 +25,7 @@ public class ObjExporter : MonoBehaviour
             Directory.CreateDirectory(folderPath);
         }
 
-        // --- 1. Filter and Sort Meshes ---
+        //  Filter and Sort Meshes ---
         List<MeshFilter> allMeshFilters = new List<MeshFilter>();
         rootObject.GetComponentsInChildren(true, allMeshFilters);
 
@@ -68,7 +68,7 @@ public class ObjExporter : MonoBehaviour
             }
         }
 
-        // --- 2. Export the Non-Trigger (Visual) Meshes ---
+        //  Export the Non-Trigger (Visual) Meshes ---
         if (nonTriggerMeshes.Count > 0)
         {
             WriteMeshListToObj(nonTriggerMeshes, folderPath, fileName, combineMeshes);
@@ -78,14 +78,14 @@ public class ObjExporter : MonoBehaviour
             Debug.LogWarning($"No non-trigger meshes found to export for '{fileName}'.");
         }
 
-        // --- 3. Export the Trigger Meshes to a separate file ---
+        //  Export the Trigger Meshes to a separate file ---
         if (triggerMeshes.Count > 0)
         {
             string triggerFileName = fileName + "_Triggers";
             WriteMeshListToObj(triggerMeshes, folderPath, triggerFileName, combineMeshes);
         }
 
-        // --- 4. Export the Ramp Meshes to a separate file ---
+        //  Export the Ramp Meshes to a separate file ---
         if (rampsMeshes.Count > 0)
         {
             string triggerFileName = fileName + "_Ramps";

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Line Detector - No Comments C#</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #1a1a1a; color: #e0e0e0; padding: 20px; }
+        .container { max-width: 1100px; margin: 0 auto; background: #2d2d2d; padding: 20px; border-radius: 10px; border: 1px solid #444; }
+        .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; padding: 15px; background: #383838; border-radius: 8px; }
+        canvas { max-width: 100%; border: 1px solid #666; background: #fff; margin-bottom: 20px; }
+        .outputs { display: grid; grid-template-columns: 1fr 1.2fr; gap: 20px; }
+        .panel { background: #252526; padding: 15px; border-radius: 8px; border: 1px solid #444; }
+        .code-block { background: #000; color: #dcdcaa; padding: 15px; border-radius: 5px; font-family: 'Consolas', monospace; font-size: 14px; overflow-x: auto; height: 350px; border: 1px solid #007acc; }
+        h3 { color: #4ec9b0; margin-top: 0; font-size: 1.1em; border-bottom: 1px solid #444; padding-bottom: 5px; }
+        input, button { background: #454545; color: white; border: 1px solid #666; padding: 8px; border-radius: 4px; width: 100%; }
+        button { background: #0e639c; cursor: pointer; border: none; font-weight: bold; margin-top: 10px; }
+        button:hover { background: #1177bb; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
+        th, td { text-align: left; padding: 8px; border-bottom: 1px solid #333; }
+        .highlight { color: #f44336; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Line Detection System (Bottom-to-Top)</h2>
+    
+    <div class="controls">
+        <div>
+            <label>Image Source:</label>
+            <input type="file" id="upload" accept="image/*">
+        </div>
+        <div>
+            <label>Merge Threshold (px):</label>
+            <input type="number" id="threshold" value="8">
+        </div>
+        <div>
+            <label>Total Real Height:</label>
+            <input type="number" id="realTotal" value="143.5">
+        </div>
+        <div>
+            <button onclick="processImage()">Analyze Image</button>
+        </div>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <div class="outputs">
+        <div class="panel">
+            <h3>Detection Results (Bottom Up)</h3>
+            <table id="metricsTable">
+                <thead>
+                    <tr>
+                        <th>Interval</th>
+                        <th>Gap (px)</th>
+                        <th>Gap (Real)</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div class="panel">
+            <h3>C# List Output</h3>
+            <div id="csharpOutput" class="code-block"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function processImage() {
+        const file = document.getElementById('upload').files[0];
+        const mergeThreshold = parseFloat(document.getElementById('threshold').value);
+        const realTotalHeight = parseFloat(document.getElementById('realTotal').value);
+
+        if (!file) return alert("Please select an image file.");
+
+        const img = new Image();
+        img.onload = function() {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+
+            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imgData.data;
+            const rowScores = new Array(canvas.height).fill(0);
+
+            // 1. LEFT-ANCHOR SCAN STRATEGY
+            const anchorRange = Math.floor(canvas.width * 0.25);
+            
+            for (let y = 0; y < canvas.height; y++) {
+                let bluePixels = 0;
+                for (let x = 0; x < anchorRange; x++) {
+                    const i = (y * canvas.width + x) * 4;
+                    const r = data[i], g = data[i+1], b = data[i+2];
+                    // Blue dominance filter
+                    if (b > 115 && b > r * 1.5 && b > g * 1.5) {
+                        bluePixels++;
+                    }
+                }
+                if (bluePixels > anchorRange * 0.1) {
+                    rowScores[y] = 1;
+                }
+            }
+
+            // 2. FIND LINE CENTERS (Centroids)
+            let rawLines = [];
+            let currentGroup = [];
+            for (let y = 0; y < rowScores.length; y++) {
+                if (rowScores[y] === 1) {
+                    currentGroup.push(y);
+                } else if (currentGroup.length > 0) {
+                    rawLines.push(currentGroup.reduce((a, b) => a + b) / currentGroup.length);
+                    currentGroup = [];
+                }
+            }
+
+            // 3. MERGE PROXIMITY
+            let mergedLines = [];
+            if (rawLines.length > 0) {
+                let temp = [rawLines[0]];
+                for (let i = 1; i < rawLines.length; i++) {
+                    if (rawLines[i] - rawLines[i-1] <= mergeThreshold) {
+                        temp.push(rawLines[i]);
+                    } else {
+                        mergedLines.push(temp.reduce((a, b) => a + b) / temp.length);
+                        temp = [rawLines[i]];
+                    }
+                }
+                mergedLines.push(temp.reduce((a, b) => a + b) / temp.length);
+            }
+
+            // 4. INVERSE ORDER (Bottom-to-Top)
+            const finalLines = mergedLines.sort((a, b) => b - a);
+
+            if (finalLines.length < 2) return alert("Error: Detection failed. Check threshold.");
+
+            // 5. RATIO & CALCULATION
+            const totalPx = Math.abs(finalLines[0] - finalLines[finalLines.length - 1]);
+            const ratio = realTotalHeight / totalPx;
+
+            // 6. OUTPUT RENDER
+            const tableBody = document.querySelector("#metricsTable tbody");
+            tableBody.innerHTML = "";
+            let csharp = `private static readonly List<float> khafreCourseHeights = new List<float>\n{\n`;
+
+            for (let i = 0; i < finalLines.length - 1; i++) {
+                const gapPx = Math.abs(finalLines[i] - finalLines[i+1]);
+                const gapReal = (gapPx * ratio).toFixed(4);
+
+                tableBody.innerHTML += `
+                    <tr>
+                        <td>Gap ${i+1}</td>
+                        <td>${gapPx.toFixed(1)} px</td>
+                        <td class="highlight">${gapReal}</td>
+                    </tr>`;
+
+                csharp += `    ${gapReal}f${i === finalLines.length - 2 ? "" : ","}\n`;
+            }
+            csharp += `};`;
+            document.getElementById('csharpOutput').innerText = csharp;
+
+            // VISUAL MARKERS
+            ctx.strokeStyle = "red";
+            ctx.lineWidth = 1;
+            ctx.fillStyle = "red";
+            ctx.font = "bold 12px Arial";
+            finalLines.forEach((y, idx) => {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+                ctx.fillText(`L${idx+1}`, 10, y - 5);
+            });
+        };
+        img.src = URL.createObjectURL(file);
+    }
+</script>
+</body>
+</html>

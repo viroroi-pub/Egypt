@@ -400,7 +400,7 @@ MonoBehaviour:
   BaseSize: 230.36
   Height: 146.5
   PyramidInclination: 51.85
-  RampInclination: 7.5
+  RampInclination: 7
   blockheight: 0.71
   blockwide: 1.27
   PathWide: 0
@@ -475,17 +475,18 @@ MonoBehaviour:
   DrawOnlyRow: 0
   DrawUntilTurn: 0
   DrawCasing: 1
-  DrawRow: 46
+  DrawRow: 40
   DrawTurn: 0
   DrawBlocks: 5
   DeletedBlocks: 0
   DrawWall: 0
   DrawFloor: 1
   DrawWoodenCyl: 1
-  DrawEgyptians: 1
+  DrawEgyptians: 0
   DrawGranite: 1
   DrawAll: 0
   showRamps: 1
+  directionRampsClockwise: 1
   halfPyramid: 0
   DrawPyramidInterior: 0
   DrawPyramidInteriorTransparent: 0
@@ -496,6 +497,14 @@ MonoBehaviour:
   DecommissioningStep: 0.05
   DetectedDeletedBlocks: []
   StraightRampFace: 1
+  HeightCornerInitialRamp: 0
+  HeightCornerInitialRamp2: 0
+  HeightCornerInitialRamp3: 0
+  HeightCornerInitialRamp4: 0
+  blockManager: {fileID: 0}
+  useGPUInstancing: 1
+  constructionEffect: {fileID: 0}
+  PyramidLogisticsAnimator: {fileID: 0}
   csvitername: pyramid_iter.csv
   csvrowname: pyramid_row.csv
   csvheadway: pyramid_headway.csv
@@ -546,6 +555,7 @@ MonoBehaviour:
   progressBar: {fileID: 1793016753}
   lastRampMidPoint: {x: 0, y: 0, z: 0}
   useKhufuCourseHeights: 0
+  useKhafreCourseHeights: 0
   showInfoGranite: 0
   numberOfGranite10tons: 6
   numberOfLimestone40tons: 24
@@ -569,6 +579,8 @@ MonoBehaviour:
   capstanWrapAngleRadians: 3.1415927
   csvGraniteName: pyramid_granite.csv
   totalGraniteMoveTimeWorkingYears: 0
+  isGenerating: 0
+  canDrawGPU: 0
 --- !u!114 &350862445
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2610,6 +2622,7 @@ MonoBehaviour:
   DrawGranite: 1
   DrawAll: 0
   showRamps: 1
+  directionRampsClockwise: 1
   halfPyramid: 0
   DrawPyramidInterior: 0
   DrawPyramidInteriorTransparent: 1
@@ -2620,6 +2633,14 @@ MonoBehaviour:
   DecommissioningStep: 0.05
   DetectedDeletedBlocks: []
   StraightRampFace: 1
+  HeightCornerInitialRamp: 0
+  HeightCornerInitialRamp2: 0
+  HeightCornerInitialRamp3: 0
+  HeightCornerInitialRamp4: 0
+  blockManager: {fileID: 0}
+  useGPUInstancing: 1
+  constructionEffect: {fileID: 0}
+  PyramidLogisticsAnimator: {fileID: 0}
   csvitername: pyramid_iter.csv
   csvrowname: pyramid_row.csv
   csvheadway: pyramid_headway.csv
@@ -2670,6 +2691,7 @@ MonoBehaviour:
   progressBar: {fileID: 0}
   lastRampMidPoint: {x: 0, y: 0, z: 0}
   useKhufuCourseHeights: 0
+  useKhafreCourseHeights: 0
   showInfoGranite: 0
   numberOfGranite10tons: 6
   numberOfLimestone40tons: 24
@@ -2693,6 +2715,8 @@ MonoBehaviour:
   capstanWrapAngleRadians: 3.1415927
   csvGraniteName: pyramid_granite.csv
   totalGraniteMoveTimeWorkingYears: 0
+  isGenerating: 0
+  canDrawGPU: 0
 --- !u!114 &1315386617
 MonoBehaviour:
   m_ObjectHideFlags: 0

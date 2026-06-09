@@ -1,4 +1,6 @@
-# Khufu Pyramid – Unity Simulation (Integrated Edge-Ramp)
+# Integrated Edge-Ramp (IER) – Unity Simulation
+
+Parametric reconstruction framework for the Fourth Dynasty pyramids of Khufu (G1) and Khafre (G2)
 
 ![Unity simulation screenshot](AdditionalData/Images/UnityPyramid.png)
 
@@ -6,7 +8,7 @@
 
 ## 📊 Metadata & Citation
 
-**Version:** v1.0.11 (final submission package for npj Heritage Science)  
+**Version:** v1.0.14   
 **DOI:** [https://doi.org/10.5281/zenodo.16732345](https://doi.org/10.5281/zenodo.16732345)  
 **Author:** Vicente Luis Rosell Roig (ORCID: 0009-0003-8857-9706)  
 **Affiliation:** Independent Researcher; PhD in Pattern Recognition, Artificial Intelligence and Computer Graphics, Universitat Politècnica de València (UPV), Spain.  
@@ -61,6 +63,7 @@ All methods implement identical physical parameters for direct comparative analy
 
 ## 📑 Changelog
 
+* **v1.0.14** – Khafre updates.
 * **v1.0.11** – Added code updates.
 * **v1.0.10** – Added code updates.
 * **v1.0.4** – Added code updates.  
@@ -70,6 +73,50 @@ All methods implement identical physical parameters for direct comparative analy
 * **v1.0.0** – Prototype release (internal use only).  
 
 All results in the npj Heritage Science submission can be reproduced exactly using the archived Unity project, CSV/Excel tables, and SimScale exports. Earlier versions remain available in the Zenodo record history for transparency
+
+---
+
+## 🏛️ Khafre (G2) Extension
+
+Version 1.0.14 extends the original Khufu (G1) implementation to the
+Pyramid of Khafre (G2).
+
+The framework now supports:
+
+- Corner-specific starting ramp elevations
+  (`HeightCornerInitialRamp`,
+   `HeightCornerInitialRamp2`,
+   `HeightCornerInitialRamp3`,
+   `HeightCornerInitialRamp4`)
+  allowing asymmetric bedrock conditions.
+
+- Optional clockwise or counter-clockwise ramp progression
+  (`directionRampsClockwise`).
+
+- Khafre-specific course-height datasets
+  (`useKhafreCourseHeights`).
+
+- Adaptive ramp aperture changes at configurable elevations
+  (`heightChangeRampConf`,
+   `holeHeight2`,
+   `holeWide2`).
+
+- Alternative ramp geometries including:
+  - Integrated Edge-Ramp (IER)
+  - Feasible variants
+  - Spurred variants
+  - Straight-ramp test configurations
+
+- Configurable straight-ramp parameters:
+  `SetBackStraightRamp`,
+  `percentageStraightRampPosition`,
+  `StraightRampInclination`,
+  `StraightRampYawAngle`,
+  `MaxHeightStraightRamp`.
+
+These additions were developed to support the manuscript:
+
+*"Geometric compatibility assessment of the integrated edge-ramp model based on architectural traces in the pyramid of Khafre"*.
 
 ---
 
@@ -98,6 +145,9 @@ All simulation scripts, block‑by‑row tables and the Unity scene are archived
 | **Assets/Prefabs/**                   | Stones, wooden sled, Egyptians, vegetation…                                                                                               |
 | **Assets/Materials/**                 | Sandstone, wood, floor, corner, etc.                                                                                                      |
 | **AdditionalData/**                   | Companion dataset folder with the files used in the manuscript. Subfolders:`Montecarlo_ramp/`,`SimScale/`,`Tables/`.,`Images/`.,`Videos/`.|
+| **Assets/Scripts/PyramidInstanceManager.cs** | GPU-instanced block management for large pyramid models. |
+| **Assets/Scripts/FastConstructionEffect.cs** | Accelerated construction visualization and time-lapse effects. |
+| **Assets/Scripts/PyramidLogisticsAnimator.cs** | Animation of hauling operations and logistics sequences. |
 
 ---
 
@@ -119,16 +169,27 @@ All simulation scripts, block‑by‑row tables and the Unity scene are archived
 
 ## 🔧 Key parameters (GeneratePyramid)
 
-| Category              | Variable                                                                                                                                  | Meaning                                                                    |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| **Geometry**          | `BaseSize`, `Height`, `PyramidInclination`, `RampInclination`                                                                             | Global pyramid and ramp angles/sizes.                                      |
-|                       | `DrawUntilRow`, `DrawOnlyRow`, `DrawRow`, `DrawBlocks`                                                                                    | Build up to a course, only a course, or a fixed number of outer layers.    |
-| **Ramp modes**        | `Method16Ramp`, `Method8Ramp`, `Method4Ramp`, `Method2Ramp`, `MethodInsideRamp`                                                           | Select 16/8/4/2 edge-ramps and inside/edge variant.                        |
-| **Visuals**           | `DrawWall`, `DrawFloor`, `DrawWoodenCyl`, `DrawEgyptians`, `DrawGranite`, `DrawCover`, `showRamps`, `halfPyramid`                         | Rendering toggles for inspection.                                          |
-| **Logging (CSV/TXT)** | `showInfoLevel`, `showInfoLevelTotal`, `showInfoLevelDec`, `showInfoRow`, `showInfoGranite`;                                              |                                                                            |
-|                       |  filenames: `csvitername`, `csvrowname`, `csvheadway`, `txtname`, `pyramid_granite`                                                       | Write iteration, per-row and headway summaries to `/persistentDataPath/…`  |
-| **Headway model**     | `AverageHeadway`, `MinHeadway`, `MaxHeadway`, `WorkingYearMinutes`, `PyramidHeadwayType`                                                  | Throughput assumptions used in time estimates.                             |
-| **Export**            | `exportPyramidObj`, `exportCombineMeshes`, `exportSubFolder`, `outputFileName`                                                            | OBJ export of the generated meshes (pyramid, ramp).                        |
+| Category              | Variable                                                                                                          | Meaning                                                                                          |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| **Geometry**          | `BaseSize`, `Height`, `PyramidInclination`, `RampInclination`                                                     | Global pyramid and ramp angles/sizes.                                                            |
+|                       | `DrawUntilRow`, `DrawOnlyRow`, `DrawRow`, `DrawBlocks`                                                            | Build up to a course, only a course, or a fixed number of outer layers.                          |
+|                       | `useKhafreCourseHeights`                                                                                          | Use the Khafre (G2) course-height model instead of the default Khufu (G1) profile.               |
+| **Ramp modes**        | `Method16Ramp`, `Method8Ramp`, `Method4Ramp`, `Method2Ramp`, `MethodInsideRamp`                                   | Select 16/8/4/2 edge-ramps and inside/edge variant.                                              |
+|                       | `RampMethodType`                                                                                                  | Select alternative ramp families for comparative modelling.                                      |
+|                       | `directionRampsClockwise`                                                                                         | Controls clockwise or counter-clockwise progression of the helical ramp system.                  |
+| **Corner offsets**    | `HeightCornerInitialRamp`, `HeightCornerInitialRamp2`, `HeightCornerInitialRamp3`, `HeightCornerInitialRamp4`     | Independent starting elevations for each pyramid corner, allowing asymmetric bedrock conditions. |
+| **Adaptive ramps**    | `heightChangeRampConf`, `holeHeight2`, `holeWide2`                                                                | Change ramp aperture dimensions above a configurable elevation.                                  |
+|                       | `holeWideStraightRamp`                                                                                            | Ramp passage width used by straight-ramp configurations.                                         |
+| **Straight ramps**    | `SetBackStraightRamp`, `percentageStraightRampPosition`, `MaxHeightStraightRamp`                                  | Enable and configure external straight-ramp comparison scenarios.                                |
+|                       | `StraightRampInclination`, `useStraightRampInclination`, `StraightRampYawAngle`                                   | Straight-ramp inclination and orientation parameters.                                            |
+| **Spiral ramps**      | `MinHeightSpiralRamp`                                                                                             | Minimum elevation at which spiral-ramp configurations become active.                             |
+| **Visuals**           | `DrawWall`, `DrawFloor`, `DrawWoodenCyl`, `DrawEgyptians`, `DrawGranite`, `DrawCover`, `showRamps`, `halfPyramid` | Rendering toggles for inspection.                                                                |
+|                       | `blockManager`, `useGPUInstancing`                                                                                | GPU-instanced rendering and block management for large pyramid models.                           |
+|                       | `FastConstructionEffect`, `PyramidLogisticsAnimator`                                                              | Construction and logistics animation systems.                                                    |
+| **Logging (CSV/TXT)** | `showInfoLevel`, `showInfoLevelTotal`, `showInfoLevelDec`, `showInfoRow`, `showInfoGranite`;                      |                                                                                                  |
+|                       | filenames: `csvitername`, `csvrowname`, `csvheadway`, `txtname`, `pyramid_granite`                                | Write iteration, per-row and headway summaries to `/persistentDataPath/…`                        |
+| **Headway model**     | `AverageHeadway`, `MinHeadway`, `MaxHeadway`, `WorkingYearMinutes`, `PyramidHeadwayType`                          | Throughput assumptions used in time estimates.                                                   |
+| **Export**            | `exportPyramidObj`, `exportCombineMeshes`, `exportSubFolder`, `outputFileName`                                    | OBJ export of the generated meshes (pyramid, ramp).                                              |
 
 ---
 
@@ -239,6 +300,28 @@ Note: project may require login (free).
 All Python dependencies are listed in the requirements.txt file. To create the necessary environment, navigate to the repository's root directory and run:
 
 pip install -r requirements.txt
+
+---
+
+## 📚 Related Research
+
+### Published article
+
+Rosell Roig, V.L. (2026)
+
+*A computational framework for evaluating an edge-integrated,
+multi-ramp construction model of the Great Pyramid of Giza.*
+
+npj Heritage Science.
+
+### Submitted manuscript
+
+Rosell Roig, V.L. (2026)
+
+*Geometric compatibility assessment of the integrated edge-ramp model
+based on architectural traces in the Pyramid of Khafre.*
+
+Submitted to the journal.
 
 ---
 

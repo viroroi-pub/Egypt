@@ -13,6 +13,19 @@ public class PyramidSequence : MonoBehaviour
     public int startRow = 0;
     public int endRow = 1000;
 
+    [Header("Orbit Camera Settings")]
+    public bool orbitCamera = false;          
+    public float orbitSpeed = 15f;            
+    public float orbitDistanceFactor = 1.5f;  
+    public float orbitHeightFactor = 0.5f;    
+
+    private float currentOrbitAngle = 0f;
+
+    private float HeightCornerInitialRamp = 0.0f;
+    private float HeightCornerInitialRamp2 = 0.0f;
+    private float HeightCornerInitialRamp3 = 0.0f;
+    private float HeightCornerInitialRamp4 = 0.0f;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -24,6 +37,11 @@ public class PyramidSequence : MonoBehaviour
         GeneratePyramid.Egyptian_body = null;
         GeneratePyramid.stone_sled = null;
         GeneratePyramid.Sequenced = true;
+
+        HeightCornerInitialRamp = GeneratePyramid.HeightCornerInitialRamp;
+        HeightCornerInitialRamp2 = GeneratePyramid.HeightCornerInitialRamp2;
+        HeightCornerInitialRamp3 = GeneratePyramid.HeightCornerInitialRamp3;
+        HeightCornerInitialRamp4 = GeneratePyramid.HeightCornerInitialRamp4;
 
         for (int i = GeneratePyramid.objParent.transform.childCount - 1; i >= 0; i--)
         {
@@ -46,6 +64,11 @@ public class PyramidSequence : MonoBehaviour
         GeneratePyramid.DrawRow = startRow;
         GeneratePyramid.total_height = 0;
 
+        GeneratePyramid.HeightCornerInitialRamp = HeightCornerInitialRamp;
+        GeneratePyramid.HeightCornerInitialRamp2 = HeightCornerInitialRamp2;
+        GeneratePyramid.HeightCornerInitialRamp3 = HeightCornerInitialRamp3;
+        GeneratePyramid.HeightCornerInitialRamp4 = HeightCornerInitialRamp4;
+
         // La condición está directamente en el bucle.
         while (GeneratePyramid.total_height < GeneratePyramid.Height || GeneratePyramid.DrawRow<endRow)
         {
@@ -65,6 +88,22 @@ public class PyramidSequence : MonoBehaviour
 
             Debug.Log("Total height " + GeneratePyramid.total_height);
 
+            if (orbitCamera)
+            {
+                currentOrbitAngle += orbitSpeed * lapse;
+                float rad = currentOrbitAngle * Mathf.Deg2Rad;
+
+                Vector3 targetCenter = new Vector3(0, GeneratePyramid.total_height / 2f, 0);
+
+                float distance = GeneratePyramid.BaseSize * orbitDistanceFactor;
+                float camHeight = GeneratePyramid.Height * orbitHeightFactor;
+
+                Vector3 newCamPos = targetCenter + new Vector3(Mathf.Sin(rad) * distance, camHeight, Mathf.Cos(rad) * distance);
+
+                GeneratePyramid.cam.transform.position = newCamPos;
+                GeneratePyramid.cam.transform.LookAt(targetCenter);
+            }
+            else
             if (GeneratePyramid.cameraPositionFace == CameraPositionFace.InfrontRamp)
             {
                 Debug.Log("Ramp Target Position : " + GeneratePyramid.lastRampMidPoint.ToString());
@@ -95,18 +134,18 @@ public class PyramidSequence : MonoBehaviour
         // Esto es crucial para asegurar que toda la renderización, incluyendo la UI, esté completa.
         yield return new WaitForEndOfFrame();
 
-        // 1. Crear una RenderTexture con las dimensiones de la pantalla.
+        // Crear una RenderTexture con las dimensiones de la pantalla.
         // Una RenderTexture es una textura en la que la cámara puede dibujar directamente.
         RenderTexture renderTexture = new RenderTexture(Screen.width, Screen.height, 24);
 
-        // 2. Asignar temporalmente esta RenderTexture a la cámara.
+        // Asignar temporalmente esta RenderTexture a la cámara.
         GeneratePyramid.cam.targetTexture = renderTexture;
         GeneratePyramid.cam.Render(); // Forzar a la cámara a renderizar en nuestra RenderTexture.
 
-        // 3. Restaurar la configuración original de la cámara.
+        // Restaurar la configuración original de la cámara.
         GeneratePyramid.cam.targetTexture = null;
 
-        // 4. Leer los píxeles de la RenderTexture.
+        // Leer los píxeles de la RenderTexture.
         RenderTexture.active = renderTexture;
         Texture2D screenshot = new Texture2D(Screen.width, Screen.height, TextureFormat.RGB24, false);
         screenshot.ReadPixels(new Rect(0, 0, Screen.width, Screen.height), 0, 0);
@@ -114,21 +153,21 @@ public class PyramidSequence : MonoBehaviour
         RenderTexture.active = null; // Liberar la RenderTexture activa.
         Destroy(renderTexture); // Limpiar la RenderTexture de la memoria.
 
-        // 5. Codificar la textura a formato PNG.
+        // Codificar la textura a formato PNG.
         // El resultado es un array de bytes que representa el archivo de imagen.
         byte[] bytes = screenshot.EncodeToPNG();
         Destroy(screenshot); // Limpiar la textura de la memoria.
 
-        // 6. Definir la ruta y el nombre del archivo.
+        // Definir la ruta y el nombre del archivo.
         // Usamos Application.persistentDataPath, que es una carpeta segura y escribible en todas las plataformas.
         string folderPath = Application.persistentDataPath;
         string fileName = "Screenshot_" + System.DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss") + ".png";
         string filePath = Path.Combine(folderPath, fileName);
 
-        // 7. Guardar el archivo en disco.
+        // Guardar el archivo en disco.
         File.WriteAllBytes(filePath, bytes);
 
-        // 8. Mostrar un mensaje de confirmación en la consola con la ruta del archivo.
+        // Mostrar un mensaje de confirmación en la consola con la ruta del archivo.
         Debug.Log($"¡Captura de pantalla guardada! Ruta: {filePath}");
     }
 }

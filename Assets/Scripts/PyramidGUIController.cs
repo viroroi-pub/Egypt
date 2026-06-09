@@ -20,6 +20,10 @@ public class PyramidGUIController : MonoBehaviour
     private string baseSizeStr, heightStr, angleStr, levelsStr;
     private string rampInclinationStr, blockHeightStr, blockWideStr;
     private string holeHeightStr, holeWideStr, drawRowStr, drawBlocksStr;
+    private string holeHeight2Str, holeWide2Str, holeWideStraightRampStr;
+    private string percentageStraightRampPositionStr, maxHeightStraightRampStr;
+    private string straightRampInclinationStr, straightRampYawAngleStr;
+    private string minHeightSpiralRampStr, heightChangeRampConfStr;
     private string numGranite1Str, numGranite2Str, minHeightGraniteStr, maxHeightGraniteStr;
     private string minBase2RampStr, minBase4RampStr, minBase8RampStr, minBase16RampStr;
     private string avgHeadwayStr, minHeadwayStr, maxHeadwayStr, workingMinutesStr;
@@ -32,9 +36,13 @@ public class PyramidGUIController : MonoBehaviour
     private string startCourseKingsStr, endCourseKingsStr, forcePerPullerStr, mezzanineRampAngleStr;
     private string mezzanineFrictionCoefStr, horizontalTransferStr, setupTimeStr, setupGroupsStr;
     private string frictionCapstanStr, capstanWrapAngleStr, pullingSpeedRampStr, pullingSpeedTerraceStr;
+    private string pathWideStr, pathSeparationStr;
+    private string heightCornerInitialRampStr, heightCornerInitialRamp2Str, heightCornerInitialRamp3Str, heightCornerInitialRamp4Str;
+    private string orbitSpeedStr, orbitDistFactorStr, orbitHeightFactorStr;
 
     private Vector2 scrollPosition; // For the scrollbar
     private bool showGUI = true; // To toggle GUI visibility
+    private bool isMaximized = false; // To toggle GUI maximization
 
     // Booleans to control the state of each collapsible panel
     private bool showCoreParams = false;
@@ -48,6 +56,7 @@ public class PyramidGUIController : MonoBehaviour
     private bool showLogging = false;
     private bool showDecommissioning = false;
     private bool showRampMethod = false;
+    private bool showOrbitSettings = false;
 
     void Start()
     {
@@ -69,6 +78,12 @@ public class PyramidGUIController : MonoBehaviour
         {
             showGUI = !showGUI;
         }
+
+        // Press F3 to maximize or restore the menu size
+        if (Input.GetKeyDown(KeyCode.F3))
+        {
+            isMaximized = !isMaximized;
+        }
     }
 
     void OnGUI()
@@ -79,10 +94,19 @@ public class PyramidGUIController : MonoBehaviour
         GUIStyle boxStyle = new GUIStyle(GUI.skin.box);
         boxStyle.normal.background = MakeTex(2, 2, new Color(0.1f, 0.1f, 0.1f, 0.8f));
 
-        // Draw the main GUI window in the top-left corner.
-        GUILayout.BeginArea(new Rect(10, 10, 550, 550), boxStyle);
+        // Determine the area Rect based on whether it is maximized or not
+        Rect guiRect = isMaximized
+            ? new Rect(10, 10, Screen.width - 20, Screen.height - 20)
+            : new Rect(10, 10, 550, 550);
+
+        // Draw the main GUI window in the top-left corner (or maximized).
+        GUILayout.BeginArea(guiRect, boxStyle);
         GUIStyle headerStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
-        GUILayout.Label("Pyramid Controller (F1 to toggle). Press 'P' for taking a screenshot.", headerStyle);
+
+        // Updated header text to show the new shortcut
+        GUILayout.Label("Pyramid Controller (F1: Toggle, F3: Maximize, P: Screenshot).", headerStyle);
+
+        // Draw the main GUI window in the top-left corner.        
         GUIStyle helpTextStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Italic, fontSize = 10 };
         GUILayout.Label("Fly Cam: WASD/QE to move. Hold RMB to look. Shift to sprint.", helpTextStyle);
         GUILayout.Space(5); // add space after the header
@@ -126,6 +150,7 @@ public class PyramidGUIController : MonoBehaviour
         DrawCollapsiblePanel("Headway & Timings", ref showHeadway, DrawHeadwayAndTimings);
         DrawCollapsiblePanel("Drawing Options", ref showDrawingOptions, DrawDrawingOptions);
         DrawCollapsiblePanel("Element Visibility", ref showVisibility, DrawElementVisibility);
+        DrawCollapsiblePanel("Orbit Camera", ref showOrbitSettings, DrawOrbitCameraOptions);
         DrawCollapsiblePanel("Granite Megalith Project", ref showGraniteProject, DrawGraniteProjectPanel);
         DrawCollapsiblePanel("Decommissioning", ref showDecommissioning, DrawDecommissioningPanel);
         DrawCollapsiblePanel("Logging & Export", ref showLogging, DrawLoggingOptions);
@@ -219,7 +244,19 @@ public class PyramidGUIController : MonoBehaviour
     {
         DrawLabeledTextField("Ramp Inclination (°)", ref rampInclinationStr);
         DrawLabeledTextField("Passage Height (blocks)", ref holeHeightStr);
-        DrawLabeledTextField("Passage Width (blocks)", ref holeWideStr);        
+        DrawLabeledTextField("Passage Width (blocks)", ref holeWideStr);
+
+        DrawLabeledTextField("Height Change Ramp Conf", ref heightChangeRampConfStr);
+        DrawLabeledTextField("Passage Height 2", ref holeHeight2Str);
+        DrawLabeledTextField("Passage Width 2", ref holeWide2Str);        
+
+        DrawLabeledTextField("Initial Ramp 1 Height (m)", ref heightCornerInitialRampStr);
+        DrawLabeledTextField("Initial Ramp 2 Height (m)", ref heightCornerInitialRamp2Str);
+        DrawLabeledTextField("Initial Ramp 3 Height (m)", ref heightCornerInitialRamp3Str);
+        DrawLabeledTextField("Initial Ramp 4 Height (m)", ref heightCornerInitialRamp4Str);
+        generatePyramid.directionRampsClockwise = GUILayout.Toggle(generatePyramid.directionRampsClockwise, "Clockwise Ramps");
+        GUILayout.Space(5);
+
         generatePyramid.showRamps = GUILayout.Toggle(generatePyramid.showRamps, "Show Ramps");
         generatePyramid.MethodInsideRamp = GUILayout.Toggle(generatePyramid.MethodInsideRamp, "Inside Ramp");
         GUILayout.BeginHorizontal();
@@ -236,12 +273,38 @@ public class PyramidGUIController : MonoBehaviour
         generatePyramid.SingleRampFaceStart = (RampPositionFace)GUILayout.Toolbar((int)generatePyramid.SingleRampFaceStart, Enum.GetNames(typeof(RampPositionFace)));
         GUILayout.EndHorizontal();
 
+        GUILayout.Space(5);
+        DrawLabeledTextField("Path Wide (m)", ref pathWideStr);
+        DrawLabeledTextField("Path Separation (m)", ref pathSeparationStr);
+
+        GUILayout.BeginHorizontal();
+        generatePyramid.useKhufuCourseHeights = GUILayout.Toggle(generatePyramid.useKhufuCourseHeights, "Use Khufu Heights");
+        generatePyramid.useKhafreCourseHeights = GUILayout.Toggle(generatePyramid.useKhafreCourseHeights, "Use Khafre Heights");
+        GUILayout.EndHorizontal();
+
+        GUILayout.Space(10);
+        GUILayout.Label("Straight Ramp Conf", subHeaderStyle);
+        generatePyramid.StraightRampFace = (RampPositionFace)GUILayout.Toolbar((int)generatePyramid.StraightRampFace, Enum.GetNames(typeof(RampPositionFace)));        
+
+        generatePyramid.SetBackStraightRamp = GUILayout.Toggle(generatePyramid.SetBackStraightRamp, "Set Back Straight Ramp");
+        DrawLabeledTextField("Passage Width Straight", ref holeWideStraightRampStr);
+        DrawLabeledTextField("Max Height (m)", ref maxHeightStraightRampStr);
+        DrawLabeledTextField("Lateral Offset (%)", ref percentageStraightRampPositionStr);
+        DrawLabeledTextField("Yaw Angle (°)", ref straightRampYawAngleStr);
+
+        generatePyramid.useStraightRampInclination = GUILayout.Toggle(generatePyramid.useStraightRampInclination, "Use Custom Inclination");
+        if (generatePyramid.useStraightRampInclination)
+        {
+            DrawLabeledTextField("Custom Incl. (°)", ref straightRampInclinationStr);
+        }
+
         GUILayout.Space(10);
         GUILayout.Label("Straight Ramp Orientation", subHeaderStyle);
         generatePyramid.StraightRampFace = (RampPositionFace)GUILayout.Toolbar((int)generatePyramid.StraightRampFace, Enum.GetNames(typeof(RampPositionFace)));
         DrawLabeledTextField("Side Slope Angle (°)", ref sideSlopeAngleStr);
         DrawLabeledTextField("Spiral Sep. (m)", ref spiralRampSeparationStr);
         DrawLabeledTextField("Internal Ramp H (m)", ref internalRampStraightRampHighStr);
+        DrawLabeledTextField("Min Height Spiral Ramp", ref minHeightSpiralRampStr);        
     }
 
     private void DrawGraniteSettings()
@@ -279,6 +342,14 @@ public class PyramidGUIController : MonoBehaviour
         DrawLabeledTextField("Outer Layers", ref drawBlocksStr);
     }
 
+    private void DrawOrbitCameraOptions()
+    {
+        generatePyramid.OrbitCameraOnFinish = GUILayout.Toggle(generatePyramid.OrbitCameraOnFinish, "Orbit On Finish");
+        DrawLabeledTextField("Orbit Speed", ref orbitSpeedStr);
+        DrawLabeledTextField("Distance Factor", ref orbitDistFactorStr);
+        DrawLabeledTextField("Height Factor", ref orbitHeightFactorStr);
+    }
+
     private void DrawElementVisibility()
     {
         GUILayout.BeginHorizontal();
@@ -303,6 +374,9 @@ public class PyramidGUIController : MonoBehaviour
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
         generatePyramid.ShowKhufuNotchs = GUILayout.Toggle(generatePyramid.ShowKhufuNotchs, "Show Khufu Notchs");
+        GUILayout.EndHorizontal();
+        GUILayout.BeginHorizontal();
+        generatePyramid.useGPUInstancing = GUILayout.Toggle(generatePyramid.useGPUInstancing, "Use GPU Instancing (Performance)");
         GUILayout.EndHorizontal();
         GUILayout.Space(10);
         GUIStyle subHeaderStyle = new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold };
@@ -454,6 +528,17 @@ public class PyramidGUIController : MonoBehaviour
         if (int.TryParse(drawRowStr, out int dR)) generatePyramid.DrawRow = dR;
         if (int.TryParse(drawBlocksStr, out int dB)) generatePyramid.DrawBlocks = dB;
 
+        if (int.TryParse(holeHeight2Str, out int hh2)) generatePyramid.holeHeight2 = hh2;
+        if (int.TryParse(holeWide2Str, out int hw2)) generatePyramid.holeWide2 = hw2;
+        if (int.TryParse(holeWideStraightRampStr, out int hwsr)) generatePyramid.holeWideStraightRamp = hwsr;
+
+        if (float.TryParse(percentageStraightRampPositionStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float psrp)) generatePyramid.percentageStraightRampPosition = psrp;
+        if (float.TryParse(maxHeightStraightRampStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float mhsr)) generatePyramid.MaxHeightStraightRamp = mhsr;
+        if (float.TryParse(straightRampInclinationStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float sri)) generatePyramid.StraightRampInclination = sri;
+        if (float.TryParse(straightRampYawAngleStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float srya)) generatePyramid.StraightRampYawAngle = srya;
+        if (float.TryParse(minHeightSpiralRampStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float mhspr)) generatePyramid.MinHeightSpiralRamp = mhspr;
+        if (int.TryParse(heightChangeRampConfStr, out int hcrc)) generatePyramid.heightChangeRampConf = hcrc;
+
         if (int.TryParse(numGranite1Str, out int intVal)) generatePyramid.numOfGraniteRock1 = intVal;
         if (int.TryParse(numGranite2Str, out int intVal2)) generatePyramid.numOfGraniteRock2 = intVal2;
         if (int.TryParse(minHeightGraniteStr, out int intVal3)) generatePyramid.minHeightGraniteRock = intVal3;
@@ -501,6 +586,17 @@ public class PyramidGUIController : MonoBehaviour
         if (float.TryParse(pullingSpeedTerraceStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float floatVal7)) generatePyramid.pullingSpeedTerraceMetersPerSecond = floatVal7;
         if (float.TryParse(frictionCapstanStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float floatVal8)) generatePyramid.frictionCoefCapstan = floatVal8;
         if (float.TryParse(capstanWrapAngleStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float floatVal9)) generatePyramid.capstanWrapAngleRadians = floatVal9;
+
+        if (float.TryParse(pathWideStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float pw)) generatePyramid.PathWide = pw;
+        if (float.TryParse(pathSeparationStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float ps)) generatePyramid.PathSeparation = ps;
+        if (float.TryParse(heightCornerInitialRampStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float hcir)) generatePyramid.HeightCornerInitialRamp = hcir;
+        if (float.TryParse(heightCornerInitialRamp2Str, NumberStyles.Any, CultureInfo.InvariantCulture, out float hcir2)) generatePyramid.HeightCornerInitialRamp2 = hcir2;
+        if (float.TryParse(heightCornerInitialRamp3Str, NumberStyles.Any, CultureInfo.InvariantCulture, out float hcir3)) generatePyramid.HeightCornerInitialRamp3 = hcir3;
+        if (float.TryParse(heightCornerInitialRamp4Str, NumberStyles.Any, CultureInfo.InvariantCulture, out float hcir4)) generatePyramid.HeightCornerInitialRamp4 = hcir4;
+
+        if (float.TryParse(orbitSpeedStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float os)) generatePyramid.OrbitSpeed = os;
+        if (float.TryParse(orbitDistFactorStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float odf)) generatePyramid.camOrbitDistanceFactor = odf;
+        if (float.TryParse(orbitHeightFactorStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float ohf)) generatePyramid.camOrbitHeightOffsetFactor = ohf;
     }
 
     /// <summary>
@@ -523,6 +619,17 @@ public class PyramidGUIController : MonoBehaviour
         holeWideStr = generatePyramid.holeWide.ToString();
         drawRowStr = generatePyramid.DrawRow.ToString();
         drawBlocksStr = generatePyramid.DrawBlocks.ToString();
+
+        holeHeight2Str = generatePyramid.holeHeight2.ToString();
+        holeWide2Str = generatePyramid.holeWide2.ToString();
+        holeWideStraightRampStr = generatePyramid.holeWideStraightRamp.ToString();
+
+        percentageStraightRampPositionStr = generatePyramid.percentageStraightRampPosition.ToString("F2", CultureInfo.InvariantCulture);
+        maxHeightStraightRampStr = generatePyramid.MaxHeightStraightRamp.ToString("F2", CultureInfo.InvariantCulture);
+        straightRampInclinationStr = generatePyramid.StraightRampInclination.ToString("F2", CultureInfo.InvariantCulture);
+        straightRampYawAngleStr = generatePyramid.StraightRampYawAngle.ToString("F2", CultureInfo.InvariantCulture);
+        minHeightSpiralRampStr = generatePyramid.MinHeightSpiralRamp.ToString("F2", CultureInfo.InvariantCulture);
+        heightChangeRampConfStr = generatePyramid.heightChangeRampConf.ToString("F2", CultureInfo.InvariantCulture);
 
         numGranite1Str = generatePyramid.numOfGraniteRock1.ToString();
         numGranite2Str = generatePyramid.numOfGraniteRock2.ToString();
@@ -571,6 +678,17 @@ public class PyramidGUIController : MonoBehaviour
         pullingSpeedTerraceStr = generatePyramid.pullingSpeedTerraceMetersPerSecond.ToString("F2", CultureInfo.InvariantCulture);
         frictionCapstanStr = generatePyramid.frictionCoefCapstan.ToString("F2", CultureInfo.InvariantCulture);
         capstanWrapAngleStr = generatePyramid.capstanWrapAngleRadians.ToString("F2", CultureInfo.InvariantCulture);
+
+        pathWideStr = generatePyramid.PathWide.ToString("F2", CultureInfo.InvariantCulture);
+        pathSeparationStr = generatePyramid.PathSeparation.ToString("F2", CultureInfo.InvariantCulture);
+        heightCornerInitialRampStr = generatePyramid.HeightCornerInitialRamp.ToString("F2", CultureInfo.InvariantCulture);
+        heightCornerInitialRamp2Str = generatePyramid.HeightCornerInitialRamp2.ToString("F2", CultureInfo.InvariantCulture);
+        heightCornerInitialRamp3Str = generatePyramid.HeightCornerInitialRamp3.ToString("F2", CultureInfo.InvariantCulture);
+        heightCornerInitialRamp4Str = generatePyramid.HeightCornerInitialRamp4.ToString("F2", CultureInfo.InvariantCulture);
+
+        orbitSpeedStr = generatePyramid.OrbitSpeed.ToString("F2", CultureInfo.InvariantCulture);
+        orbitDistFactorStr = generatePyramid.camOrbitDistanceFactor.ToString("F2", CultureInfo.InvariantCulture);
+        orbitHeightFactorStr = generatePyramid.camOrbitHeightOffsetFactor.ToString("F2", CultureInfo.InvariantCulture);
     }
 
     // Utility to create a texture for the GUI background

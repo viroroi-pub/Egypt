@@ -422,6 +422,14 @@ public class GeneratePyramid : MonoBehaviour
     /// </summary>
     public int NumberOfRopesGroups = 12;
     /// <summary>
+    /// Distance pullers X axis
+    /// </summary>
+    public float distancePullersX = 0.8f;
+    /// <summary>
+    /// Distance pullers Z axis
+    /// </summary>
+    public float distancePullersZ = 1.0f;
+    /// <summary>
     /// Prefab for a stone sledge.
     /// </summary>
     public GameObject stone_sled;
@@ -710,6 +718,14 @@ public class GeneratePyramid : MonoBehaviour
     /// Headway Type 
     /// </summary>
     public PyramidHeadwayType PyramidHeadwayType = PyramidHeadwayType.Single_Ramp;
+    /// <summary>
+    /// Sledge size in meters, used for calculating the number of pullers and their spacing.
+    /// </summary>
+    public float sledgeLength = 3.0f;
+    /// <summary>
+    /// Safety distance size in meters to avoid collisions between blocks and pullers
+    /// </summary>
+    public float dynamicBuffer = 15.0f;
     /// <summary>
     /// Sequenced 
     /// </summary>
@@ -2769,35 +2785,94 @@ public class GeneratePyramid : MonoBehaviour
                         num_ramps_headways = 3;
                     if (PyramidHeadwayType == PyramidHeadwayType.Adaptative)
                     {
-                        if (level==0)
+                        if (level == 0)
                         {
-                            if (row < 9 && Method16Ramp)
+                            if (row < 10 && Method16Ramp)
                                 num_ramps_headways = 12;
                             else
-                            if (row < 20 && Method8Ramp)
+                            if (row < 21 && Method8Ramp)
                                 num_ramps_headways = 6;
                             else
                                 num_ramps_headways = 3;
                         }
                         else
-                            num_ramps_headways = 3;
+                        {
+                            if (row < 184 && Method4Ramp)
+                                num_ramps_headways = 3;
+                            else
+                            if (row < 199 && Method4Ramp)
+                                num_ramps_headways = 2;
+                            else
+                                num_ramps_headways = 1;                            
+                        }
                     }
                     if (!Method4Ramp && !Method2Ramp)
                         num_ramps_headways = 1;
 
-                    float current_headway = MinHeadway + (old_length + distramprow) / ramp_total_length * (MaxHeadway - MinHeadway);
+                    // CALCULATE PROGRESS RATIO DEPENDING ON RAMP TYPE
+                    float progress_ratio = 0f;
+
                     if (rampMethod == RampMethodType.Straight || rampMethod == RampMethodType.Feasible || rampMethod == RampMethodType.Spurred)
                     {
-                        current_headway = MinHeadway + (distramprow) / ramp_total_length * (MaxHeadway - MinHeadway);                       
+                        progress_ratio = distramprow / ramp_total_length;
+                    }
+                    else if (rampMethod == RampMethodType.Spiral || rampMethod == RampMethodType.Internal)
+                    {
+                        progress_ratio = (old_length_spiral + distramprow) / ramp_total_length;
                     }
                     else
-                    if (rampMethod == RampMethodType.Spiral || rampMethod == RampMethodType.Internal || rampMethod == RampMethodType.Feasible || rampMethod == RampMethodType.Spurred)
                     {
-                        current_headway = MinHeadway + (old_length_spiral + distramprow) / ramp_total_length * (MaxHeadway - MinHeadway);
+                        // Integrated Ramp (Exponential volume curve)
+                        int total_rows = Mathf.CeilToInt(Height / blockheight);
+                        float vertical_progress = Mathf.Clamp01((float)row / total_rows);
+
+                        float curve_power = MaxHeadway / 10.0f;
+                        progress_ratio = Mathf.Pow(vertical_progress, curve_power);
                     }
+
+                    // DYNAMIC HEADWAY ADJUSTMENT: PERCENTAGE INCREMENT BASED ON TEAM SIZE
+                    float baseAngleRad = 7f * Mathf.Deg2Rad;
+                    float baseFriction = 0.20f;
+                    int baseMen = 24;
+
+                    float baseRequiredForce = massBlock * g * (Mathf.Sin(baseAngleRad) + baseFriction * Mathf.Cos(baseAngleRad));
+                    float pullForcePerMan = baseRequiredForce / baseMen;
+
+                    float currentRequiredForce = massBlock * g * (Mathf.Sin(RampInclination * Mathf.Deg2Rad) + frictionCoef * Mathf.Cos(RampInclination * Mathf.Deg2Rad));
+
+                    int totalMen = Mathf.RoundToInt(currentRequiredForce / pullForcePerMan);
+
+                    int rowsOfMen = Mathf.RoundToInt(totalMen / 2f);
+                    float distanceBetweenRows = 1.5f; 
+
+                    float baseSpatialFootprint = ((baseMen / 2f) * distanceBetweenRows) + sledgeLength + dynamicBuffer;
+                    float currentSpatialFootprint = (rowsOfMen * distanceBetweenRows) + sledgeLength + dynamicBuffer;
+
+                    float incrementPercentage = (currentSpatialFootprint - baseSpatialFootprint) / baseSpatialFootprint;
+
+                    float physics_min_headway = MinHeadway * (1f + incrementPercentage);
+
+                    float currentAngleRad = RampInclination * Mathf.Deg2Rad;
+                   
+                    int currentWorkers = Mathf.RoundToInt(currentRequiredForce / pullForcePerMan);
+                    int currentRows = Mathf.CeilToInt(currentWorkers / 2f);
+
+                    float currentTeamLength = (currentRows * 1.5f) - 1.0f;
+                    float physics_safety_dist = currentTeamLength + sledgeLength + dynamicBuffer;
+
+                    float physics_headway_min = (physics_safety_dist / pullingSpeedRampMetersPerSecond) / 60.0f;
+
+                    float current_headway = physics_min_headway + progress_ratio * (MaxHeadway - physics_min_headway);
+
+                    current_headway = Mathf.Min(current_headway, MaxHeadway);
+
+                    float dynamic_average_headway = (physics_headway_min > AverageHeadway)
+                                  ? physics_headway_min
+                                  : AverageHeadway;
+
                     float bxi_ramp = Mathf.Round(bxi / num_ramps_headways);
                     // Row;blocks;up ramps;blocks per ramp;fixed headway(min);adaptative headway(min);total time(min);adaptative total time(min);;total time(working years);adaptativive total time(working years)                        
-                    csvheadwaywriter.WriteLine(i + ";" + bxi + ";" + num_ramps_headways+ ";"+ bxi_ramp + ";" + AverageHeadway.ToString("F2") + ";" + current_headway.ToString("F2") + ";" + (bxi_ramp * AverageHeadway).ToString("F2") + ";" + (bxi_ramp * current_headway).ToString("F2") + ";" + (bxi_ramp * AverageHeadway / WorkingYearMinutes).ToString("F5") + ";" + (bxi_ramp * current_headway / WorkingYearMinutes).ToString("F5"));
+                    csvheadwaywriter.WriteLine(row + ";" + bxi + ";" + num_ramps_headways+ ";"+ bxi_ramp + ";" + dynamic_average_headway.ToString("F2") + ";" + current_headway.ToString("F2") + ";" + (bxi_ramp * dynamic_average_headway).ToString("F2") + ";" + (bxi_ramp * current_headway).ToString("F2") + ";" + (bxi_ramp * dynamic_average_headway / WorkingYearMinutes).ToString("F5") + ";" + (bxi_ramp * current_headway / WorkingYearMinutes).ToString("F5"));
                 }
 
                 float old_lenght_ant = old_length;
@@ -3008,6 +3083,12 @@ public class GeneratePyramid : MonoBehaviour
             if (Sequenced)
                 granite_gameObject = objParent;
 
+            List<Vector3> usedPositions = new List<Vector3>();
+            float minDistanceX = 1.4f;
+            float minDistanceZ = 4.1f;
+            float margin = 0.5f;
+            Vector3 realBlockSize = graniteRockPrefab1.transform.localScale;
+
             if ((heightGranite < maxHeightGraniteRock) && (heightGranite > 0))
             {
                 int numOfGraniteRock1Def = numOfGraniteRock1;
@@ -3016,10 +3097,44 @@ public class GeneratePyramid : MonoBehaviour
                 {
                     numOfGraniteRock1Def = (int)UnityEngine.Random.Range((maxHeightGraniteRock - heightGranite) * numOfGraniteRock1 / maxHeightGraniteRock, numOfGraniteRock1);
                     numOfGraniteRock2Def = (int)UnityEngine.Random.Range((maxHeightGraniteRock - heightGranite) * numOfGraniteRock2 / maxHeightGraniteRock, numOfGraniteRock2);
-                }
+                }                 
 
                 if (numOfGraniteRock1Def > 0 && graniteRockPrefab1)
                 {
+                    // Instantiate a temporary block at the origin to calculate its real bounds
+                    GameObject tempBlock = Instantiate(graniteRockPrefab1, Vector3.zero, Quaternion.identity);
+                    tempBlock.SetActive(false); // Hide it so it doesn't interfere with rendering
+
+                    // Find ALL Renderers in the root object and all its children
+                    Renderer[] renderers = tempBlock.GetComponentsInChildren<Renderer>();
+
+                    // Create an empty bounding box (Bounds) at the object's position
+                    Bounds totalBounds = new Bounds(tempBlock.transform.position, Vector3.zero);
+                    bool hasBounds = false;
+
+                    foreach (Renderer ren in renderers)
+                    {
+                        if (hasBounds)
+                        {
+                            // 'Encapsulate' expands the bounds to include this child's bounding box
+                            totalBounds.Encapsulate(ren.bounds);
+                        }
+                        else
+                        {
+                            totalBounds = ren.bounds;
+                            hasBounds = true;
+                        }
+                    }
+
+                    // If it has no meshes (e.g., only invisible colliders), fallback to default local scale
+                    realBlockSize = hasBounds ? totalBounds.size : graniteRockPrefab1.transform.localScale;
+
+                    // We now have the exact measurement in 3D space. Destroy the temporary object immediately.
+                    Destroy(tempBlock);
+
+                    minDistanceX = realBlockSize.x + margin;
+                    minDistanceZ = realBlockSize.z + margin;
+
                     for (int i = 0; i < numOfGraniteRock1Def; i++)
                     {
                         GameObject objGranite = null;
@@ -3028,21 +3143,46 @@ public class GeneratePyramid : MonoBehaviour
                         bool positionFound = false;
                         int attempts = 0;
                         int maxAttempts = 30; // maximum attempts to find a position
-
+                        
                         // Dimensions for OverlapBox
                         //Vector3 halfExtents = graniteRockPrefab1.transform.localScale / 2f * 0.9f;
-                        Vector3 halfExtents = new Vector3(1.3f,1.3f,4.0f) / 2f * 0.9f;  // size 10 t block
+                        Vector3 halfExtents = new Vector3(1.3f,1.3f,4.0f) / 2f * 0.9f;  // size 10 t block                       
 
                         while (!positionFound && attempts < maxAttempts)
                         {
                             spawnPos = GetRandomPositionOnTerrace(row, new_base_size, heightGranite, graniteRockPrefab1.transform.localScale.y);
 
-                            Collider[] colliders = Physics.OverlapBox(spawnPos, halfExtents, Quaternion.identity, blockLayer);
+                            /*Collider[] colliders = Physics.OverlapBox(spawnPos, halfExtents, Quaternion.identity, blockLayer);
 
                             if (colliders.Length == 0)
                             {
                                 positionFound = true;
-                            }
+                            }*/
+
+                            // Assume the position is valid until proven otherwise
+                            if (!positionFound)
+                            {
+                                bool overlaps = false;
+                                foreach (Vector3 usedPos in usedPositions)
+                                {
+                                    float distX = Mathf.Abs(spawnPos.x - usedPos.x);
+                                    float distZ = Mathf.Abs(spawnPos.z - usedPos.z);
+
+                                    // Simple distance check (much faster than physics calculations)
+                                    if (distX < minDistanceX*2 && distZ < minDistanceZ*2)
+                                    {
+                                        overlaps = true;
+                                        break;
+                                    }
+                                }
+
+                                if (!overlaps)
+                                {
+                                    positionFound = true;
+                                    usedPositions.Add(spawnPos); // Store the valid position
+                                }
+                            }                           
+
                             attempts++;
                         }
 
@@ -3053,6 +3193,40 @@ public class GeneratePyramid : MonoBehaviour
                 }
                 if (numOfGraniteRock2Def > 0 && graniteRockPrefab2)
                 {
+                    // Instantiate a temporary block at the origin to calculate its real bounds
+                    GameObject tempBlock = Instantiate(graniteRockPrefab2, Vector3.zero, Quaternion.identity);
+                    tempBlock.SetActive(false); // Hide it so it doesn't interfere with rendering
+
+                    // Find ALL Renderers in the root object and all its children
+                    Renderer[] renderers = tempBlock.GetComponentsInChildren<Renderer>();
+
+                    // Create an empty bounding box (Bounds) at the object's position
+                    Bounds totalBounds = new Bounds(tempBlock.transform.position, Vector3.zero);
+                    bool hasBounds = false;
+
+                    foreach (Renderer ren in renderers)
+                    {
+                        if (hasBounds)
+                        {
+                            // 'Encapsulate' expands the bounds to include this child's bounding box
+                            totalBounds.Encapsulate(ren.bounds);
+                        }
+                        else
+                        {
+                            totalBounds = ren.bounds;
+                            hasBounds = true;
+                        }
+                    }
+
+                    // If it has no meshes (e.g., only invisible colliders), fallback to default local scale
+                    realBlockSize = hasBounds ? totalBounds.size : graniteRockPrefab2.transform.localScale;
+
+                    // We now have the exact measurement in 3D space. Destroy the temporary object immediately.
+                    Destroy(tempBlock);
+
+                    minDistanceX = realBlockSize.x + margin;
+                    minDistanceZ = realBlockSize.z + margin;
+
                     for (int i = 0; i < numOfGraniteRock2Def; i++)
                     {
                         GameObject objGranite = null;
@@ -3066,16 +3240,44 @@ public class GeneratePyramid : MonoBehaviour
                         //Vector3 halfExtents = graniteRockPrefab2.transform.localScale / 2f * 0.9f;
                         Vector3 halfExtents = new Vector3(1.3f, 1.8f, 8.0f) / 2f * 0.9f;  // size 70 t block
 
+                        minDistanceX = 1.8f;
+                        minDistanceZ = 8.5f;
+
                         while (!positionFound && attempts < maxAttempts)
                         {
                             spawnPos = GetRandomPositionOnTerrace(row, new_base_size, heightGranite, graniteRockPrefab2.transform.localScale.y);
 
-                            Collider[] colliders = Physics.OverlapBox(spawnPos, halfExtents, Quaternion.identity, blockLayer);
+                            /*Collider[] colliders = Physics.OverlapBox(spawnPos, halfExtents, Quaternion.identity, blockLayer);
 
                             if (colliders.Length == 0)
                             {
                                 positionFound = true;
+                            }*/
+
+                            // Assume the position is valid until proven otherwise
+                            if (!positionFound)
+                            {
+                                bool overlaps = false;
+                                foreach (Vector3 usedPos in usedPositions)
+                                {
+                                    float distX = Mathf.Abs(spawnPos.x - usedPos.x);
+                                    float distZ = Mathf.Abs(spawnPos.z - usedPos.z);
+
+                                    // Simple distance check (much faster than physics calculations)
+                                    if (distX < minDistanceX*2 && distZ < minDistanceZ*2)
+                                    {
+                                        overlaps = true;
+                                        break;
+                                    }
+                                }
+
+                                if (!overlaps)
+                                {
+                                    positionFound = true;
+                                    usedPositions.Add(spawnPos); // Store the valid position
+                                }
                             }
+
                             attempts++;
                         }
 
@@ -3096,6 +3298,40 @@ public class GeneratePyramid : MonoBehaviour
 
                 if (numOfGraniteRock3Def > 0 && graniteRockPrefab3)
                 {
+                    // Instantiate a temporary block at the origin to calculate its real bounds
+                    GameObject tempBlock = Instantiate(graniteRockPrefab3, Vector3.zero, Quaternion.identity);
+                    tempBlock.SetActive(false); // Hide it so it doesn't interfere with rendering
+
+                    // Find ALL Renderers in the root object and all its children
+                    Renderer[] renderers = tempBlock.GetComponentsInChildren<Renderer>();
+
+                    // Create an empty bounding box (Bounds) at the object's position
+                    Bounds totalBounds = new Bounds(tempBlock.transform.position, Vector3.zero);
+                    bool hasBounds = false;
+
+                    foreach (Renderer ren in renderers)
+                    {
+                        if (hasBounds)
+                        {
+                            // 'Encapsulate' expands the bounds to include this child's bounding box
+                            totalBounds.Encapsulate(ren.bounds);
+                        }
+                        else
+                        {
+                            totalBounds = ren.bounds;
+                            hasBounds = true;
+                        }
+                    }
+
+                    // If it has no meshes (e.g., only invisible colliders), fallback to default local scale
+                    realBlockSize = hasBounds ? totalBounds.size : graniteRockPrefab3.transform.localScale;
+
+                    // We now have the exact measurement in 3D space. Destroy the temporary object immediately.
+                    Destroy(tempBlock);
+
+                    minDistanceX = realBlockSize.x + margin;
+                    minDistanceZ = realBlockSize.z + margin;
+
                     for (int i = 0; i < numOfGraniteRock3Def; i++)
                     {
                         GameObject objGranite = null;
@@ -3109,16 +3345,44 @@ public class GeneratePyramid : MonoBehaviour
                         //Vector3 halfExtents = graniteRockPrefab3.transform.localScale / 2f * 0.9f;
                         Vector3 halfExtents = new Vector3(1.3f, 1.3f, 7.0f) / 2f * 0.9f;  // size 50 t block
 
+                        minDistanceX = 1.8f;
+                        minDistanceZ = 7.5f;
+
                         while (!positionFound && attempts < maxAttempts)
                         {
                             spawnPos = GetRandomPositionOnTerrace(row, new_base_size, heightGranite, graniteRockPrefab3.transform.localScale.y);
 
-                            Collider[] colliders = Physics.OverlapBox(spawnPos, halfExtents, Quaternion.identity, blockLayer);
+                            /*Collider[] colliders = Physics.OverlapBox(spawnPos, halfExtents, Quaternion.identity, blockLayer);
 
                             if (colliders.Length == 0)
                             {
                                 positionFound = true;
+                            }*/
+
+                            // Assume the position is valid until proven otherwise
+                            if (!positionFound)
+                            {
+                                bool overlaps = false;
+                                foreach (Vector3 usedPos in usedPositions)
+                                {
+                                    float distX = Mathf.Abs(spawnPos.x - usedPos.x);
+                                    float distZ = Mathf.Abs(spawnPos.z - usedPos.z);
+
+                                    // Simple distance check (much faster than physics calculations)
+                                    if (distX < minDistanceX*2 && distZ < minDistanceZ*2)
+                                    {
+                                        overlaps = true;
+                                        break;
+                                    }
+                                }
+
+                                if (!overlaps)
+                                {
+                                    positionFound = true;
+                                    usedPositions.Add(spawnPos); // Store the valid position
+                                }
                             }
+
                             attempts++;
                         }
 
@@ -3227,47 +3491,48 @@ public class GeneratePyramid : MonoBehaviour
                                 workers_gameObject = objParent;
 
                             // draw capstan Operators
+                            if (useCapstan)
                             for (int j = 0; j < capstanOperators / 6; j++)
                             {
                                 // left hand
                                 GameObject Egyptian = Instantiate(Egyptian_body, objParent.transform.position + new Vector3(0, 1.0f, 0), Quaternion.identity);
                                 Egyptian.name = "Egyptian_granite_left_" + level + "_" + row + "_" + i + "_" + j +"_1";
-                                Egyptian.transform.position = woodencyl1.transform.position + new Vector3(-0.5f, 0, (1.75f + j * 1.0f));
+                                Egyptian.transform.position = woodencyl1.transform.position + new Vector3(-distancePullersX, 0, (1.75f + j * distancePullersZ));
                                 //Egyptian.transform.localRotation = Quaternion.Euler(RampInclination, RampInclination + 180f, 0.0f);
                                 Egyptian.transform.parent = workers_gameObject.transform;
                                 Egyptian.isStatic = true;
                                 // right hand
                                 GameObject Egyptian2 = Instantiate(Egyptian_body, objParent.transform.position + new Vector3(0, 1.0f, 0), Quaternion.identity);
                                 Egyptian2.name = "Egyptian_granite_right_" + level + "_" + row + "_" + i + j + "_2";
-                                Egyptian2.transform.position = woodencyl1.transform.position + new Vector3(-1.5f, 0, (1.75f + j * 1.0f));
+                                Egyptian2.transform.position = woodencyl1.transform.position + new Vector3(-distancePullersX*2, 0, (1.75f + j * distancePullersZ));
                                 //Egyptian2.transform.localRotation = Quaternion.Euler(RampInclination, RampInclination + 180f, 0.0f);
                                 Egyptian2.transform.parent = workers_gameObject.transform;
                                 Egyptian2.isStatic = true;
                                 // right hand 2
                                 GameObject Egyptian6 = Instantiate(Egyptian_body, objParent.transform.position + new Vector3(0, 0, 0), Quaternion.identity);
                                 Egyptian6.name = "Egyptian_granite_right_" + level + "_" + row + "_" + i + "_" + j + "_3";
-                                Egyptian6.transform.position = woodencyl1.transform.position + new Vector3(-2.5f, 0, ( 1.75f + j * 1.0f));
+                                Egyptian6.transform.position = woodencyl1.transform.position + new Vector3(-distancePullersX*3, 0, ( 1.75f + j * distancePullersZ));
                                 Egyptian6.transform.parent = workers_gameObject.transform;
                                 Egyptian6.isStatic = true;
 
                                 // left hand
                                 GameObject Egyptian3 = Instantiate(Egyptian_body, objParent.transform.position + new Vector3(0, 0, 0), Quaternion.identity);
                                 Egyptian3.name = "Egyptian_granite_left_" + level + "_" + row + "_" + i + "_" + j + "_4";
-                                Egyptian3.transform.position = woodencyl2.transform.position + new Vector3(-0.5f, 0, -(1.75f + j * 1.0f));
+                                Egyptian3.transform.position = woodencyl2.transform.position + new Vector3(-distancePullersX, 0, -(1.75f + j * distancePullersZ));
                                 Egyptian3.transform.localRotation = Quaternion.Euler(0.0f, 180f, 0.0f);
                                 Egyptian3.transform.parent = workers_gameObject.transform;
                                 Egyptian3.isStatic = true;
                                 // right hand
                                 GameObject Egyptian4 = Instantiate(Egyptian_body, objParent.transform.position + new Vector3(0, 0, 0), Quaternion.identity);
                                 Egyptian4.name = "Egyptian_granite_right_" + level + "_" + row + "_" + i + "_" + j + "_5";
-                                Egyptian4.transform.position = woodencyl2.transform.position + new Vector3(-1.5f, 0f, -(1.75f + j * 1.0f));
+                                Egyptian4.transform.position = woodencyl2.transform.position + new Vector3(-distancePullersX*2, 0f, -(1.75f + j * distancePullersZ));
                                 Egyptian4.transform.localRotation = Quaternion.Euler(0.0f, 180f, 0.0f);
                                 Egyptian4.transform.parent = workers_gameObject.transform;
                                 Egyptian4.isStatic = true;
                                 // right hand 2
                                 GameObject Egyptian5 = Instantiate(Egyptian_body, objParent.transform.position + new Vector3(0, 0, 0), Quaternion.identity);
                                 Egyptian5.name = "Egyptian_granite_right_" + level + "_" + row + "_" + i + "_" + j + "_6";
-                                Egyptian5.transform.position = woodencyl2.transform.position + new Vector3(-2.5f, 0, -(1.75f + j * 1.0f));
+                                Egyptian5.transform.position = woodencyl2.transform.position + new Vector3(-distancePullersX*3, 0, -(1.75f + j * distancePullersZ));
                                 Egyptian5.transform.localRotation = Quaternion.Euler(0.0f, 180f, 0.0f);
                                 Egyptian5.transform.parent = workers_gameObject.transform;
                                 Egyptian5.isStatic = true;
@@ -3281,7 +3546,7 @@ public class GeneratePyramid : MonoBehaviour
                                 {
                                     GameObject Egyptian = Instantiate(Egyptian_body, objParent.transform.position + new Vector3(0, 0, 0), Quaternion.identity);
                                     Egyptian.name = "Egyptian_granite_puller_" + level + "_" + row + "_" + i + "_" + j + "_" + k;
-                                    Egyptian.transform.position = (woodencyl1.transform.position + woodencyl2.transform.position) / 2 + new Vector3(- (5.0f + k * 1.0f), 0, (NumberOfRopesGroups / 2 - j) * 1.5f);
+                                    Egyptian.transform.position = (woodencyl1.transform.position + woodencyl2.transform.position) / 2 + new Vector3(- (5.0f + k * distancePullersX), 0, (NumberOfRopesGroups / 2 - j) * distancePullersZ);
                                     Egyptian.transform.localRotation = Quaternion.Euler(0, 270f, 0.0f);
                                     Egyptian.transform.parent = workers_gameObject.transform;
                                     Egyptian.isStatic = true;
@@ -3325,6 +3590,7 @@ public class GeneratePyramid : MonoBehaviour
                                 workers_gameObject = objParent;
 
                             // draw capstan Operators
+                            if (useCapstan)
                             for (int j = 0; j < capstanOperators / 6; j++)
                             {
                                 // left hand

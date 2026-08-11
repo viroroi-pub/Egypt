@@ -1569,6 +1569,9 @@ public class GeneratePyramid : MonoBehaviour
 
     public IEnumerator compute_size()
     {
+        if (Sequenced)
+            isGenerating = true;
+
         if (showInfoLevel || showInfoLevelDec || showInfoLevelTotal || showInfoRow)
         {
             Debug.Log("Start with : Base size (m) = " + BaseSize + ", Height (m) = " + Height);
@@ -1593,7 +1596,7 @@ public class GeneratePyramid : MonoBehaviour
 
         path_length = 0;
 
-        yield return StartCoroutine(compute_size_level(0, BaseSize, PathWide, PathSeparation, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+        yield return StartCoroutine(compute_size_level(0, BaseSize, PathWide, PathSeparation, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
 
         if (DrawUntilRow && DrawRow > 0)
             CalculateVolumeUntilRow(DrawRow);
@@ -1620,12 +1623,15 @@ public class GeneratePyramid : MonoBehaviour
             Debug.Log("Total length : " + path_length + ", Total block distance : " + totalLength + ", Total block force : " + totalForce + ", Total block force ramp : " + totalForceRamp + ", % force ramp : " + totalForceRamp * 100 / totalForce);
             writer.WriteLine("Total length : " + path_length + ", Total block distance : " + totalLength + ", Total block force : " + totalForce + ", Total block force ramp : " + totalForceRamp + ", % force ramp : " + totalForceRamp * 100 / totalForce);
         }
+
+        if (Sequenced)
+            isGenerating = false;
     }
 
     private IEnumerator compute_size_level(int level, float base_size, float path_wide, float separation, float height, 
             float old_length, float beforeBlocks, float beforeDistance, float beforeForce, 
             float force_old_length, float force_old_vert, float force_old_horiz, 
-            int row, float old_length_spiral)
+            int row, float old_length_spiral, int real_level)
     {
         if (DrawUntilRow && row > DrawRow)
         {
@@ -3783,7 +3789,7 @@ public class GeneratePyramid : MonoBehaviour
         force_old_vert += forceblocksrow_vert_total;
 
         // next level the initial ramp heights are zero
-        if (!Sequenced || level > 0)
+        if (real_level > -1)
         {
             HeightCornerInitialRamp = 0.0f;
             HeightCornerInitialRamp2 = 0.0f;
@@ -3802,7 +3808,7 @@ public class GeneratePyramid : MonoBehaviour
         else
             yield return StartCoroutine(compute_size_level(level + 1, new_base_size, path_wide, separation, height + h,
                                             old_length + length, biter, distblocks, forceblocks, force_old_length, force_old_vert, force_old_horiz, row, 
-                                            old_length_spiral + length_spiral));
+                                            old_length_spiral + length_spiral, real_level+1));
     }
 
     private void draw_one_size_level(int level, float base_size, float path_wide, float separation, float height, int index)

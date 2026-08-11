@@ -37,6 +37,7 @@ public class PyramidSequence : MonoBehaviour
         GeneratePyramid.Egyptian_body = null;
         GeneratePyramid.stone_sled = null;
         GeneratePyramid.Sequenced = true;
+        GeneratePyramid.useGPUInstancing = false;
 
         HeightCornerInitialRamp = GeneratePyramid.HeightCornerInitialRamp;
         HeightCornerInitialRamp2 = GeneratePyramid.HeightCornerInitialRamp2;
@@ -64,11 +65,6 @@ public class PyramidSequence : MonoBehaviour
         GeneratePyramid.DrawRow = startRow;
         GeneratePyramid.total_height = 0;
 
-        GeneratePyramid.HeightCornerInitialRamp = HeightCornerInitialRamp;
-        GeneratePyramid.HeightCornerInitialRamp2 = HeightCornerInitialRamp2;
-        GeneratePyramid.HeightCornerInitialRamp3 = HeightCornerInitialRamp3;
-        GeneratePyramid.HeightCornerInitialRamp4 = HeightCornerInitialRamp4;
-
         // La condición está directamente en el bucle.
         while (GeneratePyramid.total_height < GeneratePyramid.Height || GeneratePyramid.DrawRow<endRow)
         {
@@ -83,8 +79,21 @@ public class PyramidSequence : MonoBehaviour
             //cam.transform.localPosition = new Vector3(-BaseSize, Height, BaseSize);
             //cam.transform.localPosition = new Vector3(-BaseSize, Height, -BaseSize);
 
+            GeneratePyramid.HeightCornerInitialRamp = HeightCornerInitialRamp;
+            GeneratePyramid.HeightCornerInitialRamp2 = HeightCornerInitialRamp2;
+            GeneratePyramid.HeightCornerInitialRamp3 = HeightCornerInitialRamp3;
+            GeneratePyramid.HeightCornerInitialRamp4 = HeightCornerInitialRamp4;
+
+            Debug.Log("DrawRow:" + GeneratePyramid.DrawRow);
+            Debug.Log("HeightCornerInitialRamp:" + HeightCornerInitialRamp);
+            Debug.Log("HeightCornerInitialRamp2:" + HeightCornerInitialRamp2);
+            Debug.Log("HeightCornerInitialRamp3:" + HeightCornerInitialRamp3);
+            Debug.Log("HeightCornerInitialRamp4:" + HeightCornerInitialRamp4);
+
             GeneratePyramid.total_height = 0;
             yield return StartCoroutine(GeneratePyramid.compute_size());
+
+            yield return new WaitUntil(() => !GeneratePyramid.isGenerating);
 
             Debug.Log("Total height " + GeneratePyramid.total_height);
 

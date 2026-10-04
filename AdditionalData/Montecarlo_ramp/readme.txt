@@ -1,8 +1,8 @@
 params.txt — Configuration file listing key parameters used in the Monte Carlo edge-ramp simulations (μ ranges, θ values, number of trials, seed). Supports Supplementary Section S9 (Methods / Monte Carlo setup).
 
-pyramid_thickness_simulation.py / .ipynb — Python / Jupyter scripts reproducing the course-thickness alignment tests described in Supplement S11. Generate the simulated course-by-course series compared with McKenzie’s [30] empirical data and output the alignment figures (used in Fig. 10, Table S11.1).
-
 requirements.txt — List of Python libraries and versions required to execute all notebooks (NumPy, Pandas, Matplotlib, SciPy etc.). Enables full reproducibility of the pipeline (as declared in Methods → Reproducibility and Zenodo README).
+
+thickness_range_monte_carlo.py / .ipynb — Python / Jupyter implementations of the course-thickness alignment analysis. Generate randomized course-thickness series from a truncated normal distribution and identify significant local thickness-range transitions from the course pattern immediately preceding and following each candidate boundary. User-defined turning elevations are then tested against these transitions within a configurable matching window. Simulation parameters, transition thresholds, turning elevations, and number of Monte Carlo realizations can be modified by the user. The scripts output the match distribution, summary statistics, and individual simulation results.
 
 edge_ramp_montecarlo_generator.ipynb — Master Jupyter notebook for generating Monte Carlo runs over friction (μ) and ramp angle (θr) ranges. Implements the discrete-event loop producing synthetic timelines and queue statistics. Underlies the bootstrap and confidence-interval results in Table 5 and Figure 8 (Main Article).
 

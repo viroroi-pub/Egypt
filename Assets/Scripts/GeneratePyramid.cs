@@ -153,6 +153,31 @@ public enum DrawGranitePullers
     pullersmean
 }
 
+/// <summary>
+/// Stores edge segment metrics for each pyramid iteration.
+/// </summary>
+public struct IterationEdgeMetrics
+{
+    public int iterationIndex;
+    public float minHeight;
+    public float maxHeight;
+    public float edgeSegmentLength;
+    public Vector3 sampleCornerPoint3D;
+    public float ratioToTotalEdge;
+    public float progressionRatio;
+    public float levelVolume;          
+    public float cumulativeVolume;     
+    public float volumePercentage;     
+    public float cumulativePercentage; 
+    public float estimatedMassTons;
+
+    public override string ToString()
+    {
+        string progStr = (progressionRatio > 0f) ? $"{progressionRatio:F3}" : "N/A (Base)";
+        return $"Iter {iterationIndex} | Heights: {minHeight:F2}m -> {maxHeight:F2}m | Segment: {edgeSegmentLength:F2}m | Prog: {progStr} | Ratio to Full: {ratioToTotalEdge:P2} | Vol: {levelVolume:N0} m³ ({volumePercentage:F2}%) | Cum Vol: {cumulativePercentage:F2}% | Mass: {estimatedMassTons:N0} t | Corner: {sampleCornerPoint3D}";
+    }
+}
+
 public class GeneratePyramid : MonoBehaviour
 {
     public RampMethodType rampMethod = RampMethodType.Integrated;
@@ -293,6 +318,10 @@ public class GeneratePyramid : MonoBehaviour
     /// </summary>
     public float massBlock = 2267.96f;
     /// <summary>
+    /// The average hauling mass per trip.
+    /// </summary>
+    public float haulingMassPerTrip = 2267.96f;
+    /// <summary>
     /// The coefficient of friction used in physics calculations.
     /// </summary>
     public float frictionCoef = 0.7f;
@@ -328,6 +357,39 @@ public class GeneratePyramid : MonoBehaviour
     /// Single ramp IER face start
     /// </summary>
     public RampPositionFace SingleRampFaceStart = RampPositionFace.NorthFace;
+
+    [Tooltip("Enables dynamic mass limits based on Stephen's equations for Spurred/Feasible ramps.")]
+    public bool useStephenMassLimits = false;
+
+    [Tooltip("Base coefficient for Stephen's Spurred Spiral Ramp equation (default 108000).")]
+    public float stephenCoefficient = 108000f;
+
+    [Tooltip("Exponent for Stephen's equation (default -0.788).")]
+    public float stephenExponent = -0.788f;
+
+    [Tooltip("Maximum hauling mass per trip for Feasible ramps at the initial straight ramp / limestone maximum (kg).")]
+    public float feasibleInitialStraightRampMaxMass = 8000f;
+
+    [Tooltip("Maximum hauling mass per trip for Feasible ramps at the upper platform (kg).")]
+    public float feasiblePlatformMaxMass = 2000f;
+
+    [Tooltip("Maximum hauling mass per trip for Feasible ramps at the secondary spiral ramp (kg).")]
+    public float feasibleSecondarySpiralMaxMass = 6000f;
+
+    [Tooltip("Minimum baseline safety buffer when team length is minimal (m).")]
+    public float bufferMin = 5.0f;
+
+    [Tooltip("Coupling factor scaling the safety buffer based on the team length (f_team).")]
+    public float teamBufferFactor = 0.20f;
+
+    [Tooltip("Transition height up to which 2 working lanes operate (m, default 71m).")]
+    public float stephenFeasibleTransitionHeight = 71.0f;
+
+    [Tooltip("Number of working lanes below the transition height.")]
+    public int stephenLanesBelowTransition = 2;
+
+    [Tooltip("Number of working lanes above the transition height.")]
+    public int stephenLanesAboveTransition = 1;
 
     // --- Materials and GameObjects ---
     /// <summary>
@@ -970,6 +1032,15 @@ public class GeneratePyramid : MonoBehaviour
     [HideInInspector]
     public bool canDrawGPU = false;
 
+    // List to store edge metrics per iteration
+    private List<IterationEdgeMetrics> iterationEdgeMetricsList = new List<IterationEdgeMetrics>();
+
+    // Full pyramid edge calculation from base to apex
+    private float halfBase;
+    private float pyramidAngleRad;
+    // Full edge length from corner (bs2, 0, bs2) to apex (0, Height, 0)
+    private float fullPyramidEdgeLength;
+
     // This runs in the editor whenever a value is changed in the Inspector.
     private void OnValidate()
     {
@@ -1072,7 +1143,7 @@ public class GeneratePyramid : MonoBehaviour
                 textPath = Path.Combine(dir, csvheadway);
                 Debug.Log("File : " + textPath);
                 csvheadwaywriter = new StreamWriter(textPath, false);
-                csvheadwaywriter.WriteLine("Row;blocks;up ramps;blocks per ramp;fixed headway(min);adaptative headway(min);total time(min);adaptative total time(min);total time(working years);adaptativive total time(working years)");
+                csvheadwaywriter.WriteLine("Row;blocks;up ramps;blocks per ramp;stone-hauling team;fixed headway(min);adaptative headway(min);total time(min);adaptative total time(min);total time(working years);adaptativive total time(working years)");
             }
             else
             {
@@ -1234,6 +1305,22 @@ public class GeneratePyramid : MonoBehaviour
         // hide Pyramide during generation
         if (objParent) objParent.SetActive(false);
 
+        // edge list for each iteration
+        if (iterationEdgeMetricsList == null)
+        {
+            iterationEdgeMetricsList = new List<IterationEdgeMetrics>();
+        }
+        else
+        {
+            iterationEdgeMetricsList.Clear();
+        }
+
+        // Full pyramid edge calculation from base to apex
+        float halfBase = BaseSize / 2f;
+        float pyramidAngleRad = PyramidInclination * Mathf.Deg2Rad;
+        // Full edge length from corner (bs2, 0, bs2) to apex (0, Height, 0)
+        float fullPyramidEdgeLength = Mathf.Sqrt(2f * halfBase * halfBase + Height * Height);
+
         // --- 0. DYNAMICALLY CALCULATE TURNING POINTS ---
         if (rampMethod == RampMethodType.Integrated && (Method2Ramp || Method4Ramp))
         {
@@ -1350,6 +1437,12 @@ public class GeneratePyramid : MonoBehaviour
             cube.GetComponent<BoxCollider>().isTrigger = true;
         }
 
+        // if it is 2 ramps spiral method and the ramp is on the East or West face, we need to orbit the parent object 
+        if (objParent && showRamps && Method2Ramp && !Method4Ramp && rampMethod== RampMethodType.Spiral && (SingleRampFaceStart==RampPositionFace.EastFace || SingleRampFaceStart == RampPositionFace.WestFace))
+        {
+            objParent.transform.Rotate(0f, 90f, 0f, Space.World);
+        }
+
         if (progressBar) progressBar.Show("Finalizing...");
         yield return null;
 
@@ -1406,6 +1499,18 @@ public class GeneratePyramid : MonoBehaviour
         isGenerating = false;
         canDrawGPU = true;
         Debug.Log("Pyramid generation complete.");
+
+        Debug.Log("=== PYRAMID ITERATION EDGE SEGMENT ANALYSIS ===");
+        Debug.Log($"Full Pyramid Total Edge Length: {fullPyramidEdgeLength:F2} m");
+
+        float accumulatedEdgeLength = 0f;
+        foreach (var metric in iterationEdgeMetricsList)
+        {
+            accumulatedEdgeLength += metric.edgeSegmentLength;
+            Debug.Log(metric.ToString());
+        }
+        Debug.Log($"Accumulated Edge Length across iterations: {accumulatedEdgeLength:F2} m");
+        Debug.Log("================================================");
 
         // Bake static geometry and classify for GPU optimization
         if (isStatic && useGPUInstancing)
@@ -1582,6 +1687,102 @@ public class GeneratePyramid : MonoBehaviour
             writer.WriteLine("Pyramid inclination (degrees) = " + PyramidInclination + ", Ramp inclination (degrees) = " + RampInclination);
             Debug.Log("Pyramid inclination tangent : " + pyramid_inclination_tg + ", Ramp inclination tangent : " + ramp_inclination_tg);
             writer.WriteLine("Pyramid inclination tangent : " + pyramid_inclination_tg + ", Ramp inclination tangent : " + ramp_inclination_tg);
+
+            // --- Logistics and Stephen's model configuration logging ---
+            Debug.Log("Logistics - Default Hauling Mass Per Trip (kg) = " + haulingMassPerTrip + ", Force Per Puller (N) = " + forcePerPullerNewtons);
+            writer.WriteLine("Logistics - Default Hauling Mass Per Trip (kg) = " + haulingMassPerTrip + ", Force Per Puller (N) = " + forcePerPullerNewtons);
+            Debug.Log("Logistics - Dynamic Buffer (m) = " + dynamicBuffer + ", Sledge Length (m) = " + sledgeLength);
+            writer.WriteLine("Logistics - Dynamic Buffer (m) = " + dynamicBuffer + ", Sledge Length (m) = " + sledgeLength);
+            Debug.Log("Logistics - Working Time = " +
+                              (WorkingYearMinutes / 60f / 300f).ToString("F1") +
+                              " h/day, " +
+                              (WorkingYearMinutes / 60f / 300f * 6f).ToString("F1") +
+                              " h/week");
+            writer.WriteLine("Logistics - Working Time = " +
+                             (WorkingYearMinutes / 60f / 300f).ToString("F1") +
+                             " h/day, " +
+                             (WorkingYearMinutes / 60f / 300f * 6f).ToString("F1") +
+                             " h/week");
+            Debug.Log("Logistics - Speed (m/s) :, Ramp = " + pullingSpeedRampMetersPerSecond + ", Terrace = " + pullingSpeedTerraceMetersPerSecond);
+            writer.WriteLine("Logistics - Speed (m/s) : Ramp = " + pullingSpeedRampMetersPerSecond + ", Terrace = " + pullingSpeedTerraceMetersPerSecond);
+
+            // --- Stephen's Ramp Models Detailed Analysis ---
+            if (useStephenMassLimits && (rampMethod == RampMethodType.Spurred || rampMethod == RampMethodType.Feasible))
+            {
+                Debug.Log($"=== STEPHEN'S RAMPS MODEL ANALYSIS ({rampMethod}) ===");
+                writer.WriteLine($"=== STEPHEN'S RAMPS MODEL ANALYSIS ({rampMethod}) ===");
+
+                // Base puller parameters for workforce calculation
+                float baseAngleRad = 7f * Mathf.Deg2Rad;
+                float baseFriction = 0.20f;
+                int baseMen = 24;
+                float baseRequiredForce = massBlock * g * (Mathf.Sin(baseAngleRad) + baseFriction * Mathf.Cos(baseAngleRad));
+                float pullForcePerMan = baseRequiredForce / baseMen;
+
+                if (rampMethod == RampMethodType.Spurred)
+                {
+                    // Evaluate Spurred ramp values at key heights (~20m intervals up to Height)
+                    for (float hSample = 20f; hSample <= Height; hSample += 20f)
+                    {
+                        // Calculate mass using Stephen's equation: M_max(h) = 108 000 * h^(-0.788) kg
+                        float massKg = stephenCoefficient * Mathf.Pow(hSample, stephenExponent);
+
+                        // Calculate required force, team size, and safety distance
+                        float reqForce = massKg * g * (Mathf.Sin(RampInclination * Mathf.Deg2Rad) + frictionCoef * Mathf.Cos(RampInclination * Mathf.Deg2Rad));
+                        int workers = Mathf.RoundToInt(reqForce / pullForcePerMan);
+                        int rows = Mathf.CeilToInt(workers / 2f);
+                        float teamLen = (rows * 1.5f) - 1.0f;
+                        // Apply dynamic buffer if mass deviates from standard massBlock
+                        float effectiveBuffer = dynamicBuffer;
+                        if (Mathf.Abs(massKg - massBlock) > 0.01f)
+                        {
+                            effectiveBuffer = bufferMin + (teamBufferFactor * teamLen);
+                            if (dynamicBuffer > effectiveBuffer) effectiveBuffer = dynamicBuffer;                            
+                        }
+
+                        float safetyDist = teamLen + sledgeLength + effectiveBuffer;
+
+                        // Calculate physics minimum headway (in minutes) based on safety distance and pulling speed
+                        float physics_headway_min = (safetyDist / pullingSpeedRampMetersPerSecond) / 60.0f;
+
+                        string logMsg = $"Spurred Ramp @ ~{hSample:F0}m | Hauling Mass: {massKg:F1} kg | Workers: {workers} | Team Length: {teamLen:F1}m | Safety Distance: {safetyDist:F1}m | Ramp Speed: {pullingSpeedRampMetersPerSecond:F2} m/s | Min Headway: {physics_headway_min:F2} min";
+                        Debug.Log(logMsg);
+                        writer.WriteLine(logMsg);
+                    }
+                }
+                else if (rampMethod == RampMethodType.Feasible)
+                {
+                    // Evaluate Feasible ramp phases (Initial Straight Limestone, Secondary Spiral, Upper Platform)
+                    float[] sampleHeights = new float[] { internalRampStraightRampHigh / blockheight, Height * 0.5f, Height * 0.9f };
+                    string[] phaseNames = new string[] { "Initial Straight Limestone Ramp", "Secondary Spiral Ramp", "Upper Platform" };
+                    float[] phaseMasses = new float[] { feasibleInitialStraightRampMaxMass, feasibleSecondarySpiralMaxMass, feasiblePlatformMaxMass };
+
+                    for (int p = 0; p < phaseNames.Length; p++)
+                    {
+                        float massKg = phaseMasses[p];
+                        float reqForce = massKg * g * (Mathf.Sin(RampInclination * Mathf.Deg2Rad) + frictionCoef * Mathf.Cos(RampInclination * Mathf.Deg2Rad));
+                        int workers = Mathf.RoundToInt(reqForce / pullForcePerMan);
+                        int rows = Mathf.CeilToInt(workers / 2f);
+                        float teamLen = (rows * 1.5f) - 1.0f;
+                        // Apply dynamic buffer if mass deviates from standard massBlock
+                        float effectiveBuffer = dynamicBuffer;
+                        if (Mathf.Abs(massKg - massBlock) > 0.01f)
+                        {
+                            effectiveBuffer = bufferMin + (teamBufferFactor * teamLen);
+                            if (dynamicBuffer > effectiveBuffer) effectiveBuffer = dynamicBuffer;
+                        }
+
+                        float safetyDist = teamLen + sledgeLength + effectiveBuffer;
+
+                        // Calculate physics minimum headway (in minutes) based on safety distance and pulling speed
+                        float physics_headway_min = (safetyDist / pullingSpeedRampMetersPerSecond) / 60.0f;
+
+                        string logMsg = $"Feasible Phase: {phaseNames[p]} | Hauling Mass: {massKg:F1} kg | Workers: {workers} | Team Length: {teamLen:F1}m | Safety Distance: {safetyDist:F1}m | Ramp Speed: {pullingSpeedRampMetersPerSecond:F2} m/s | Min Headway: {physics_headway_min:F2} min";
+                        Debug.Log(logMsg);
+                        writer.WriteLine(logMsg);
+                    }
+                }
+            }
         }
 
         if (progressBar && !Sequenced)
@@ -1622,6 +1823,24 @@ public class GeneratePyramid : MonoBehaviour
         {
             Debug.Log("Total length : " + path_length + ", Total block distance : " + totalLength + ", Total block force : " + totalForce + ", Total block force ramp : " + totalForceRamp + ", % force ramp : " + totalForceRamp * 100 / totalForce);
             writer.WriteLine("Total length : " + path_length + ", Total block distance : " + totalLength + ", Total block force : " + totalForce + ", Total block force ramp : " + totalForceRamp + ", % force ramp : " + totalForceRamp * 100 / totalForce);
+
+            writer.WriteLine("=== PYRAMID COMPREHENSIVE ITERATION ANALYSIS ===");
+            float accumulatedEdgeLength = 0f;
+            float totalCalculatedVolume = 0f;
+
+            foreach (var metric in iterationEdgeMetricsList)
+            {
+                accumulatedEdgeLength += metric.edgeSegmentLength;
+                totalCalculatedVolume += metric.levelVolume;
+
+                // Write each iteration's formatted metrics line into the txt file
+                writer.WriteLine(metric.ToString());
+            }
+
+            writer.WriteLine($"Total Accumulated Edge Length: {accumulatedEdgeLength:F2} m");
+            writer.WriteLine($"Total Calculated Volume: {totalCalculatedVolume:N0} m³");
+            writer.WriteLine("=================================================");
+            writer.Flush();
         }
 
         if (Sequenced)
@@ -1652,6 +1871,11 @@ public class GeneratePyramid : MonoBehaviour
 
         //float h = base_size * ramp_inclination_tg;  // height
         float h = base_size * ramp_inclination_tg * pyramid_inclination_tg / (ramp_inclination_tg + pyramid_inclination_tg);
+        // control max Height
+        if (total_height+ h > Height)
+        {
+            h = Height - total_height;
+        }
         // divide by height of block
         int ch = Mathf.RoundToInt(h / blockheight);
         h = ch * blockheight; // adjust
@@ -2813,7 +3037,7 @@ public class GeneratePyramid : MonoBehaviour
                         }
                     }
                     if (!Method4Ramp && !Method2Ramp)
-                        num_ramps_headways = 1;
+                        num_ramps_headways = 1;                    
 
                     // CALCULATE PROGRESS RATIO DEPENDING ON RAMP TYPE
                     float progress_ratio = 0f;
@@ -2844,12 +3068,63 @@ public class GeneratePyramid : MonoBehaviour
                     float baseRequiredForce = massBlock * g * (Mathf.Sin(baseAngleRad) + baseFriction * Mathf.Cos(baseAngleRad));
                     float pullForcePerMan = baseRequiredForce / baseMen;
 
-                    float currentRequiredForce = massBlock * g * (Mathf.Sin(RampInclination * Mathf.Deg2Rad) + frictionCoef * Mathf.Cos(RampInclination * Mathf.Deg2Rad));
+                    // Determine effective hauling mass based on Stephen's limits if enabled
+                    float effectiveHaulingMass = haulingMassPerTrip;
 
-                    int totalMen = Mathf.RoundToInt(currentRequiredForce / pullForcePerMan);
+                    if (useStephenMassLimits)
+                    {
+                        // Get the absolute height from the base directly using the existing function
+                        float absoluteHeightFromGround = GetHeightAtCourse(row_ori + i);
+                        if (rampMethod == RampMethodType.Spurred)
+                        {
+                            // Avoid division by zero or negative values with Mathf.Max
+                            float heightForMass = Mathf.Max(absoluteHeightFromGround, 1.0f);
 
-                    int rowsOfMen = Mathf.RoundToInt(totalMen / 2f);
-                    float distanceBetweenRows = 1.5f; 
+                            // Directly apply Stephen's equation: M_max(h) = 108 000 * h^(-0.788) kg
+                            effectiveHaulingMass = stephenCoefficient * Mathf.Pow(heightForMass, stephenExponent);
+                        }
+                        else if (rampMethod == RampMethodType.Feasible)
+                        {
+                            // Directly assign the specific mass value according to the construction phase/height
+                            if (absoluteHeightFromGround <= internalRampStraightRampHigh)
+                            {
+                                // Feasible – initial straight limestone ramp limit
+                                effectiveHaulingMass = feasibleInitialStraightRampMaxMass;
+                            }
+                            else if (absoluteHeightFromGround > (Height * 0.8f))
+                            {
+                                // Feasible – upper platform limit
+                                effectiveHaulingMass = feasiblePlatformMaxMass;
+                            }
+                            else
+                            {
+                                // Feasible – secondary spiral ramp limit
+                                effectiveHaulingMass = feasibleSecondarySpiralMaxMass;
+                            }
+                        }
+
+                        // Determine active working lanes (lines of traffic) based on Stephen's Feasible model
+                        int activeWorkingLanes = stephenLanesAboveTransition;
+                        if (absoluteHeightFromGround <= stephenFeasibleTransitionHeight)
+                        {
+                            activeWorkingLanes = stephenLanesBelowTransition; 
+                        }
+                        else
+                        {
+                            activeWorkingLanes = stephenLanesAboveTransition; 
+                        }
+
+                        // Ensure the distribution accounts for the active lanes
+                        num_ramps_headways = activeWorkingLanes;
+                    }
+
+                    // Calculate required force using the effective hauling mass for logistics
+                    float currentRequiredForce = effectiveHaulingMass * g * (Mathf.Sin(RampInclination * Mathf.Deg2Rad) + frictionCoef * Mathf.Cos(RampInclination * Mathf.Deg2Rad));
+
+                    int totalMen = Mathf.CeilToInt(currentRequiredForce / pullForcePerMan);
+
+                    int rowsOfMen = Mathf.CeilToInt(totalMen / 2f);
+                    float distanceBetweenRows = 1.5f;
 
                     float baseSpatialFootprint = ((baseMen / 2f) * distanceBetweenRows) + sledgeLength + dynamicBuffer;
                     float currentSpatialFootprint = (rowsOfMen * distanceBetweenRows) + sledgeLength + dynamicBuffer;
@@ -2858,18 +3133,23 @@ public class GeneratePyramid : MonoBehaviour
 
                     float physics_min_headway = MinHeadway * (1f + incrementPercentage);
 
-                    float currentAngleRad = RampInclination * Mathf.Deg2Rad;
-                   
+                    // Calculate team dimensions
                     int currentWorkers = Mathf.RoundToInt(currentRequiredForce / pullForcePerMan);
                     int currentRows = Mathf.CeilToInt(currentWorkers / 2f);
-
                     float currentTeamLength = (currentRows * 1.5f) - 1.0f;
-                    float physics_safety_dist = currentTeamLength + sledgeLength + dynamicBuffer;
+
+                    // Effective buffer calculated directly using dynamicBuffer as the baseline minimum floor
+                    float effectiveBuffer = Mathf.Max(
+                            dynamicBuffer,
+                            bufferMin + teamBufferFactor * currentTeamLength
+                        );
+
+                    // Total safety distance incorporating the appropriate buffer
+                    float physics_safety_dist = currentTeamLength + sledgeLength + effectiveBuffer;
 
                     float physics_headway_min = (physics_safety_dist / pullingSpeedRampMetersPerSecond) / 60.0f;
 
                     float current_headway = physics_min_headway + progress_ratio * (MaxHeadway - physics_min_headway);
-
                     current_headway = Mathf.Min(current_headway, MaxHeadway);
 
                     float dynamic_average_headway = (physics_headway_min > AverageHeadway)
@@ -2877,8 +3157,23 @@ public class GeneratePyramid : MonoBehaviour
                                   : AverageHeadway;
 
                     float bxi_ramp = Mathf.Round(bxi / num_ramps_headways);
-                    // Row;blocks;up ramps;blocks per ramp;fixed headway(min);adaptative headway(min);total time(min);adaptative total time(min);;total time(working years);adaptativive total time(working years)                        
-                    csvheadwaywriter.WriteLine(row + ";" + bxi + ";" + num_ramps_headways+ ";"+ bxi_ramp + ";" + dynamic_average_headway.ToString("F2") + ";" + current_headway.ToString("F2") + ";" + (bxi_ramp * dynamic_average_headway).ToString("F2") + ";" + (bxi_ramp * current_headway).ToString("F2") + ";" + (bxi_ramp * dynamic_average_headway / WorkingYearMinutes).ToString("F5") + ";" + (bxi_ramp * current_headway / WorkingYearMinutes).ToString("F5"));
+
+                    // Use effectiveHaulingMass instead of haulingMassPerTrip for the correct mass ratio/trip factor
+                    float massRatio = massBlock / effectiveHaulingMass;
+                    float effectiveTrips = bxi * massRatio;
+
+                    // Distribute the effective trips among the active ramp(s).
+                    float effectiveTrips_ramp = Mathf.Round(effectiveTrips / num_ramps_headways);
+
+                    // Calculate the new total times (in minutes and in working years)
+                    float totalTimeAdaptive_min = effectiveTrips_ramp * current_headway;
+                    float totalTimeFixed_min = effectiveTrips_ramp * dynamic_average_headway;
+
+                    float totalTimeAdaptive_years = totalTimeAdaptive_min / WorkingYearMinutes;
+                    float totalTimeFixed_years = totalTimeFixed_min / WorkingYearMinutes;
+
+                    // Row;blocks;up ramps;blocks per ramp;stone-hauling team;fixed headway(min);adaptative headway(min);total time(min);adaptative total time(min);total time(working years);adaptativive total time(working years)                        
+                    csvheadwaywriter.WriteLine(row + ";" + bxi + ";" + num_ramps_headways + ";" + effectiveTrips_ramp.ToString("F2") + ";" + currentWorkers + ";" + dynamic_average_headway.ToString("F2") + ";" + current_headway.ToString("F2") + ";" + totalTimeFixed_min.ToString("F2") + ";" + totalTimeAdaptive_min.ToString("F2") + ";" + totalTimeFixed_years.ToString("F5") + ";" + totalTimeAdaptive_years.ToString("F5"));
                 }
 
                 float old_lenght_ant = old_length;
@@ -3006,6 +3301,81 @@ public class GeneratePyramid : MonoBehaviour
         float minBaseSize = blockwide * holeWide * 2;
         if (Method4Ramp && minBaseSize<minBaseSize4Ramps)
             minBaseSize = minBaseSize * 2;
+        
+
+        // --- COMPREHENSIVE METRICS CALCULATION (EDGE, PROGRESSION, VOLUME & MASS) ---
+        float currentLevelMinHeight = height;
+        float currentLevelMaxHeight = height + h;
+
+        // Lower and upper 3D corners for this level
+        float halfBaseCurrent = base_size / 2f;
+        Vector3 lowerCorner3D = objParent.transform.position + new Vector3(halfBaseCurrent, currentLevelMinHeight, -halfBaseCurrent);
+
+        float halfBaseNext = new_base_size / 2f;
+        Vector3 upperCorner3D = objParent.transform.position + new Vector3(halfBaseNext, currentLevelMaxHeight, -halfBaseNext);
+
+        // Exact 3D Euclidean distance of the edge segment
+        float edgeSegmentLength = Vector3.Distance(lowerCorner3D, upperCorner3D);
+
+        // Full pyramid true edge length
+        float halfBaseTotal = BaseSize / 2f;
+        float fullPyramidEdgeLength = Mathf.Sqrt(2f * (halfBaseTotal * halfBaseTotal) + Height * Height);
+        float ratioToTotal = edgeSegmentLength / fullPyramidEdgeLength;
+
+        // Progression ratio relative to previous iteration
+        float progressionRatio = 0f;
+        if (iterationEdgeMetricsList != null && iterationEdgeMetricsList.Count > 0)
+        {
+            float previousSegmentLength = iterationEdgeMetricsList[iterationEdgeMetricsList.Count - 1].edgeSegmentLength;
+            if (previousSegmentLength > 0f)
+            {
+                progressionRatio = edgeSegmentLength / previousSegmentLength;
+            }
+        }
+
+        // Volume of the truncated pyramid frustum for this level
+        float b11 = base_size;
+        float b2 = new_base_size;
+        float levelHeight = h;
+        float levelVolume = (levelHeight / 3f) * ((b11 * b11) + (b2 * b2) + (b11 * b2));
+
+        // Estimated stone mass calculation (limestone density based on block settings)
+        float blockVolEstimate = blockwide * blockwide * blockheight;
+        float stoneDensity = (blockVolEstimate > 0f) ? (massBlock / blockVolEstimate) : 2270f;
+        float levelMassTons = (levelVolume * stoneDensity) / 1000f;
+
+        // Cumulative volume calculation
+        float previousCumulativeVol = (iterationEdgeMetricsList != null && iterationEdgeMetricsList.Count > 0) ?
+            iterationEdgeMetricsList[iterationEdgeMetricsList.Count - 1].cumulativeVolume : 0f;
+        float cumulativeVolume = previousCumulativeVol + levelVolume;
+
+        // ESTIMATED TOTAL FINAL VOLUME (Based on base size and height of the current run)
+        // Using the geometric frustum/pyramid volume of the initial base to serve as a normalized 100% reference scale,
+        // or we can compute relative percentages after collection. To make it relative to the theoretical total built volume:
+        float theoreticalTotalVolume = (BaseSize * BaseSize * Height) / 3f;
+
+        // Safety guard to prevent division by zero or out-of-bounds percentage capping
+        float volumePercentage = (theoreticalTotalVolume > 0f) ? (levelVolume / theoreticalTotalVolume) * 100f : 0f;
+        float cumulativePercentage = (theoreticalTotalVolume > 0f) ? Mathf.Min(100f, (cumulativeVolume / theoreticalTotalVolume) * 100f) : 0f;
+
+        IterationEdgeMetrics iterMetrics = new IterationEdgeMetrics
+        {
+            iterationIndex = level + 1,
+            minHeight = currentLevelMinHeight,
+            maxHeight = currentLevelMaxHeight,
+            edgeSegmentLength = edgeSegmentLength,
+            sampleCornerPoint3D = upperCorner3D,
+            ratioToTotalEdge = ratioToTotal,
+            progressionRatio = progressionRatio,
+            levelVolume = levelVolume,
+            cumulativeVolume = cumulativeVolume,
+            volumePercentage = volumePercentage,
+            cumulativePercentage = cumulativePercentage,
+            estimatedMassTons = levelMassTons
+        };
+
+        if (iterationEdgeMetricsList == null) iterationEdgeMetricsList = new List<IterationEdgeMetrics>();
+        iterationEdgeMetricsList.Add(iterMetrics);
 
         // do not draw ramps if the base size is too small
         if (showRamps && rampMethod != RampMethodType.Straight && base_size > minBaseSize)
@@ -3784,9 +4154,9 @@ public class GeneratePyramid : MonoBehaviour
 
         }
 
-        force_old_length += forceblocksrow_total_total;
-        force_old_horiz += forceblocksrow_horiz_total;
-        force_old_vert += forceblocksrow_vert_total;
+        force_old_length = forceblocksrow_total_total;
+        force_old_horiz = forceblocksrow_horiz_total;
+        force_old_vert = forceblocksrow_vert_total;
 
         // next level the initial ramp heights are zero
         if (real_level > -1)
@@ -3796,7 +4166,12 @@ public class GeneratePyramid : MonoBehaviour
             HeightCornerInitialRamp3 = 0.0f;
             HeightCornerInitialRamp4 = 0.0f;
         }
-        
+        //Debug.Log("real_level:"+ real_level);
+        //Debug.Log("HeightCornerInitialRamp:" + HeightCornerInitialRamp);
+        //Debug.Log("HeightCornerInitialRamp2:" + HeightCornerInitialRamp2);
+        //Debug.Log("HeightCornerInitialRamp3:" + HeightCornerInitialRamp3);
+        //Debug.Log("HeightCornerInitialRamp4:" + HeightCornerInitialRamp4);
+
         //return length;
         if (rampMethod == RampMethodType.Spiral || rampMethod == RampMethodType.Internal || rampMethod == RampMethodType.Feasible || rampMethod == RampMethodType.Spurred)
             path_length += path_length + length_spiral;
@@ -4040,9 +4415,12 @@ public class GeneratePyramid : MonoBehaviour
                 last_v0 = Quaternion.Euler(0, 270f, 0) * last_v0;
                 last_v1 = Quaternion.Euler(0, 270f, 0) * last_v1;
             }
-        }        
+        }
 
-        GameObject iter_gameObject = GameObject.Find("Iter_" + level);
+        Transform foundTransform = objParent.transform.Find("Iter_" + level);
+        GameObject iter_gameObject = null;
+        if (foundTransform != null)
+            iter_gameObject = foundTransform.gameObject;       
         if (iter_gameObject == null)
             iter_gameObject = objParent;
         GameObject ramp_gameObject = new GameObject();
@@ -4634,7 +5012,10 @@ public class GeneratePyramid : MonoBehaviour
         if (height < MinHeightSpiralRamp)
             return;
 
-        GameObject iter_gameObject = GameObject.Find("Iter_" + level);
+        Transform foundTransform = objParent.transform.Find("Iter_" + level);
+        GameObject iter_gameObject = null;
+        if (foundTransform != null)
+            iter_gameObject = foundTransform.gameObject;
         if (iter_gameObject == null)
             iter_gameObject = objParent;
         GameObject ramp_gameObject = new GameObject();

@@ -1,0 +1,116 @@
+Start with : Base size (m) = 230.36, Height (m) = 147.68
+Path wide (m) = 0, Separation (m) = 0
+Pyramid inclination (degrees) = 51.84, Ramp inclination (degrees) = 7
+Pyramid inclination tangent : 1.272601, Ramp inclination tangent : 0.1227846
+Level : 0 : Height : 25.56 : Block rows : 36, Separation : 20.27014, New base size : 189.8197, Length : 212.6075, Ramp inclination : 6.855286, Start height : 0, % total height : 0, Ramp length : 0
+  Row : 0, blocks : 32902, ramp inclination : 7.035037, Length ramp : 0, distance blocks Km: 5785.882, force blocks : (MJ): 25680.33
+  Row : 1, blocks : 32581, ramp inclination : 6.76, Length ramp : 5.99, distance blocks Km: 5783.583, force blocks (MJ): 2618.960, Decrement - blocks : 99.00 %, Distance : 99.96 %, Force : 101.98 %
+  Row : 2, blocks : 32261, ramp inclination : 6.82, Length ramp : 11.88, distance blocks Km: 5781.217, force blocks (MJ): 2668.634, Decrement - blocks : 99.00 %, Distance : 99.96 %, Force : 101.90 %
+  Row : 3, blocks : 31944, ramp inclination : 6.83, Length ramp : 17.78, distance blocks Km: 5782.265, force blocks (MJ): 2718.659, Decrement - blocks : 99.00 %, Distance : 100.02 %, Force : 101.87 %
+  Row : 4, blocks : 31627, ramp inclination : 6.84, Length ramp : 23.68, distance blocks Km: 5786.654, force blocks (MJ): 2769.040, Decrement - blocks : 99.00 %, Distance : 100.08 %, Force : 101.85 %
+  Row : 5, blocks : 31313, ramp inclination : 6.84, Length ramp : 29.59, distance blocks Km: 5794.463, force blocks (MJ): 2819.775, Decrement - blocks : 99.00 %, Distance : 100.13 %, Force : 101.83 %
+  Row : 6, blocks : 31000, ramp inclination : 6.84, Length ramp : 35.49, distance blocks Km: 5853.925, force blocks (MJ): 2887.752, Decrement - blocks : 99.00 %, Distance : 101.03 %, Force : 102.41 %
+  Row : 7, blocks : 30688, ramp inclination : 6.85, Length ramp : 41.40, distance blocks Km: 5870.121, force blocks (MJ): 2940.661, Decrement - blocks : 98.00 %, Distance : 100.28 %, Force : 101.83 %
+  Row : 8, blocks : 30379, ramp inclination : 6.85, Length ramp : 47.30, distance blocks Km: 5889.899, force blocks (MJ): 2994.058, Decrement - blocks : 98.00 %, Distance : 100.34 %, Force : 101.82 %
+  Row : 9, blocks : 30070, ramp inclination : 6.85, Length ramp : 53.21, distance blocks Km: 5913.306, force blocks (MJ): 3047.985, Decrement - blocks : 98.00 %, Distance : 100.40 %, Force : 101.80 %
+  Row : 10, blocks : 29764, ramp inclination : 6.85, Length ramp : 59.11, distance blocks Km: 5940.415, force blocks (MJ): 3102.459, Decrement - blocks : 98.00 %, Distance : 100.46 %, Force : 101.79 %
+  Row : 11, blocks : 29458, ramp inclination : 6.85, Length ramp : 65.02, distance blocks Km: 5971.209, force blocks (MJ): 3157.500, Decrement - blocks : 98.00 %, Distance : 100.52 %, Force : 101.77 %
+  Row : 12, blocks : 29155, ramp inclination : 6.85, Length ramp : 70.93, distance blocks Km: 6005.596, force blocks (MJ): 3213.110, Decrement - blocks : 98.00 %, Distance : 100.58 %, Force : 101.76 %
+  Row : 13, blocks : 28853, ramp inclination : 6.85, Length ramp : 76.83, distance blocks Km: 6043.672, force blocks (MJ): 3269.304, Decrement - blocks : 98.00 %, Distance : 100.63 %, Force : 101.75 %
+  Row : 14, blocks : 28552, ramp inclination : 6.85, Length ramp : 82.74, distance blocks Km: 6085.293, force blocks (MJ): 3326.075, Decrement - blocks : 98.00 %, Distance : 100.69 %, Force : 101.74 %
+  Row : 15, blocks : 28253, ramp inclination : 6.85, Length ramp : 88.64, distance blocks Km: 6193.424, force blocks (MJ): 3411.913, Decrement - blocks : 98.00 %, Distance : 101.78 %, Force : 102.58 %
+  Row : 16, blocks : 27956, ramp inclination : 6.85, Length ramp : 94.55, distance blocks Km: 6244.021, force blocks (MJ): 3471.131, Decrement - blocks : 98.00 %, Distance : 100.82 %, Force : 101.74 %
+  Row : 17, blocks : 27660, ramp inclination : 6.85, Length ramp : 100.45, distance blocks Km: 6298.149, force blocks (MJ): 3530.913, Decrement - blocks : 98.00 %, Distance : 100.87 %, Force : 101.72 %
+  Row : 18, blocks : 27366, ramp inclination : 6.85, Length ramp : 106.36, distance blocks Km: 6355.691, force blocks (MJ): 3591.251, Decrement - blocks : 98.00 %, Distance : 100.91 %, Force : 101.71 %
+  Row : 19, blocks : 27074, ramp inclination : 6.85, Length ramp : 112.26, distance blocks Km: 6416.681, force blocks (MJ): 3652.120, Decrement - blocks : 98.00 %, Distance : 100.96 %, Force : 101.69 %
+  Row : 20, blocks : 26783, ramp inclination : 6.85, Length ramp : 118.17, distance blocks Km: 6480.899, force blocks (MJ): 3713.490, Decrement - blocks : 98.00 %, Distance : 101.00 %, Force : 101.68 %
+  Row : 21, blocks : 26493, ramp inclination : 6.85, Length ramp : 124.08, distance blocks Km: 6548.370, force blocks (MJ): 3775.357, Decrement - blocks : 98.00 %, Distance : 101.04 %, Force : 101.67 %
+  Row : 22, blocks : 26205, ramp inclination : 6.85, Length ramp : 129.98, distance blocks Km: 6618.887, force blocks (MJ): 3837.669, Decrement - blocks : 98.00 %, Distance : 101.08 %, Force : 101.65 %
+  Row : 23, blocks : 25919, ramp inclination : 6.85, Length ramp : 135.89, distance blocks Km: 6692.406, force blocks (MJ): 3900.389, Decrement - blocks : 98.00 %, Distance : 101.11 %, Force : 101.63 %
+  Row : 24, blocks : 25634, ramp inclination : 6.85, Length ramp : 141.79, distance blocks Km: 6850.242, force blocks (MJ): 4003.664, Decrement - blocks : 98.00 %, Distance : 102.36 %, Force : 102.65 %
+  Row : 25, blocks : 25351, ramp inclination : 6.85, Length ramp : 147.70, distance blocks Km: 6931.580, force blocks (MJ): 4068.352, Decrement - blocks : 98.00 %, Distance : 101.19 %, Force : 101.62 %
+  Row : 26, blocks : 25070, ramp inclination : 6.85, Length ramp : 153.60, distance blocks Km: 7015.481, force blocks (MJ): 4133.324, Decrement - blocks : 98.00 %, Distance : 101.21 %, Force : 101.60 %
+  Row : 27, blocks : 24790, ramp inclination : 6.85, Length ramp : 159.51, distance blocks Km: 7101.890, force blocks (MJ): 4198.499, Decrement - blocks : 98.00 %, Distance : 101.23 %, Force : 101.58 %
+  Row : 28, blocks : 24511, ramp inclination : 6.85, Length ramp : 165.42, distance blocks Km: 7190.580, force blocks (MJ): 4263.858, Decrement - blocks : 98.00 %, Distance : 101.25 %, Force : 101.56 %
+  Row : 29, blocks : 24234, ramp inclination : 6.85, Length ramp : 171.32, distance blocks Km: 7281.367, force blocks (MJ): 4329.274, Decrement - blocks : 98.00 %, Distance : 101.26 %, Force : 101.53 %
+  Row : 30, blocks : 23959, ramp inclination : 6.85, Length ramp : 177.23, distance blocks Km: 7374.027, force blocks (MJ): 4394.677, Decrement - blocks : 98.00 %, Distance : 101.27 %, Force : 101.51 %
+  Row : 31, blocks : 23685, ramp inclination : 6.85, Length ramp : 183.13, distance blocks Km: 7468.367, force blocks (MJ): 4460.017, Decrement - blocks : 98.00 %, Distance : 101.28 %, Force : 101.49 %
+  Row : 32, blocks : 23413, ramp inclination : 6.85, Length ramp : 189.04, distance blocks Km: 7664.741, force blocks (MJ): 4575.682, Decrement - blocks : 98.00 %, Distance : 102.63 %, Force : 102.59 %
+  Row : 33, blocks : 23142, ramp inclination : 6.85, Length ramp : 194.94, distance blocks Km: 7764.045, force blocks (MJ): 4641.759, Decrement - blocks : 98.00 %, Distance : 101.30 %, Force : 101.44 %
+  Row : 34, blocks : 22874, ramp inclination : 6.85, Length ramp : 200.85, distance blocks Km: 7864.171, force blocks (MJ): 4707.396, Decrement - blocks : 98.00 %, Distance : 101.29 %, Force : 101.41 %
+  Row : 35, blocks : 22606, ramp inclination : 6.85, Length ramp : 206.76, distance blocks Km: 7964.705, force blocks (MJ): 4772.453, Decrement - blocks : 98.00 %, Distance : 101.28 %, Force : 101.38 %
+Blocks per level : 993525, distance blocks per level : 2.346072E+08, force blocks per level : 1.295352E+12, force blocks ramp per level : 6.82944E+11, % force ramp per level : 52.72267, Total height : 25.56, rows : 36
+Level : 1 : Height : 21.3 : Block rows : 30, Separation : 16.70287, New base size : 156.414, Length : 175.2202, Ramp inclination : 6.930944, Start height : 25.56, % total height : 17.30769, Ramp length : 212.6075
+  Row : 0, blocks : 22340, ramp inclination : 7.035037, Length ramp : 0, distance blocks Km: 8017.130, force blocks : (MJ): 29139490000.00
+  Row : 1, blocks : 22079, ramp inclination : 6.84, Length ramp : 5.92, distance blocks Km: 7952.093, force blocks (MJ): 2875230000.000, Decrement - blocks : 98.00 %, Distance : 99.19 %, Force : 98.67 %
+  Row : 2, blocks : 21819, ramp inclination : 6.89, Length ramp : 11.75, distance blocks Km: 7887.847, force blocks (MJ): 2836771000.000, Decrement - blocks : 98.00 %, Distance : 99.19 %, Force : 98.66 %
+  Row : 3, blocks : 21561, ramp inclination : 6.91, Length ramp : 17.58, distance blocks Km: 7826.775, force blocks (MJ): 2798570000.000, Decrement - blocks : 98.00 %, Distance : 99.23 %, Force : 98.65 %
+  Row : 4, blocks : 21304, ramp inclination : 6.91, Length ramp : 23.42, distance blocks Km: 7768.887, force blocks (MJ): 2760629000.000, Decrement - blocks : 98.00 %, Distance : 99.26 %, Force : 98.64 %
+  Row : 5, blocks : 21049, ramp inclination : 6.92, Length ramp : 29.26, distance blocks Km: 7808.752, force blocks (MJ): 2760629000.000, Decrement - blocks : 98.00 %, Distance : 100.51 %, Force : 100.00 %
+  Row : 6, blocks : 20795, ramp inclination : 6.92, Length ramp : 35.10, distance blocks Km: 7757.974, force blocks (MJ): 2722946000.000, Decrement - blocks : 98.00 %, Distance : 99.35 %, Force : 98.64 %
+  Row : 7, blocks : 20543, ramp inclination : 6.92, Length ramp : 40.94, distance blocks Km: 7710.537, force blocks (MJ): 2685523000.000, Decrement - blocks : 98.00 %, Distance : 99.39 %, Force : 98.63 %
+  Row : 8, blocks : 20293, ramp inclination : 6.92, Length ramp : 46.78, distance blocks Km: 7666.427, force blocks (MJ): 2648358000.000, Decrement - blocks : 98.00 %, Distance : 99.43 %, Force : 98.62 %
+  Row : 9, blocks : 20044, ramp inclination : 6.92, Length ramp : 52.62, distance blocks Km: 7625.710, force blocks (MJ): 2611453000.000, Decrement - blocks : 98.00 %, Distance : 99.47 %, Force : 98.61 %
+  Row : 10, blocks : 19796, ramp inclination : 6.92, Length ramp : 58.46, distance blocks Km: 7588.322, force blocks (MJ): 2574806000.000, Decrement - blocks : 98.00 %, Distance : 99.51 %, Force : 98.60 %
+  Row : 11, blocks : 19550, ramp inclination : 6.93, Length ramp : 64.30, distance blocks Km: 7554.252, force blocks (MJ): 2538418000.000, Decrement - blocks : 98.00 %, Distance : 99.55 %, Force : 98.59 %
+  Row : 12, blocks : 19306, ramp inclination : 6.93, Length ramp : 70.14, distance blocks Km: 7523.506, force blocks (MJ): 2502290000.000, Decrement - blocks : 98.00 %, Distance : 99.59 %, Force : 98.58 %
+  Row : 13, blocks : 19063, ramp inclination : 6.93, Length ramp : 75.98, distance blocks Km: 7598.433, force blocks (MJ): 2502290000.000, Decrement - blocks : 98.00 %, Distance : 101.00 %, Force : 100.00 %
+  Row : 14, blocks : 18822, ramp inclination : 6.93, Length ramp : 81.82, distance blocks Km: 7575.229, force blocks (MJ): 2466420000.000, Decrement - blocks : 98.00 %, Distance : 99.69 %, Force : 98.57 %
+  Row : 15, blocks : 18582, ramp inclination : 6.93, Length ramp : 87.66, distance blocks Km: 7555.258, force blocks (MJ): 2430810000.000, Decrement - blocks : 98.00 %, Distance : 99.74 %, Force : 98.56 %
+  Row : 16, blocks : 18344, ramp inclination : 6.93, Length ramp : 93.51, distance blocks Km: 7538.406, force blocks (MJ): 2395458000.000, Decrement - blocks : 98.00 %, Distance : 99.78 %, Force : 98.55 %
+  Row : 17, blocks : 18107, ramp inclination : 6.93, Length ramp : 99.35, distance blocks Km: 7524.558, force blocks (MJ): 2360365000.000, Decrement - blocks : 98.00 %, Distance : 99.82 %, Force : 98.54 %
+  Row : 18, blocks : 17872, ramp inclination : 6.93, Length ramp : 105.19, distance blocks Km: 7513.637, force blocks (MJ): 2325531000.000, Decrement - blocks : 98.00 %, Distance : 99.85 %, Force : 98.52 %
+  Row : 19, blocks : 17638, ramp inclination : 6.93, Length ramp : 111.03, distance blocks Km: 7505.601, force blocks (MJ): 2290957000.000, Decrement - blocks : 98.00 %, Distance : 99.89 %, Force : 98.51 %
+  Row : 20, blocks : 17406, ramp inclination : 6.93, Length ramp : 116.87, distance blocks Km: 7500.239, force blocks (MJ): 2256641000.000, Decrement - blocks : 98.00 %, Distance : 99.93 %, Force : 98.50 %
+  Row : 21, blocks : 17175, ramp inclination : 6.93, Length ramp : 122.71, distance blocks Km: 7610.680, force blocks (MJ): 2256641000.000, Decrement - blocks : 98.00 %, Distance : 101.47 %, Force : 100.00 %
+  Row : 22, blocks : 16946, ramp inclination : 6.93, Length ramp : 128.55, distance blocks Km: 7611.766, force blocks (MJ): 2222584000.000, Decrement - blocks : 98.00 %, Distance : 100.01 %, Force : 98.49 %
+  Row : 23, blocks : 16719, ramp inclination : 6.93, Length ramp : 134.39, distance blocks Km: 7615.187, force blocks (MJ): 2188787000.000, Decrement - blocks : 98.00 %, Distance : 100.04 %, Force : 98.48 %
+  Row : 24, blocks : 16493, ramp inclination : 6.93, Length ramp : 140.23, distance blocks Km: 7620.704, force blocks (MJ): 2155248000.000, Decrement - blocks : 98.00 %, Distance : 100.07 %, Force : 98.47 %
+  Row : 25, blocks : 16268, ramp inclination : 6.93, Length ramp : 146.07, distance blocks Km: 7628.189, force blocks (MJ): 2121968000.000, Decrement - blocks : 98.00 %, Distance : 100.10 %, Force : 98.46 %
+  Row : 26, blocks : 16045, ramp inclination : 6.93, Length ramp : 151.91, distance blocks Km: 7637.401, force blocks (MJ): 2088947000.000, Decrement - blocks : 98.00 %, Distance : 100.12 %, Force : 98.44 %
+  Row : 27, blocks : 15824, ramp inclination : 6.93, Length ramp : 157.75, distance blocks Km: 7648.066, force blocks (MJ): 2056185000.000, Decrement - blocks : 98.00 %, Distance : 100.14 %, Force : 98.43 %
+  Row : 28, blocks : 15604, ramp inclination : 6.93, Length ramp : 163.59, distance blocks Km: 7659.884, force blocks (MJ): 2023683000.000, Decrement - blocks : 98.00 %, Distance : 100.15 %, Force : 98.42 %
+  Row : 29, blocks : 15386, ramp inclination : 6.93, Length ramp : 169.43, distance blocks Km: 7798.848, force blocks (MJ): 2023683000.000, Decrement - blocks : 98.00 %, Distance : 101.81 %, Force : 100.00 %
+Blocks per level : 562773, distance blocks per level : 2.298303E+08, force blocks per level : 7.339578E+17, force blocks ramp per level : 4.00341E+13, % force ramp per level : 0.005454551, Total height : 46.86, rows : 66
+Decrement: Blocks per level : 76.54099 % , distance blocks per level : 2.078459 %, force blocks per level : -99.99982 %
+Level : 2 : Height : 17.75 : Block rows : 25, Separation : 13.76339, New base size : 128.8872, Length : 144.4081, Ramp inclination : 7.007395, Start height : 46.86, % total height : 31.73077, Ramp length : 387.8277
+  Row : 0, blocks : 15169, ramp inclination : 7.035037, Length ramp : 0, distance blocks Km: 7776.864, force blocks : (MJ): 42358930000.00
+  Row : 1, blocks : 14956, ramp inclination : 6.91, Length ramp : 5.85, distance blocks Km: 7680.411, force blocks (MJ): 4167892000.000, Decrement - blocks : 98.00 %, Distance : 98.76 %, Force : 98.39 %
+  Row : 2, blocks : 14745, ramp inclination : 6.97, Length ramp : 11.62, distance blocks Km: 7585.343, force blocks (MJ): 4100442000.000, Decrement - blocks : 98.00 %, Distance : 98.76 %, Force : 98.38 %
+  Row : 3, blocks : 14535, ramp inclination : 6.98, Length ramp : 17.39, distance blocks Km: 7493.345, force blocks (MJ): 4033542000.000, Decrement - blocks : 98.00 %, Distance : 98.79 %, Force : 98.37 %
+  Row : 4, blocks : 14327, ramp inclination : 6.99, Length ramp : 23.16, distance blocks Km: 7404.298, force blocks (MJ): 3967193000.000, Decrement - blocks : 98.00 %, Distance : 98.81 %, Force : 98.36 %
+  Row : 5, blocks : 14120, ramp inclination : 6.99, Length ramp : 28.94, distance blocks Km: 7318.333, force blocks (MJ): 3901394000.000, Decrement - blocks : 98.00 %, Distance : 98.84 %, Force : 98.34 %
+  Row : 6, blocks : 13915, ramp inclination : 7.00, Length ramp : 34.71, distance blocks Km: 7235.459, force blocks (MJ): 3836147000.000, Decrement - blocks : 98.00 %, Distance : 98.87 %, Force : 98.33 %
+  Row : 7, blocks : 13711, ramp inclination : 7.00, Length ramp : 40.49, distance blocks Km: 7271.870, force blocks (MJ): 3836147000.000, Decrement - blocks : 98.00 %, Distance : 100.50 %, Force : 100.00 %
+  Row : 8, blocks : 13509, ramp inclination : 7.00, Length ramp : 46.27, distance blocks Km: 7195.456, force blocks (MJ): 3771449000.000, Decrement - blocks : 98.00 %, Distance : 98.95 %, Force : 98.31 %
+  Row : 9, blocks : 13308, ramp inclination : 7.00, Length ramp : 52.04, distance blocks Km: 7122.179, force blocks (MJ): 3707303000.000, Decrement - blocks : 98.00 %, Distance : 98.98 %, Force : 98.30 %
+  Row : 10, blocks : 13109, ramp inclination : 7.00, Length ramp : 57.82, distance blocks Km: 7052.014, force blocks (MJ): 3643707000.000, Decrement - blocks : 98.00 %, Distance : 99.01 %, Force : 98.28 %
+  Row : 11, blocks : 12911, ramp inclination : 7.00, Length ramp : 63.59, distance blocks Km: 6984.854, force blocks (MJ): 3580644000.000, Decrement - blocks : 98.00 %, Distance : 99.05 %, Force : 98.27 %
+  Row : 12, blocks : 12715, ramp inclination : 7.00, Length ramp : 69.37, distance blocks Km: 6920.741, force blocks (MJ): 3518101000.000, Decrement - blocks : 98.00 %, Distance : 99.08 %, Force : 98.25 %
+  Row : 13, blocks : 12520, ramp inclination : 7.00, Length ramp : 75.15, distance blocks Km: 6859.552, force blocks (MJ): 3456108000.000, Decrement - blocks : 98.00 %, Distance : 99.12 %, Force : 98.24 %
+  Row : 14, blocks : 12327, ramp inclination : 7.00, Length ramp : 80.92, distance blocks Km: 6921.504, force blocks (MJ): 3456108000.000, Decrement - blocks : 98.00 %, Distance : 100.90 %, Force : 100.00 %
+  Row : 15, blocks : 12135, ramp inclination : 7.00, Length ramp : 86.70, distance blocks Km: 6866.555, force blocks (MJ): 3394667000.000, Decrement - blocks : 98.00 %, Distance : 99.21 %, Force : 98.22 %
+  Row : 16, blocks : 11945, ramp inclination : 7.00, Length ramp : 92.48, distance blocks Km: 6814.277, force blocks (MJ): 3333776000.000, Decrement - blocks : 98.00 %, Distance : 99.24 %, Force : 98.21 %
+  Row : 17, blocks : 11756, ramp inclination : 7.00, Length ramp : 98.25, distance blocks Km: 6764.605, force blocks (MJ): 3273437000.000, Decrement - blocks : 98.00 %, Distance : 99.27 %, Force : 98.19 %
+  Row : 18, blocks : 11569, ramp inclination : 7.00, Length ramp : 104.03, distance blocks Km: 6717.380, force blocks (MJ): 3213649000.000, Decrement - blocks : 98.00 %, Distance : 99.30 %, Force : 98.17 %
+  Row : 19, blocks : 11383, ramp inclination : 7.00, Length ramp : 109.80, distance blocks Km: 6672.440, force blocks (MJ): 3154412000.000, Decrement - blocks : 98.00 %, Distance : 99.33 %, Force : 98.16 %
+  Row : 20, blocks : 11199, ramp inclination : 7.00, Length ramp : 115.58, distance blocks Km: 6629.663, force blocks (MJ): 3095725000.000, Decrement - blocks : 98.00 %, Distance : 99.36 %, Force : 98.14 %
+  Row : 21, blocks : 11016, ramp inclination : 7.00, Length ramp : 121.36, distance blocks Km: 6588.836, force blocks (MJ): 3037590000.000, Decrement - blocks : 98.00 %, Distance : 99.38 %, Force : 98.12 %
+  Row : 22, blocks : 10835, ramp inclination : 7.00, Length ramp : 127.13, distance blocks Km: 6676.945, force blocks (MJ): 3037590000.000, Decrement - blocks : 98.00 %, Distance : 101.34 %, Force : 100.00 %
+  Row : 23, blocks : 10655, ramp inclination : 7.00, Length ramp : 132.91, distance blocks Km: 6640.137, force blocks (MJ): 2980006000.000, Decrement - blocks : 98.00 %, Distance : 99.45 %, Force : 98.10 %
+  Row : 24, blocks : 10477, ramp inclination : 7.00, Length ramp : 138.69, distance blocks Km: 6604.544, force blocks (MJ): 2922973000.000, Decrement - blocks : 98.00 %, Distance : 99.46 %, Force : 98.09 %
+Blocks per level : 318847, distance blocks per level : 1.757976E+08, force blocks per level : 8.86559E+17, force blocks ramp per level : 6.991408E+13, % force ramp per level : 0.007886004, Total height : 64.61, rows : 91
+Decrement: Blocks per level : 76.50253 % , distance blocks per level : 30.73571 %, force blocks per level : -17.21276 %
+Level : 3 : Height : 14.2 : Block rows : 20, Separation : 11.34121, New base size : 106.2048, Length : 118.9425, Ramp inclination : 6.808057, Start height : 64.61, % total height : 43.75, Ramp length : 532.2358
+  Row : 0, blocks : 10300, ramp inclination : 7.035037, Length ramp : 0, distance blocks Km: 6547.542, force blocks : (MJ): 40843180000.00
+  Row : 1, blocks : 10120, ramp inclination : 6.72, Length ramp : 6.03, distance blocks Km: 6439.581, force blocks (MJ): 4004628000.000, Decrement - blocks : 98.00 %, Distance : 98.35 %, Force : 98.05 %
+  Row : 2, blocks : 9941, ramp inclination : 6.77, Length ramp : 11.96, distance blocks Km: 6333.581, force blocks (MJ): 3925723000.000, Decrement - blocks : 98.00 %, Distance : 98.35 %, Force : 98.03 %
+  Row : 3, blocks : 9763, ramp inclination : 6.78, Length ramp : 17.90, distance blocks Km: 6230.618, force blocks (MJ): 3847604000.000, Decrement - blocks : 98.00 %, Distance : 98.37 %, Force : 98.01 %
+  Row : 4, blocks : 9588, ramp inclination : 6.79, Length ramp : 23.85, distance blocks Km: 6130.784, force blocks (MJ): 3770270000.000, Decrement - blocks : 98.00 %, Distance : 98.40 %, Force : 97.99 %
+  Row : 5, blocks : 9414, ramp inclination : 6.79, Length ramp : 29.80, distance blocks Km: 6154.324, force blocks (MJ): 3770270000.000, Decrement - blocks : 98.00 %, Distance : 100.38 %, Force : 100.00 %
+  Row : 6, blocks : 9241, ramp inclination : 6.80, Length ramp : 35.74, distance blocks Km: 6060.609, force blocks (MJ): 3693720000.000, Decrement - blocks : 98.00 %, Distance : 98.48 %, Force : 97.97 %
+  Row : 7, blocks : 9070, ramp inclination : 6.80, Length ramp : 41.69, distance blocks Km: 5970.063, force blocks (MJ): 3617956000.000, Decrement - blocks : 98.00 %, Distance : 98.51 %, Force : 97.95 %
+  Row : 8, blocks : 8901, ramp inclination : 6.80, Length ramp : 47.63, distance blocks Km: 5882.660, force blocks (MJ): 3542977000.000, Decrement - blocks : 98.00 %, Distance : 98.54 %, Force : 97.93 %
+Blocks per level : 86338, distance blocks per level : 5.574976E+07, force blocks per level : 3.425747E+17, force blocks ramp per level : 3.567521E+13, % force ramp per level : 0.01041385, Total height : 78.81, rows : 100
+Decrement: Blocks per level : 269.3009 % , distance blocks per level : 215.3334 %, force blocks per level : 158.7929 %
+Total length : 2809.5, Total block distance : 6.959849E+08, Total block force : 1.963093E+18, Total block force ramp : 1.463063E+14, % force ramp : 0.00745285

@@ -39,6 +39,8 @@ public class PyramidGUIController : MonoBehaviour
     private string pathWideStr, pathSeparationStr;
     private string heightCornerInitialRampStr, heightCornerInitialRamp2Str, heightCornerInitialRamp3Str, heightCornerInitialRamp4Str;
     private string orbitSpeedStr, orbitDistFactorStr, orbitHeightFactorStr;
+    private string stephenFeasibleTransitionHeightStr, stephenLanesBelowTransitionStr, stephenLanesAboveTransitionStr;
+    private string massBlockStr, haulingMassPerTripStr;
 
     private Vector2 scrollPosition; // For the scrollbar
     private bool showGUI = true; // To toggle GUI visibility
@@ -57,7 +59,7 @@ public class PyramidGUIController : MonoBehaviour
     private bool showDecommissioning = false;
     private bool showRampMethod = false;
     private bool showOrbitSettings = false;
-
+    
     void Start()
     {
         if (generatePyramid == null)
@@ -144,13 +146,13 @@ public class PyramidGUIController : MonoBehaviour
         // --- MANUAL PARAMETERS ---
         DrawCollapsiblePanel("Ramp Method", ref showRampMethod, DrawRampMethodPanel);
         DrawCollapsiblePanel("Core Parameters", ref showCoreParams, DrawCoreParameters);
-        DrawCollapsiblePanel("Ramp Details", ref showRampDetails, DrawRampDetails);
-        DrawCollapsiblePanel("Granite Settings", ref showGraniteSettings, DrawGraniteSettings);
+        DrawCollapsiblePanel("Ramp Details", ref showRampDetails, DrawRampDetails);        
         DrawCollapsiblePanel("Adaptive Ramp System", ref showAdaptiveRamps, DrawAdaptiveRampSystem);
         DrawCollapsiblePanel("Headway & Timings", ref showHeadway, DrawHeadwayAndTimings);
         DrawCollapsiblePanel("Drawing Options", ref showDrawingOptions, DrawDrawingOptions);
         DrawCollapsiblePanel("Element Visibility", ref showVisibility, DrawElementVisibility);
         DrawCollapsiblePanel("Orbit Camera", ref showOrbitSettings, DrawOrbitCameraOptions);
+        DrawCollapsiblePanel("Granite Settings", ref showGraniteSettings, DrawGraniteSettings);
         DrawCollapsiblePanel("Granite Megalith Project", ref showGraniteProject, DrawGraniteProjectPanel);
         DrawCollapsiblePanel("Decommissioning", ref showDecommissioning, DrawDecommissioningPanel);
         DrawCollapsiblePanel("Logging & Export", ref showLogging, DrawLoggingOptions);
@@ -292,6 +294,9 @@ public class PyramidGUIController : MonoBehaviour
         DrawLabeledTextField("Lateral Offset (%)", ref percentageStraightRampPositionStr);
         DrawLabeledTextField("Yaw Angle (°)", ref straightRampYawAngleStr);
 
+        DrawLabeledTextField("Mass Block (kg)", ref massBlockStr);
+        DrawLabeledTextField("Hauling Mass/Trip (kg)", ref haulingMassPerTripStr);
+
         generatePyramid.useStraightRampInclination = GUILayout.Toggle(generatePyramid.useStraightRampInclination, "Use Custom Inclination");
         if (generatePyramid.useStraightRampInclination)
         {
@@ -304,7 +309,14 @@ public class PyramidGUIController : MonoBehaviour
         DrawLabeledTextField("Side Slope Angle (°)", ref sideSlopeAngleStr);
         DrawLabeledTextField("Spiral Sep. (m)", ref spiralRampSeparationStr);
         DrawLabeledTextField("Internal Ramp H (m)", ref internalRampStraightRampHighStr);
-        DrawLabeledTextField("Min Height Spiral Ramp", ref minHeightSpiralRampStr);        
+        DrawLabeledTextField("Min Height Spiral Ramp", ref minHeightSpiralRampStr);
+
+        GUILayout.Space(10);
+        generatePyramid.useStephenMassLimits = GUILayout.Toggle(generatePyramid.useStephenMassLimits, "Enable Stephen's Mass Limits");
+        GUILayout.Space(5);
+        DrawLabeledTextField("Transition Height (m)", ref stephenFeasibleTransitionHeightStr);
+        DrawLabeledTextField("Lanes Below (<=71m)", ref stephenLanesBelowTransitionStr);
+        DrawLabeledTextField("Lanes Above (>71m)", ref stephenLanesAboveTransitionStr);
     }
 
     private void DrawGraniteSettings()
@@ -532,11 +544,17 @@ public class PyramidGUIController : MonoBehaviour
         if (int.TryParse(holeWide2Str, out int hw2)) generatePyramid.holeWide2 = hw2;
         if (int.TryParse(holeWideStraightRampStr, out int hwsr)) generatePyramid.holeWideStraightRamp = hwsr;
 
+        if (float.TryParse(stephenFeasibleTransitionHeightStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float sfth)) generatePyramid.stephenFeasibleTransitionHeight = sfth;
+        if (int.TryParse(stephenLanesBelowTransitionStr, out int slbt)) generatePyramid.stephenLanesBelowTransition = slbt;
+        if (int.TryParse(stephenLanesAboveTransitionStr, out int slat)) generatePyramid.stephenLanesAboveTransition = slat;
+
         if (float.TryParse(percentageStraightRampPositionStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float psrp)) generatePyramid.percentageStraightRampPosition = psrp;
         if (float.TryParse(maxHeightStraightRampStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float mhsr)) generatePyramid.MaxHeightStraightRamp = mhsr;
         if (float.TryParse(straightRampInclinationStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float sri)) generatePyramid.StraightRampInclination = sri;
         if (float.TryParse(straightRampYawAngleStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float srya)) generatePyramid.StraightRampYawAngle = srya;
         if (float.TryParse(minHeightSpiralRampStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float mhspr)) generatePyramid.MinHeightSpiralRamp = mhspr;
+        if (float.TryParse(massBlockStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float mb)) generatePyramid.massBlock = mb;
+        if (float.TryParse(haulingMassPerTripStr, NumberStyles.Any, CultureInfo.InvariantCulture, out float hmpt)) generatePyramid.haulingMassPerTrip = hmpt;
         if (int.TryParse(heightChangeRampConfStr, out int hcrc)) generatePyramid.heightChangeRampConf = hcrc;
 
         if (int.TryParse(numGranite1Str, out int intVal)) generatePyramid.numOfGraniteRock1 = intVal;
@@ -624,12 +642,18 @@ public class PyramidGUIController : MonoBehaviour
         holeWide2Str = generatePyramid.holeWide2.ToString();
         holeWideStraightRampStr = generatePyramid.holeWideStraightRamp.ToString();
 
+        stephenFeasibleTransitionHeightStr = generatePyramid.stephenFeasibleTransitionHeight.ToString("F2", CultureInfo.InvariantCulture);
+        stephenLanesBelowTransitionStr = generatePyramid.stephenLanesBelowTransition.ToString();
+        stephenLanesAboveTransitionStr = generatePyramid.stephenLanesAboveTransition.ToString();
+
         percentageStraightRampPositionStr = generatePyramid.percentageStraightRampPosition.ToString("F2", CultureInfo.InvariantCulture);
         maxHeightStraightRampStr = generatePyramid.MaxHeightStraightRamp.ToString("F2", CultureInfo.InvariantCulture);
         straightRampInclinationStr = generatePyramid.StraightRampInclination.ToString("F2", CultureInfo.InvariantCulture);
         straightRampYawAngleStr = generatePyramid.StraightRampYawAngle.ToString("F2", CultureInfo.InvariantCulture);
         minHeightSpiralRampStr = generatePyramid.MinHeightSpiralRamp.ToString("F2", CultureInfo.InvariantCulture);
         heightChangeRampConfStr = generatePyramid.heightChangeRampConf.ToString("F2", CultureInfo.InvariantCulture);
+        massBlockStr = generatePyramid.massBlock.ToString("F2", CultureInfo.InvariantCulture);
+        haulingMassPerTripStr = generatePyramid.haulingMassPerTrip.ToString("F2", CultureInfo.InvariantCulture);
 
         numGranite1Str = generatePyramid.numOfGraniteRock1.ToString();
         numGranite2Str = generatePyramid.numOfGraniteRock2.ToString();

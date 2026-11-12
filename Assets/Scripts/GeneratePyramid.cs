@@ -35,13 +35,13 @@ public enum RampMethodType
     /// </summary>
     Integrated,
     /// <summary>
-    /// Ramps integrated into the main axis or edges of the pyramid structure.
+    /// Stephen Feasible Ramp
     /// </summary>
     Feasible,
     /// <summary>
-    /// Ramps integrated into the main axis or edges of the pyramid structure.
+    /// Stephen Spured Ramp
     /// </summary>
-    Spurred
+    Spurred,    
 }
 
 // Defines the pyramid types for the dropdown menu in the Inspector.
@@ -4174,9 +4174,9 @@ public class GeneratePyramid : MonoBehaviour
 
         //return length;
         if (rampMethod == RampMethodType.Spiral || rampMethod == RampMethodType.Internal || rampMethod == RampMethodType.Feasible || rampMethod == RampMethodType.Spurred)
-            path_length += path_length + length_spiral;
+            path_length += length_spiral;
         else
-            path_length += path_length + length;
+            path_length += length;
 
         if (maxBlocks > 0 && numberOfBlocks > maxBlocks)
             yield break;
@@ -6523,6 +6523,11 @@ public class GeneratePyramid : MonoBehaviour
         holeWide2 = 2;
         holeWideStraightRamp = 3;
 
+        HeightCornerInitialRamp = 0.0f;
+        HeightCornerInitialRamp2 = 0.0f;
+        HeightCornerInitialRamp3 = 0.0f;
+        HeightCornerInitialRamp4 = 0.0f;
+
         PyramidVolume = 0f;
         EmbankmentVolume = 0f;
         Decomisioning = false;
@@ -6556,6 +6561,18 @@ public class GeneratePyramid : MonoBehaviour
         frictionCoefCapstan = 0.3f;
         capstanWrapAngleRadians = Mathf.PI;
         totalGraniteMoveTimeWorkingYears = 0;
+
+        useStephenMassLimits = false;
+        stephenCoefficient = 108000f;
+        stephenExponent = -0.788f;
+        feasibleInitialStraightRampMaxMass = 8000f;
+        feasiblePlatformMaxMass = 2000f;
+        feasibleSecondarySpiralMaxMass = 6000f;
+        bufferMin = 5.0f;
+        teamBufferFactor = 0.20f;
+        stephenFeasibleTransitionHeight = 71.0f;
+        stephenLanesBelowTransition = 2;
+        stephenLanesAboveTransition = 1;       
 
         Debug.Log("Properties reset to default values.");
     }
@@ -6980,7 +6997,7 @@ public class GeneratePyramid : MonoBehaviour
     /// </summary>
     private void CalculateVolumeUntilRow(int targetRow)
     {
-        if (targetRow <= 0)
+        if (targetRow < 0)
         {
             PyramidVolume = 0;
             return;

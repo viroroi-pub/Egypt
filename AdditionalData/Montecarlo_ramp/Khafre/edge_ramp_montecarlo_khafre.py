@@ -1,23 +1,13 @@
-"""
-Monte Carlo traffic/queuing model for the Khafre (G2) IER scenario.
-Adapted from edge_ramp_montecarlo.py used for Khufu/G1.
+"""Monte Carlo dispatch-capacity model for Khafre (G2).
 
-This version keeps the same output structure as the Khufu capacity CSV:
-trial_id, phase_id, phase_label, ramp_configuration, ramps_up, ramps_down,
-turns_per_block, speed_factor, headway_arrival_min, corner_delay_per_turn_min,
-service_time_min, arrival_rate_blocks_per_min, service_rate_blocks_per_min,
-utilization, per_ramp_capacity_blocks_per_hour, total_capacity_blocks_per_hour,
-mean_corner_queue_length, waiting_probability, blocking_probability, mc_settings.
-
-Default Khafre/G2 assumptions:
-- N = 10,000 trials
-- mu = 0.20
-- theta = 7.5 degrees, used as the Khafre reference slope
-- same adaptive ramp phases as Khufu: 16 -> 8 -> 4 -> 2 -> 1
-- same stochastic settings: +/-25% speed, +/-1 min headway, lognormal corner delay
+Requested and nominal minimum headways share a uniform perturbation.
+The sampled minimum implies a variable speed, referenced to 0.15 m/s.
+Availability is included once. Corner delays are diagnostic; queue and
+blocking metrics are unspecified (NaN).
 """
 
 import math
+from pathlib import Path
 import numpy as np
 import pandas as pd
 
@@ -38,21 +28,53 @@ def s_mu_theta(mu: float, theta_deg: float, mu0: float = 0.20, theta0_deg: float
 
 
 def run_trials(
-    mu: float = 0.20,
+    mu: float = 0.30,
     theta_deg: float = 7.5,
     N: int = 10000,
     seed: int = 42,
     theta0_deg: float = 7.5,
     phases=PHASES_KHAFRE,
+    nominal_headway_min: float = 4.0,
+    headway_abs_jitter_min: float = 1.0,
+    minimum_headway_abs_jitter_min: float = 1.0,
+    mtbf_hours: float = 6.0,
+    repair_min_low: float = 5.0,
+    repair_min_high: float = 12.0,
 ) -> pd.DataFrame:
+    if isinstance(N, bool) or not isinstance(N, int) or N < 1:
+        raise ValueError("N must be a positive integer")
+    parameters = (mu, theta_deg, theta0_deg, nominal_headway_min,
+                  headway_abs_jitter_min, minimum_headway_abs_jitter_min,
+                  mtbf_hours, repair_min_low, repair_min_high)
+    if not all(math.isfinite(x) for x in parameters):
+        raise ValueError("Parameters must be finite")
+    if mu < 0 or not 0 < theta_deg < 90 or not 0 < theta0_deg < 90:
+        raise ValueError("Invalid friction or slope")
+    if not 0 <= headway_abs_jitter_min < nominal_headway_min or not phases:
+        raise ValueError("Invalid headway jitter or empty phases")
+    if mtbf_hours <= 0 or not 0 <= repair_min_low <= repair_min_high:
+        raise ValueError("Invalid MTBF or repair times")
+
+    th = math.radians(theta_deg)
+    force = 2267.96 * 9.81 * (math.sin(th) + mu * math.cos(th))
+    pullers = math.ceil(force / 300.0)
+    team_length = 1.5 * math.ceil(pullers / 2) - 1.0
+    safety_distance = team_length + 3.0 + 15.0
+    minimum_headway = safety_distance / 0.15 / 60.0
+    if not 0 <= minimum_headway_abs_jitter_min < minimum_headway:
+        raise ValueError("Invalid minimum-headway jitter")
+
     rng = np.random.default_rng(seed)
-    scale = s_mu_theta(mu, theta_deg, theta0_deg=theta0_deg)
+    variation = rng.uniform(-1.0, 1.0, size=N)
+    requested_headway = nominal_headway_min + headway_abs_jitter_min * variation
+    sampled_minimum = minimum_headway + minimum_headway_abs_jitter_min * variation
+    repair_times = rng.uniform(repair_min_low, repair_min_high, size=N)
+    availability = mtbf_hours * 60.0 / (mtbf_hours * 60.0 + repair_times)
+    headway = np.maximum(requested_headway, sampled_minimum) / availability
+    speed_factor = minimum_headway / sampled_minimum
 
     frames = []
     for ph in phases:
-        headway = 4.0 + rng.uniform(-1.0, 1.0, size=N)
-        headway = np.clip(headway, 2.0, 8.0)
-        speed_factor = rng.uniform(0.75, 1.25, size=N)
 
         mu_ln = math.log(2.8)
         sigma_ln = 0.35
@@ -60,22 +82,17 @@ def run_trials(
         heavy = rng.random(N) < 0.10
         corner_delay[heavy] *= rng.uniform(1.1, 1.4, size=heavy.sum())
 
-        hauling = (ph["base_service_time_min"] / speed_factor) * scale
-        turning = ph["turns_per_block"] * corner_delay
-        service_time = hauling + turning
+        service_time = sampled_minimum / availability
 
         arrival_rate = 1.0 / headway
         service_rate = 1.0 / service_time
 
-        utilization = np.clip(arrival_rate / service_rate, 1e-6, 0.995)
-        Wq = utilization / (2.0 * service_rate * (1.0 - utilization))
-        Lq = arrival_rate * Wq
+        utilization = arrival_rate / service_rate
+        Lq = np.full(N, np.nan)
+        waiting_probability = np.full(N, np.nan)
+        blocking_probability = np.full(N, np.nan)
 
-        waiting_probability = utilization
-        blocking_probability = np.clip((utilization - 0.85) / 0.15, 0.0, 1.0) * 0.30
-
-        # This follows the structure shown in the Khufu CSV example: capacity is service capacity.
-        per_ramp_capacity_bph = 60.0 * service_rate * (1.0 - blocking_probability)
+        per_ramp_capacity_bph = 60.0 * np.minimum(arrival_rate, service_rate)
         total_capacity_bph = per_ramp_capacity_bph * ph["ramps_up"]
 
         df = pd.DataFrame({
@@ -98,17 +115,28 @@ def run_trials(
             "mean_corner_queue_length": Lq,
             "waiting_probability": waiting_probability,
             "blocking_probability": blocking_probability,
-            "mc_settings": f"Khafre/G2; μ={mu}; θr={theta_deg}°; θ0={theta0_deg}°; ±25% speed; ±1 min headway; lognormal corner delays (median 2.8 min, σ=0.35); hauling term scaled by S(mu,θ)",
+            "mc_settings": f"Khafre/G2; mu={mu}; theta={theta_deg}; nominal_headway_min={nominal_headway_min}; jitter_min={headway_abs_jitter_min}; minimum_jitter_min={minimum_headway_abs_jitter_min}; common uniform perturbation; nominal_minimum_min={minimum_headway}; sampled minimum implies variable speed; mtbf_hours={mtbf_hours}; repair_min={repair_min_low}-{repair_min_high}; availability included; seed={seed}; corner delays diagnostic; queue/blocking not modelled",
         })
         frames.append(df)
 
     return pd.concat(frames, ignore_index=True)
 
 
-def save_trials_csv(mu: float = 0.20, theta_deg: float = 7.5, N: int = 10000,
-                    out_csv: str = "/mnt/data/khafre_montecarlo_capacity_trials.csv",
-                    seed: int = 42, theta0_deg: float = 7.5) -> str:
-    df = run_trials(mu=mu, theta_deg=theta_deg, N=N, seed=seed, theta0_deg=theta0_deg)
+def save_trials_csv(mu: float = 0.30, theta_deg: float = 7.5, N: int = 10000,
+                    out_csv: str = "khafre_montecarlo_capacity_trials.csv",
+                    seed: int = 42, theta0_deg: float = 7.5,
+                    nominal_headway_min: float = 4.0,
+                    headway_abs_jitter_min: float = 1.0,
+                    minimum_headway_abs_jitter_min: float = 1.0,
+                    mtbf_hours: float = 6.0, repair_min_low: float = 5.0,
+                    repair_min_high: float = 12.0) -> str:
+    df = run_trials(mu=mu, theta_deg=theta_deg, N=N, seed=seed, theta0_deg=theta0_deg,
+                    nominal_headway_min=nominal_headway_min,
+                    headway_abs_jitter_min=headway_abs_jitter_min,
+                    minimum_headway_abs_jitter_min=minimum_headway_abs_jitter_min,
+                    mtbf_hours=mtbf_hours, repair_min_low=repair_min_low,
+                    repair_min_high=repair_min_high)
+    Path(out_csv).parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(out_csv, index=False)
     return out_csv
 

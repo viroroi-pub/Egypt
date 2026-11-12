@@ -50,3 +50,7 @@ Description: Aggregated on-site duration statistics for the Khafre edge-ramp mod
 montecarlo_edge_ramp_trials_mu015_mu030_theta6_7_8_khafre.zip
 Section: Methods — Monte Carlo traffic and duration uncertainty
 Description: Compressed archive of Khafre Monte Carlo edge-ramp trial outputs across μ = 0.15–0.30 and θr = 6°, 7° and 8°. This archive preserves the trial-level results underlying the summarized CSV outputs.
+
+results_headway_khafre.zip
+Section: Methods — Monte Carlo duration uncertainty; Results — Monte Carlo traffic and schedule robustness
+Description: Compressed archive of the Khafre headway calculations for the 4-min baseline, 6-min conservative and 8-min slow scenarios, with 10,000 trials per scenario and random seed 42. 
